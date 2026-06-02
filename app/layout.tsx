@@ -51,8 +51,8 @@ const notoTC = Noto_Sans_TC({
 });
 
 export const metadata: Metadata = {
-  title: "Nihongo · 夜讀",
-  description: "10,000 個常用日語單字，為繁體中文學習者打造的行動優先翻卡練習工具。"
+  title: "NVT",
+  description: "13,000 個常用日語單字，為繁體中文學習者打造的行動優先翻卡練習工具。"
 };
 
 export const viewport: Viewport = {

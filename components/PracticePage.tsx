@@ -35,22 +35,28 @@ import {
 } from "@/components/ui/select";
 import { track } from "@vercel/analytics";
 import { useStudyProgress } from "@/lib/storage";
-import { filterVocab, findRelatedTarget, shuffle } from "@/lib/vocab";
+import { shuffle } from "@/lib/vocab";
+import { fetchTranche, fetchVocabIndex } from "@/lib/vocab-client";
 import { cn } from "@/lib/utils";
 import type { PracticeMode, Tranche, VocabEntry } from "@/lib/types";
 
-export function PracticePage({
-  tranches,
-  vocab
-}: {
-  tranches: Tranche[];
-  vocab: VocabEntry[];
-}) {
+function matchesFilters(entry: VocabEntry, jlpt: string, part: string) {
+  return (
+    (jlpt === "全部" || entry.jlpt_level === jlpt) &&
+    (part === "全部" || entry.part_of_speech.includes(part))
+  );
+}
+
+export function PracticePage({ tranches }: { tranches: Tranche[] }) {
   const { progress, setProgress, markSeen, toggleLearned, resetProgress } =
     useStudyProgress();
   const [isFlipped, setIsFlipped] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
+
+  const [vocabIndex, setVocabIndex] = useState<Record<number, number> | null>(null);
+  const [trancheEntries, setTrancheEntries] = useState<VocabEntry[]>([]);
+  const [trancheLoading, setTrancheLoading] = useState(true);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -64,20 +70,31 @@ export function PracticePage({
   const selectedTranche =
     tranches.find((item) => item.id === selectedTrancheId) ?? tranches[0];
 
+  useEffect(() => {
+    fetchVocabIndex().then(setVocabIndex).catch(() => setVocabIndex({}));
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    setTrancheLoading(true);
+    fetchTranche(selectedTrancheId)
+      .then((entries) => {
+        if (active) setTrancheEntries(entries);
+      })
+      .finally(() => {
+        if (active) setTrancheLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [selectedTrancheId]);
+
   const sequentialWords = useMemo(
     () =>
-      filterVocab(vocab, {
-        query: "",
-        trancheId: selectedTrancheId,
-        jlpt: progress.selectedJlpt,
-        partOfSpeech: progress.selectedPartOfSpeech
-      }),
-    [
-      progress.selectedJlpt,
-      progress.selectedPartOfSpeech,
-      selectedTrancheId,
-      vocab
-    ]
+      trancheEntries.filter((entry) =>
+        matchesFilters(entry, progress.selectedJlpt, progress.selectedPartOfSpeech)
+      ),
+    [trancheEntries, progress.selectedJlpt, progress.selectedPartOfSpeech]
   );
 
   const sessionWords = useMemo(() => {
@@ -85,24 +102,24 @@ export function PracticePage({
       progress.practiceMode === "random30" &&
       progress.randomSessionWordIds.length > 0
     ) {
-      const ids = new Set(progress.randomSessionWordIds);
+      const byId = new Map(trancheEntries.map((entry) => [entry.id, entry]));
       return progress.randomSessionWordIds
-        .map((id) => vocab.find((entry) => entry.id === id))
-        .filter((entry): entry is VocabEntry => Boolean(entry && ids.has(entry.id)));
+        .map((id) => byId.get(id))
+        .filter((entry): entry is VocabEntry => Boolean(entry));
     }
     return sequentialWords;
   }, [
     progress.practiceMode,
     progress.randomSessionWordIds,
     sequentialWords,
-    vocab
+    trancheEntries
   ]);
 
   const safeIndex =
     sessionWords.length === 0
       ? 0
       : Math.min(progress.currentPracticeIndex, sessionWords.length - 1);
-  const current = sessionWords[safeIndex] ?? sequentialWords[0] ?? vocab[0];
+  const current = sessionWords[safeIndex];
   const isLearned = current ? progress.learnedWordIds.includes(current.id) : false;
   const pct = sessionWords.length
     ? ((safeIndex + 1) / sessionWords.length) * 100
@@ -127,10 +144,7 @@ export function PracticePage({
   }
 
   function startRandomSession() {
-    const pool =
-      sequentialWords.length > 0
-        ? sequentialWords
-        : vocab.filter((entry) => entry.tranche_id === selectedTrancheId);
+    const pool = sequentialWords.length > 0 ? sequentialWords : trancheEntries;
     const ids = shuffle(pool.map((entry) => entry.id)).slice(0, 30);
     setProgress({
       practiceMode: "random30",
@@ -152,15 +166,18 @@ export function PracticePage({
     setIsFlipped(false);
   }
 
-  function selectRelated(targetId: number) {
-    const target = findRelatedTarget(vocab, targetId);
-    if (!target) return;
-    const targetIndex = vocab
-      .filter((entry) => entry.tranche_id === target.tranche_id)
-      .findIndex((entry) => entry.id === target.id);
+  async function selectRelated(targetId: number) {
+    const trancheId = vocabIndex?.[targetId];
+    if (!trancheId) return;
+    const entries =
+      trancheId === selectedTrancheId ? trancheEntries : await fetchTranche(trancheId);
+    const inSession = entries.filter((entry) =>
+      matchesFilters(entry, progress.selectedJlpt, progress.selectedPartOfSpeech)
+    );
+    const targetIndex = inSession.findIndex((entry) => entry.id === targetId);
     setProgress({
       practiceMode: "sequential",
-      selectedTrancheId: target.tranche_id,
+      selectedTrancheId: trancheId,
       currentPracticeIndex: Math.max(0, targetIndex),
       randomSessionWordIds: []
     });
@@ -207,6 +224,17 @@ export function PracticePage({
     if (Math.abs(dx) < 54 || Math.abs(dx) < Math.abs(dy)) return;
     if (dx < 0) go(1);
     if (dx > 0) go(-1);
+  }
+
+  if (trancheLoading && sessionWords.length === 0) {
+    return (
+      <AppShell>
+        <main className="mx-auto flex min-h-[calc(100svh-3.5rem)] max-w-md flex-col items-center justify-center gap-4 px-4">
+          <div className="h-[clamp(22rem,60svh,34rem)] w-full animate-pulse rounded-3xl border border-border/60 bg-card/50" />
+          <p className="text-sm text-muted-foreground">載入中…</p>
+        </main>
+      </AppShell>
+    );
   }
 
   if (!current) {

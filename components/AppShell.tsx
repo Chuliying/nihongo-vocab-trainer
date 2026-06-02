@@ -20,11 +20,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex h-full max-w-5xl items-center justify-between px-4">
           <Link
             href="/"
-            className="flex items-baseline gap-2"
+            className="flex items-center gap-2"
             aria-label="Nihongo 首頁"
           >
-            <span className="font-serif text-xl leading-none text-primary">日</span>
-            <span className="font-logo text-base font-bold uppercase tracking-[0.16em]">
+            <span className="font-serif text-[0.95rem] leading-none text-primary">
+              日
+            </span>
+            <span className="font-logo text-lg font-bold uppercase leading-none tracking-[0.16em]">
               Nihongo
             </span>
           </Link>
