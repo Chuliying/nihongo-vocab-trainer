@@ -1,0 +1,51 @@
+# Vocabulary enrichment batch pilot_bad_batch_013_000
+
+Rewrite each JSONL row into one output JSON object per line.
+
+Goal:
+- Make the Traditional Chinese meaning accurate.
+- Make the Japanese example natural, realistic, and usable by a Japanese speaker.
+- Keep the Japanese grammar around JLPT N4/N5 level whenever the word allows it.
+
+Rules:
+- Preserve `id` exactly. Do not add, remove, or reorder ids.
+- Use `quality_issues` to decide what to fix.
+- If only the meaning is bad and the existing example is natural and uses the target word correctly, you may keep the example.
+- If `missing_target_word` or `low_value_example` is present, rewrite the example.
+- Return Traditional Chinese in `meaning` and `example.chinese`.
+- Keep `meaning` concise: usually 1-4 Traditional Chinese glosses separated by `、`.
+- Do not copy English glosses into Traditional Chinese fields.
+- Do not use placeholder meanings such as `名詞概念`, `文法形式`, `副詞用法`, or `需人工確認`.
+- The Japanese example must naturally use the target word, not talk about the word itself.
+- Avoid meta examples like `日本語でXの意味を理解しました`, `Xについて話しました`, `Xを使うことがあります`, or `Xの例文を作りました`.
+- Keep examples beginner/intermediate friendly unless the word itself is advanced.
+- `example.reading` should be the kana reading of the Japanese sentence, preserving katakana loanwords where natural.
+
+Output schema per line:
+```json
+{"id":1,"meaning":"...","example":{"japanese":"...","reading":"...","chinese":"..."}}
+```
+
+Input JSONL:
+```jsonl
+{"id":1388,"word":"イカ","reading":"イカ","part_of_speech":"名詞","jlpt_level":"N4","meaning":"名詞概念","example":{"japanese":"彼は自分の意見をしっかりと持っています。","reading":"かれはじぶんのいけんをしっかりともっています。","chinese":"他有自己堅定的意見。"},"gloss_en":["cuttlefish","squid"],"quality_issues":["meaning_placeholder","missing_target_word","stale_llm_source"]}
+{"id":1389,"word":"イギリス","reading":"イギリス","part_of_speech":"名詞","jlpt_level":"N4","meaning":"名詞概念","example":{"japanese":"みんなで協力したので、仕事が早く終わりました。","reading":"みんなできょうりょくしたので、しごとがはやくおわりました。","chinese":"因為大家合力，工作早早就結束了。"},"gloss_en":["United Kingdom","UK","Britain","Great Britain"],"quality_issues":["meaning_placeholder","missing_target_word","stale_llm_source"]}
+{"id":1390,"word":"オリンピック","reading":"オリンピック","part_of_speech":"名詞","jlpt_level":"N4","meaning":"遊戲","example":{"japanese":"この映画は実話を元にした作品です。","reading":"このえいがはじつわをもとにしたさくひんです。","chinese":"這部電影是以真實故事為基礎的作品。"},"gloss_en":["Olympics","Olympic Games"],"quality_issues":["missing_target_word","stale_llm_source"]}
+{"id":1391,"word":"ブランド","reading":"ブランド","part_of_speech":"名詞","jlpt_level":"N4","meaning":"名詞概念","example":{"japanese":"彼女はとても丁寧にメールを書きます。","reading":"かのじょはとてもていねいにめーるをかきます。","chinese":"她寫電子郵件非常用心細緻。"},"gloss_en":["brand"],"quality_issues":["meaning_placeholder","missing_target_word","stale_llm_source"]}
+{"id":1392,"word":"一切","reading":"いっさい","part_of_speech":"名詞・助詞・副詞","jlpt_level":"N4","meaning":"非常、很、全部","example":{"japanese":"テストで百点を取ることが目標です。","reading":"てすとでひゃくてんをとることがもくひょうです。","chinese":"在考試中拿滿分是我的目標。"},"gloss_en":["all","everything","entirety","the whole"],"quality_issues":["missing_target_word"]}
+{"id":1393,"word":"不足","reading":"ふそく","part_of_speech":"名詞・形容動詞","jlpt_level":"N4","meaning":"年齡","example":{"japanese":"この商品は品質がよくて、値段も手ごろです。","reading":"このしょうひんはひんしつがよくて、ねだんもてごろです。","chinese":"這個商品品質好，價格也實惠。"},"gloss_en":["insufficiency","deficiency","shortage","lack"],"quality_issues":["missing_target_word"]}
+{"id":1394,"word":"世紀","reading":"せいき","part_of_speech":"名詞・助詞","jlpt_level":"N4","meaning":"文法功能","example":{"japanese":"新しい環境に慣れるのに時間がかかりました。","reading":"あたらしいかんきょうになれるのにじかんがかかりました。","chinese":"花了一段時間才適應新環境。"},"gloss_en":["century","era","of the century (e.g. fight of the century)"],"quality_issues":["meaning_placeholder","missing_target_word"]}
+{"id":1395,"word":"久しぶり","reading":"ひさしぶり","part_of_speech":"名詞・助詞・形容動詞","jlpt_level":"N4","meaning":"時間","example":{"japanese":"彼は冗談が好きで、いつもみんなを笑わせます。","reading":"かれはじょうだんがすきで、いつもみんなをわらわせます。","chinese":"他喜歡開玩笑，總是逗大家笑。"},"gloss_en":["a long time (since the last time)","first in a long time","it's been a long time","long time no see"],"quality_issues":["missing_target_word"]}
+{"id":1396,"word":"事態","reading":"じたい","part_of_speech":"名詞","jlpt_level":"N4","meaning":"情況、狀況","example":{"japanese":"今日の昼ご飯に何を食べましたか？","reading":"きょうのひるごはんになにをたべましたか？","chinese":"你今天午餐吃了什麼？"},"gloss_en":["situation","(present) state of affairs","circumstances"],"quality_issues":["missing_target_word"]}
+{"id":1397,"word":"以内","reading":"いない","part_of_speech":"名詞・副詞","jlpt_level":"N4","meaning":"以內","example":{"japanese":"彼女はとても優しくて、みんなに好かれています。","reading":"かのじょはとてもやさしくて、みんなにすかれています。","chinese":"她非常溫柔，受到大家的喜愛。"},"gloss_en":["within","inside of","less than"],"quality_issues":["missing_target_word"]}
+{"id":1398,"word":"候補","reading":"こうほ","part_of_speech":"名詞","jlpt_level":"N4","meaning":"結束、結尾","example":{"japanese":"この本を読んで、考え方が変わりました。","reading":"このほんをよんで、かんがえかたがかわりました。","chinese":"讀了這本書，思考方式改變了。"},"gloss_en":["candidate","contender","prospect","pick"],"quality_issues":["missing_target_word"]}
+{"id":1399,"word":"六","reading":"ろく","part_of_speech":"未分類","jlpt_level":"N4","meaning":"名詞概念","example":{"japanese":"彼は毎日少しずつ貯金しています。","reading":"かれはまいにちすこしずつちょきんしています。","chinese":"他每天一點一點地存錢。"},"gloss_en":["six","6"],"quality_issues":["meaning_placeholder","missing_target_word"]}
+{"id":1400,"word":"原作","reading":"げんさく","part_of_speech":"名詞・助詞","jlpt_level":"N4","meaning":"文法功能","example":{"japanese":"今日は特別な日なので、外食しました。","reading":"きょうはとくべつなひなので、がいしょくしました。","chinese":"今天是特別的日子，所以出去吃飯了。"},"gloss_en":["original work"],"quality_issues":["meaning_placeholder","missing_target_word"]}
+{"id":1401,"word":"合う","reading":"あう","part_of_speech":"動詞・助動詞","jlpt_level":"N4","meaning":"動作、行為","example":{"japanese":"短い文で「合う」を練習しました。","reading":"みじかいぶんで「あう」をれんしゅうしました。","chinese":"用短句練習了「合う」。"},"gloss_en":["to come together","to merge","to unite","to meet"],"quality_issues":["low_value_example"]}
+{"id":1403,"word":"好み","reading":"このみ","part_of_speech":"名詞・助詞","jlpt_level":"N4","meaning":"味道、品味","example":{"japanese":"彼は仕事熱心で、毎日遅くまで残業しています。","reading":"かれはしごとねっしんで、まいにちおそくまでざんぎょうしています。","chinese":"他工作勤奮，每天都加班到很晚。"},"gloss_en":["liking","taste","fancy","fondness"],"quality_issues":["missing_target_word"]}
+{"id":1404,"word":"押し","reading":"おし","part_of_speech":"名詞","jlpt_level":"N4","meaning":"我們、壓力","example":{"japanese":"この公園では毎朝犬を散歩させている人が多いです。","reading":"このこうえんではまいあさいぬをさんぽさせているひとがおおいです。","chinese":"這個公園每天早上有很多人在遛狗。"},"gloss_en":["push","pushing","weight","pressure"],"quality_issues":["missing_target_word"]}
+{"id":1405,"word":"掃除","reading":"そうじ","part_of_speech":"名詞","jlpt_level":"N4","meaning":"我們","example":{"japanese":"彼女はプレゼントをもらってとても喜んでいました。","reading":"かのじょはぷれぜんとをもらってとてもよろこんでいました。","chinese":"她收到禮物非常高興。"},"gloss_en":["cleaning","sweeping","dusting","scrubbing"],"quality_issues":["missing_target_word"]}
+{"id":1406,"word":"接続","reading":"せつぞく","part_of_speech":"名詞","jlpt_level":"N4","meaning":"連接、關聯","example":{"japanese":"電車の中では静かにしてください。","reading":"でんしゃのなかではしずかにしてください。","chinese":"在電車裡請保持安靜。"},"gloss_en":["connection","attachment","union","join"],"quality_issues":["missing_target_word"]}
+{"id":1407,"word":"教師","reading":"きょうし","part_of_speech":"名詞","jlpt_level":"N4","meaning":"教師、老師","example":{"japanese":"この問題についてもっと調べる必要があります。","reading":"このもんだいについてもっとしらべるひつようがあります。","chinese":"需要對這個問題進行更多調查。"},"gloss_en":["teacher","instructor"],"quality_issues":["missing_target_word"]}
+{"id":1408,"word":"日常","reading":"にちじょう","part_of_speech":"名詞・助詞・副詞","jlpt_level":"N4","meaning":"日常、普通","example":{"japanese":"彼は毎日英語のニュースを聞いています。","reading":"かれはまいにちえいごのにゅーすをきいています。","chinese":"他每天聽英語新聞。"},"gloss_en":["everyday","daily","ordinary","usual"],"quality_issues":["missing_target_word"]}
+```

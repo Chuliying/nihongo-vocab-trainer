@@ -8,7 +8,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "validate:data": "python3 scripts/validate_vocab.py public/data/vocab_13000.json public/data/tranches.json"
+    "split:chunks": "npx tsx scripts/split_vocab_chunks.ts",
+    "enrich:export": "node scripts/export_enrichment_batch.js",
+    "enrich:apply": "node scripts/apply_enrichment_batch.js",
+    "validate:chunks": "node scripts/validate_chunks_strict.js",
+    "validate:data": "python3 scripts/validate_vocab.py public/data/vocab_13000.json public/data/tranches.json && node scripts/validate_chunks_strict.js"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
