@@ -38,6 +38,13 @@ VERB_FIELDS = {
 }
 
 PLACEHOLDER_MARKERS = ("這個詞", "的動作", "的狀態", "的語氣")
+DISPLAY_PREFIX_RE = re.compile(
+    r"^(?:"
+    r"助詞|助動詞|接續詞|接続詞|接續助詞|接続助詞|副詞|名詞|動詞|"
+    r"形容詞|形容動詞|感動詞|表現|代名詞|連體詞|連体詞|接尾詞|否定|"
+    r"文法形式|活用・口語形式"
+    r")[:：]"
+)
 LOW_VALUE_EXAMPLE_PATTERNS = (
     "の意味を書きました",
     "よく使う動詞です",
@@ -61,6 +68,10 @@ def has_ascii_letters(text: str) -> bool:
 
 def has_placeholder(text: str) -> bool:
     return any(marker in text for marker in PLACEHOLDER_MARKERS)
+
+
+def has_display_prefix(text: str) -> bool:
+    return bool(DISPLAY_PREFIX_RE.match(text or ""))
 
 
 def has_untranslated_meaning(entry: dict) -> bool:
@@ -147,6 +158,8 @@ def main() -> None:
             fail(f"word id {entry['id']} still uses generated fallback")
         if has_placeholder(entry["meaning"]):
             fail(f"word id {entry['id']} still has placeholder meaning: {entry['meaning']}")
+        if has_display_prefix(entry["meaning"]):
+            fail(f"word id {entry['id']} meaning exposes display prefix: {entry['meaning']}")
         if has_untranslated_meaning(entry):
             fail(f"word id {entry['id']} meaning is not translated: {entry['word']} -> {entry['meaning']}")
         if entry["tranche_id"] == 1 and has_placeholder(entry["meaning"]):
@@ -167,6 +180,8 @@ def main() -> None:
         for related in entry.get("related", []):
             if has_placeholder(str(related.get("meaning", ""))):
                 fail(f"word id {entry['id']} related meaning still has placeholder text")
+            if has_display_prefix(str(related.get("meaning", ""))):
+                fail(f"word id {entry['id']} related meaning exposes display prefix")
 
     duplicated_ids = [item for item, count in Counter(ids).items() if count > 1]
     if duplicated_ids:
