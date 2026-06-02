@@ -63,6 +63,14 @@ def has_placeholder(text: str) -> bool:
     return any(marker in text for marker in PLACEHOLDER_MARKERS)
 
 
+def has_untranslated_meaning(entry: dict) -> bool:
+    meaning = entry.get("meaning", "")
+    return (
+        meaning in {entry.get("word"), entry.get("reading")}
+        or bool(re.fullmatch(r"[ぁ-ゟ゠-ヿー・]+", meaning))
+    )
+
+
 def has_low_value_example(sentence: str) -> bool:
     return any(pattern in sentence for pattern in LOW_VALUE_EXAMPLE_PATTERNS)
 
@@ -139,6 +147,8 @@ def main() -> None:
             fail(f"word id {entry['id']} still uses generated fallback")
         if has_placeholder(entry["meaning"]):
             fail(f"word id {entry['id']} still has placeholder meaning: {entry['meaning']}")
+        if has_untranslated_meaning(entry):
+            fail(f"word id {entry['id']} meaning is not translated: {entry['word']} -> {entry['meaning']}")
         if entry["tranche_id"] == 1 and has_placeholder(entry["meaning"]):
             fail(f"word id {entry['id']} in Tranche 1 still has placeholder meaning: {entry['meaning']}")
         if entry["quality_score"] in {"curated", "verb_curated"}:
