@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/sheet";
 import { track } from "@vercel/analytics";
 import { useStudyProgress } from "@/lib/storage";
-import { getJlptOptions, getPartOfSpeechOptions } from "@/lib/vocab";
+import { getPartOfSpeechOptions } from "@/lib/vocab";
 import { fetchPopularVerbs, fetchTranche, fetchVocabIndex } from "@/lib/vocab-client";
 import type { Tranche, VocabEntry } from "@/lib/types";
 
@@ -48,7 +48,6 @@ export function LibraryPage({ tranches }: { tranches: Tranche[] }) {
   const [popularLoading, setPopularLoading] = useState(false);
 
   const selectedTrancheId = progress.selectedTrancheId || 1;
-  const selectedJlpt = progress.selectedJlpt || "全部";
   const selectedPart = progress.selectedPartOfSpeech || "全部";
 
   // id → tranche_id, for learned-count tallies + related-word navigation
@@ -84,7 +83,6 @@ export function LibraryPage({ tranches }: { tranches: Tranche[] }) {
   const activeEntries = libraryMode === "popular-verbs" ? popularEntries ?? [] : trancheEntries;
   const loading = libraryMode === "popular-verbs" ? popularLoading : trancheLoading;
 
-  const jlptOptions = useMemo(() => getJlptOptions(trancheEntries), [trancheEntries]);
   const partOptions = useMemo(() => getPartOfSpeechOptions(trancheEntries), [trancheEntries]);
 
   const learnedCounts = useMemo(() => {
@@ -117,18 +115,16 @@ export function LibraryPage({ tranches }: { tranches: Tranche[] }) {
     }
     return trancheEntries.filter(
       (e) =>
-        (selectedJlpt === "全部" || e.jlpt_level === selectedJlpt) &&
         (selectedPart === "全部" || e.part_of_speech.includes(selectedPart)) &&
         matchesQuery(e)
     );
-  }, [libraryMode, popularEntries, trancheEntries, query, selectedJlpt, selectedPart]);
+  }, [libraryMode, popularEntries, trancheEntries, query, selectedPart]);
 
   const visible = filtered.slice(0, visibleCount);
   const selectedTranche =
     tranches.find((item) => item.id === selectedTrancheId) ?? tranches[0];
   const learnedHere = learnedCounts[selectedTrancheId] ?? 0;
   const activeFilters =
-    (selectedJlpt !== "全部" ? 1 : 0) +
     (selectedPart !== "全部" ? 1 : 0) +
     (libraryMode === "popular-verbs" ? 1 : 0);
 
@@ -285,27 +281,6 @@ export function LibraryPage({ tranches }: { tranches: Tranche[] }) {
               </SheetHeader>
               <div className="space-y-5 px-5">
                 <div className="space-y-2">
-                  <Label>推估等級</Label>
-                  <Select
-                    value={selectedJlpt}
-                    onValueChange={(value) => {
-                      setProgress({ selectedJlpt: value });
-                      setVisibleCount(PAGE_SIZE);
-                    }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {jlptOptions.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
                   <Label>詞性</Label>
                   <Select
                     value={selectedPart}
@@ -344,9 +319,6 @@ export function LibraryPage({ tranches }: { tranches: Tranche[] }) {
             <span className="ml-2 inline-flex gap-1.5 align-middle">
               {libraryMode === "popular-verbs" ? (
                 <Badge variant="secondary">常用動詞300</Badge>
-              ) : null}
-              {selectedJlpt !== "全部" ? (
-                <Badge variant="secondary">{selectedJlpt}</Badge>
               ) : null}
               {selectedPart !== "全部" ? (
                 <Badge variant="secondary">{selectedPart}</Badge>

@@ -1,11 +1,30 @@
 #!/usr/bin/env python3
 import json
+import re
 from pathlib import Path
 
 
 VOCAB_PATH = Path("public/data/vocab_13000.json")
 OUTPUT_PATH = Path("public/data/popular_verbs_300.json")
 TARGET = 300
+
+FORBIDDEN_POPULAR_VERBS = {
+    "ます", "てる", "れる", "たい", "よう", "せる", "ちゃう", "とく",
+    "なく", "たく", "ませ", "ましょ", "ござい", "でる", "でき", "しよ",
+    "すれ", "いけ", "つけ", "ついてる", "による", "とる", "とある",
+    "ちまう", "やってくる",
+}
+
+KANA_VERB_ALLOWLIST = {
+    "する", "いる", "ある", "なる", "やる", "できる", "わかる", "くれる",
+    "もらう", "あげる", "しまう", "おく", "いける", "いただく", "ござる",
+}
+
+SURFACE_NORMALIZATION = {
+    ("くる", "くる"): ("来る", "くる"),
+    ("いく", "いく"): ("行く", "いく"),
+    ("わかる", "わかる"): ("分かる", "わかる"),
+}
 
 LEARNING_PRIORITY = [
     ("する", "する"), ("来る", "くる"), ("行く", "いく"), ("見る", "みる"), ("聞く", "きく"),
@@ -25,26 +44,61 @@ LEARNING_PRIORITY = [
 ]
 
 
+def normalized_key(entry: dict) -> tuple[str, str]:
+    return SURFACE_NORMALIZATION.get((entry["word"], entry["reading"]), (entry["word"], entry["reading"]))
+
+
+def is_independent_dictionary_verb(entry: dict) -> bool:
+    word = entry["word"]
+    reading = entry["reading"]
+    if word in FORBIDDEN_POPULAR_VERBS or reading in FORBIDDEN_POPULAR_VERBS:
+        return False
+    if not entry.get("verb_info"):
+        return False
+    if entry["verb_info"].get("dictionary_form") != word:
+        return False
+
+    pos_tokens = entry["part_of_speech"].split("・")
+    if not pos_tokens or pos_tokens[0] != "動詞":
+        return False
+    if "助動詞" in pos_tokens:
+        return False
+    if "表現" in pos_tokens and word not in {"違う", "言える"}:
+        return False
+
+    if re.fullmatch(r"[\u3040-\u309f]+", word):
+        if len(word) <= 2 and word not in {"する", "いる", "ある"}:
+            return False
+        if word.endswith(("てる", "ちゃう", "とく", "れる", "せる")) and word not in KANA_VERB_ALLOWLIST:
+            return False
+    return True
+
+
 def main() -> None:
     vocab = json.loads(VOCAB_PATH.read_text(encoding="utf-8"))
     verbs = [
         entry
         for entry in vocab
-        if "動詞" in entry["part_of_speech"].split("・") and entry.get("verb_info")
+        if is_independent_dictionary_verb(entry)
     ]
-    by_key = {(entry["word"], entry["reading"]): entry for entry in verbs}
+    by_key = {normalized_key(entry): entry for entry in verbs}
     selected = []
     used = set()
+    used_normalized = set()
     for word, reading in LEARNING_PRIORITY:
         entry = by_key.get((word, reading))
-        if entry and entry["id"] not in used:
+        key = normalized_key(entry) if entry else None
+        if entry and entry["id"] not in used and key not in used_normalized:
             selected.append(entry)
             used.add(entry["id"])
+            used_normalized.add(key)
     for entry in sorted(verbs, key=lambda entry: entry["frequency_rank"]):
-        if entry["id"] in used:
+        key = normalized_key(entry)
+        if entry["id"] in used or key in used_normalized:
             continue
         selected.append(entry)
         used.add(entry["id"])
+        used_normalized.add(key)
         if len(selected) >= TARGET:
             break
     if len(selected) != TARGET:

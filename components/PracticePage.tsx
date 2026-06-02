@@ -386,9 +386,6 @@ export function PracticePage({ tranches }: { tranches: Tranche[] }) {
                 <span className="font-serif text-[clamp(3.6rem,18vw,5.8rem)] leading-none font-semibold">
                   {current.word}
                 </span>
-                <span className="text-lg text-muted-foreground">
-                  {current.reading}
-                </span>
                 <span className="absolute bottom-6 font-display text-xs tracking-wide text-muted-foreground/70">
                   tap to flip ＋ swipe ↔
                 </span>
