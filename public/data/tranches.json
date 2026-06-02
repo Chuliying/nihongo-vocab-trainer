@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "title": "Tranche 1",
+    "rank_range": "1-1000",
+    "label": "FOUNDATIONS",
+    "description": "最核心基礎詞、問候、日常名詞、基本動詞"
+  },
+  {
+    "id": 2,
+    "title": "Tranche 2",
+    "rank_range": "1001-2000",
+    "label": "DAILY LIFE",
+    "description": "生活、家庭、時間、購物、移動"
+  },
+  {
+    "id": 3,
+    "title": "Tranche 3",
+    "rank_range": "2001-3000",
+    "label": "PEOPLE & SOCIETY",
+    "description": "人際、社會、公共生活、基本制度"
+  },
+  {
+    "id": 4,
+    "title": "Tranche 4",
+    "rank_range": "3001-4000",
+    "label": "ACTIONS & DESCRIPTIONS",
+    "description": "動作、狀態、形容詞與常用副詞"
+  },
+  {
+    "id": 5,
+    "title": "Tranche 5",
+    "rank_range": "4001-5000",
+    "label": "IDEAS & FEELINGS",
+    "description": "想法、感情、抽象概念"
+  },
+  {
+    "id": 6,
+    "title": "Tranche 6",
+    "rank_range": "5001-6000",
+    "label": "WORK & STUDY",
+    "description": "學校、工作、商務、技能"
+  },
+  {
+    "id": 7,
+    "title": "Tranche 7",
+    "rank_range": "6001-7000",
+    "label": "MEDIA & CULTURE",
+    "description": "媒體、文化、娛樂、網路常用語"
+  },
+  {
+    "id": 8,
+    "title": "Tranche 8",
+    "rank_range": "7001-8000",
+    "label": "FORMAL & NEWS",
+    "description": "新聞、正式表達、社會議題"
+  },
+  {
+    "id": 9,
+    "title": "Tranche 9",
+    "rank_range": "8001-9000",
+    "label": "ADVANCED LINKS",
+    "description": "連接詞、抽象語、進階常見詞"
+  },
+  {
+    "id": 10,
+    "title": "Tranche 10",
+    "rank_range": "9001-10000",
+    "label": "EXPANSION",
+    "description": "補強詞彙、低頻但實用的延伸詞"
+  }
+]

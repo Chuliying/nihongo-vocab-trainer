@@ -1,0 +1,12 @@
+.DS_Store
+.next
+node_modules
+out
+dist
+.vercel
+*.log
+public/data/raw
+public/data/generated
+
+certificates
+.claude/settings.local.json

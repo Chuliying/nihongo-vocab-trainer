@@ -1,0 +1,242 @@
+[
+  {
+    "id": 1,
+    "meaning": "安全、平安、沒有危險",
+    "example": {
+      "japanese": "この道は夜でも安全です。",
+      "chinese": "這條路即使晚上也很安全。"
+    }
+  },
+  {
+    "id": 2,
+    "meaning": "安全保障；日美安保的簡稱",
+    "example": {
+      "japanese": "安保についてニュースで説明していました。",
+      "chinese": "新聞裡正在說明安保相關的內容。"
+    }
+  },
+  {
+    "id": 3,
+    "meaning": "自從、以來",
+    "example": {
+      "japanese": "卒業以来、彼には会っていません。",
+      "chinese": "自從畢業以來，我就沒有見過他。"
+    }
+  },
+  {
+    "id": 4,
+    "meaning": "委員、委員會成員",
+    "example": {
+      "japanese": "彼女は図書委員になりました。",
+      "chinese": "她成了圖書委員。"
+    }
+  },
+  {
+    "id": 5,
+    "meaning": "委員會",
+    "example": {
+      "japanese": "委員会で新しい計画を話し合いました。",
+      "chinese": "我們在委員會討論了新的計畫。"
+    }
+  },
+  {
+    "id": 6,
+    "meaning": "委員長、委員會主席",
+    "example": {
+      "japanese": "委員長が会議を始めました。",
+      "chinese": "委員長開始了會議。"
+    }
+  },
+  {
+    "id": 7,
+    "meaning": "意見、看法",
+    "example": {
+      "japanese": "あなたの意見を聞かせてください。",
+      "chinese": "請讓我聽聽你的意見。"
+    }
+  },
+  {
+    "id": 8,
+    "meaning": "意思、意義",
+    "example": {
+      "japanese": "この言葉の意味を調べました。",
+      "chinese": "我查了這個詞的意思。"
+    }
+  },
+  {
+    "id": 9,
+    "meaning": "維持、保持",
+    "example": {
+      "japanese": "健康を維持するために毎日歩いています。",
+      "chinese": "為了維持健康，我每天都走路。"
+    }
+  },
+  {
+    "id": 10,
+    "meaning": "違反、違背規則",
+    "example": {
+      "japanese": "交通ルールに違反してはいけません。",
+      "chinese": "不可以違反交通規則。"
+    }
+  },
+  {
+    "id": 11,
+    "meaning": "醫療、醫療服務",
+    "example": {
+      "japanese": "この町では医療サービスが充実しています。",
+      "chinese": "這個城鎮的醫療服務很完善。"
+    }
+  },
+  {
+    "id": 12,
+    "meaning": "一個；其中之一",
+    "example": {
+      "japanese": "りんごを一つください。",
+      "chinese": "請給我一個蘋果。"
+    }
+  },
+  {
+    "id": 13,
+    "meaning": "一月",
+    "example": {
+      "japanese": "１月に日本へ行く予定です。",
+      "chinese": "我預定一月去日本。"
+    }
+  },
+  {
+    "id": 14,
+    "meaning": "一般、普通、普遍",
+    "example": {
+      "japanese": "これは一般によく使われる表現です。",
+      "chinese": "這是一般很常使用的表達。"
+    }
+  },
+  {
+    "id": 15,
+    "meaning": "第一、最好、最重要",
+    "example": {
+      "japanese": "彼はクラスで一番背が高いです。",
+      "chinese": "他是班上最高的人。"
+    }
+  },
+  {
+    "id": 16,
+    "meaning": "一部分、部分內容",
+    "example": {
+      "japanese": "資料の一部をコピーしました。",
+      "chinese": "我影印了資料的一部分。"
+    }
+  },
+  {
+    "id": 17,
+    "meaning": "一方面；另一方；方向",
+    "example": {
+      "japanese": "彼は優しい一方で、とても厳しいです。",
+      "chinese": "他一方面很溫柔，但也非常嚴格。"
+    }
+  },
+  {
+    "id": 18,
+    "meaning": "右、右邊",
+    "example": {
+      "japanese": "次の角を右に曲がってください。",
+      "chinese": "請在下一個轉角右轉。"
+    }
+  },
+  {
+    "id": 19,
+    "meaning": "運動、體育活動",
+    "example": {
+      "japanese": "毎朝三十分運動しています。",
+      "chinese": "我每天早上運動三十分鐘。"
+    }
+  },
+  {
+    "id": 20,
+    "meaning": "影響",
+    "example": {
+      "japanese": "台風の影響で電車が遅れました。",
+      "chinese": "因為颱風的影響，電車誤點了。"
+    }
+  },
+  {
+    "id": 21,
+    "meaning": "電影",
+    "example": {
+      "japanese": "週末に友達と映画を見ました。",
+      "chinese": "週末我和朋友看了電影。"
+    }
+  },
+  {
+    "id": 22,
+    "meaning": "援助、幫助、支援",
+    "example": {
+      "japanese": "困っている人に援助をしました。",
+      "chinese": "我援助了有困難的人。"
+    }
+  },
+  {
+    "id": 23,
+    "meaning": "歐洲",
+    "example": {
+      "japanese": "欧州の歴史に興味があります。",
+      "chinese": "我對歐洲的歷史有興趣。"
+    }
+  },
+  {
+    "id": 24,
+    "meaning": "音樂",
+    "example": {
+      "japanese": "静かな音楽を聞きながら勉強します。",
+      "chinese": "我一邊聽安靜的音樂一邊讀書。"
+    }
+  },
+  {
+    "id": 25,
+    "meaning": "價格、價值",
+    "example": {
+      "japanese": "この商品の価格は少し高いです。",
+      "chinese": "這個商品的價格有點高。"
+    }
+  },
+  {
+    "id": 26,
+    "meaning": "加盟、加入團體或組織",
+    "example": {
+      "japanese": "その会社は新しい団体に加盟しました。",
+      "chinese": "那家公司加入了新的團體。"
+    }
+  },
+  {
+    "id": 27,
+    "meaning": "可能、可以做到",
+    "example": {
+      "japanese": "明日までに提出することは可能です。",
+      "chinese": "明天以前提交是可能的。"
+    }
+  },
+  {
+    "id": 28,
+    "meaning": "可能性、機會",
+    "example": {
+      "japanese": "成功する可能性は十分あります。",
+      "chinese": "成功的可能性相當高。"
+    }
+  },
+  {
+    "id": 29,
+    "meaning": "夏天",
+    "example": {
+      "japanese": "夏になると海へ行きたくなります。",
+      "chinese": "一到夏天就會想去海邊。"
+    }
+  },
+  {
+    "id": 30,
+    "meaning": "家族",
+    "example": {
+      "japanese": "週末は家族と食事をします。",
+      "chinese": "週末我會和家人一起吃飯。"
+    }
+  }
+]

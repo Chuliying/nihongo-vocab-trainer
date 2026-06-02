@@ -1,0 +1,183 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ───────────────────────────────────────────────
+   和紙 · Washi paper palette
+   Warm off-white canvas, white cards, deep pine-teal ink accent
+   ─────────────────────────────────────────────── */
+:root {
+  --radius: 1.25rem;
+
+  /* Warm paper */
+  --background: oklch(0.985 0.006 92);
+  --foreground: oklch(0.23 0.012 68);
+
+  /* Cards lift off the paper with crisp white */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.23 0.012 68);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.23 0.012 68);
+
+  /* Deep pine-teal — high contrast on paper, reads as text or fill */
+  --primary: oklch(0.47 0.072 178);
+  --primary-foreground: oklch(0.99 0.005 92);
+
+  --secondary: oklch(0.95 0.007 92);
+  --secondary-foreground: oklch(0.27 0.012 68);
+
+  --muted: oklch(0.955 0.006 92);
+  --muted-foreground: oklch(0.5 0.014 72);
+
+  --accent: oklch(0.95 0.012 178);
+  --accent-foreground: oklch(0.27 0.02 178);
+
+  --destructive: oklch(0.55 0.19 26);
+  --destructive-foreground: oklch(0.99 0.005 92);
+
+  --border: oklch(0.9 0.007 88);
+  --input: oklch(0.88 0.008 88);
+  --ring: oklch(0.47 0.072 178);
+
+  /* Soft tinted shadow used for cards + focus moments */
+  --glow: oklch(0.47 0.072 178 / 16%);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 8px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 8px);
+
+  /* Font families wired from next/font in layout.tsx */
+  --font-sans: var(--font-zen), var(--font-noto-tc), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-shippori), "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --font-display: var(--font-fraunces), Georgia, serif;
+}
+
+* {
+  border-color: var(--border);
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  color-scheme: light;
+  background: var(--background);
+  /* prevent horizontal scroll on mobile from glow blur */
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100svh;
+  margin: 0;
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Soft warm light bleeding from the top — barely there */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20% -20% auto -20%;
+  height: 55vh;
+  background: radial-gradient(
+    60% 60% at 50% 0%,
+    oklch(0.7 0.05 80 / 10%),
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Faint paper grain so the white isn't dead-flat */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+button {
+  cursor: pointer;
+  font: inherit;
+}
+
+/* Hide scrollbars on horizontal scrollers but keep function */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Flashcard 3D flip */
+.flip-scene {
+  perspective: 1600px;
+}
+.flip-card {
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.flip-card.is-flipped {
+  transform: rotateY(180deg);
+}
+.flip-face {
+  position: absolute;
+  inset: 0;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.flip-face--back {
+  transform: rotateY(180deg);
+}
+
+/* Staggered entrance */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.rise {
+  animation: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-card,
+  .rise {
+    transition: none;
+    animation: none;
+  }
+}
