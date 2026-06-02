@@ -10,3 +10,6 @@ public/data/generated
 
 certificates
 .claude/settings.local.json
+
+# Temporary review extraction slices; keep enrichment batch JSONL and handoff docs.
+scratch/chunk_*_part*.txt

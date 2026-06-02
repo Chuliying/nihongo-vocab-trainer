@@ -1,0 +1,51 @@
+# Vocabulary enrichment batch pilot_bad_batch_010_000
+
+Rewrite each JSONL row into one output JSON object per line.
+
+Goal:
+- Make the Traditional Chinese meaning accurate.
+- Make the Japanese example natural, realistic, and usable by a Japanese speaker.
+- Keep the Japanese grammar around JLPT N4/N5 level whenever the word allows it.
+
+Rules:
+- Preserve `id` exactly. Do not add, remove, or reorder ids.
+- Use `quality_issues` to decide what to fix.
+- If only the meaning is bad and the existing example is natural and uses the target word correctly, you may keep the example.
+- If `missing_target_word` or `low_value_example` is present, rewrite the example.
+- Return Traditional Chinese in `meaning` and `example.chinese`.
+- Keep `meaning` concise: usually 1-4 Traditional Chinese glosses separated by `、`.
+- Do not copy English glosses into Traditional Chinese fields.
+- Do not use placeholder meanings such as `名詞概念`, `文法形式`, `副詞用法`, or `需人工確認`.
+- The Japanese example must naturally use the target word, not talk about the word itself.
+- Avoid meta examples like `日本語でXの意味を理解しました`, `Xについて話しました`, `Xを使うことがあります`, or `Xの例文を作りました`.
+- Keep examples beginner/intermediate friendly unless the word itself is advanced.
+- `example.reading` should be the kana reading of the Japanese sentence, preserving katakana loanwords where natural.
+
+Output schema per line:
+```json
+{"id":1,"meaning":"...","example":{"japanese":"...","reading":"...","chinese":"..."}}
+```
+
+Input JSONL:
+```jsonl
+{"id":1286,"word":"一覧","reading":"いちらん","part_of_speech":"名詞","jlpt_level":"N4","meaning":"一看、外觀","example":{"japanese":"運動会の準備で学校が賑やかです。","reading":"うんどうかいのじゅんびでがっこうがにぎやかです。","chinese":"因為在準備運動會，學校很熱鬧。"},"gloss_en":["look","glance","sight","having a look at"],"quality_issues":["missing_target_word"]}
+{"id":1287,"word":"会員","reading":"かいいん","part_of_speech":"名詞","jlpt_level":"N4","meaning":"會員","example":{"japanese":"彼女の料理はいつもおいしいです。","reading":"かのじょのりょうりはいつもおいしいです。","chinese":"她做的料理總是很好吃。"},"gloss_en":["member","the membership"],"quality_issues":["missing_target_word"]}
+{"id":1288,"word":"便利","reading":"べんり","part_of_speech":"名詞・形容動詞","jlpt_level":"N4","meaning":"手、使用、利用","example":{"japanese":"この映画を見て、涙が止まらなかったです。","reading":"このえいがをみて、なみだがとまらなかったです。","chinese":"看了這部電影，眼淚不停地流。"},"gloss_en":["convenient","handy","useful"],"quality_issues":["missing_target_word"]}
+{"id":1289,"word":"信用","reading":"しんよう","part_of_speech":"名詞","jlpt_level":"N4","meaning":"名詞概念","example":{"japanese":"彼はいつも時間を守ります。","reading":"かれはいつもじかんをまもります。","chinese":"他總是守時。"},"gloss_en":["confidence","trust","faith","reputation"],"quality_issues":["meaning_placeholder","missing_target_word"]}
+{"id":1290,"word":"地獄","reading":"じごく","part_of_speech":"名詞","jlpt_level":"N4","meaning":"名詞概念","example":{"japanese":"このパンはとてもふわふわで美味しいです。","reading":"このぱんはとてもふわふわでおいしいです。","chinese":"這個麵包非常鬆軟好吃。"},"gloss_en":["hell realm","Naraka","Hell","hell"],"quality_issues":["meaning_placeholder","missing_target_word"]}
+{"id":1291,"word":"始まり","reading":"はじまり","part_of_speech":"名詞","jlpt_level":"N4","meaning":"開始、開頭","example":{"japanese":"彼女は毎日英語の勉強をしています。","reading":"かのじょはまいにちえいごのべんきょうをしています。","chinese":"她每天都在學習英語。"},"gloss_en":["origin","beginning","start"],"quality_issues":["missing_target_word"]}
+{"id":1292,"word":"恋人","reading":"こいびと","part_of_speech":"名詞","jlpt_level":"N4","meaning":"戀人","example":{"japanese":"新しい仕事にやっと慣れてきました。","reading":"あたらしいしごとにやっとなれてきました。","chinese":"終於開始習慣新工作了。"},"gloss_en":["lover","sweetheart","boyfriend","girlfriend"],"quality_issues":["missing_target_word"]}
+{"id":1293,"word":"捜査","reading":"そうさ","part_of_speech":"名詞・助詞","jlpt_level":"N4","meaning":"調查","example":{"japanese":"夏休みには家族で海に行きました。","reading":"なつやすみにはかぞくでうみにいきました。","chinese":"暑假和家人去了海邊。"},"gloss_en":["search (esp. in criminal investigations)","investigation","inquiry","enquiry"],"quality_issues":["missing_target_word"]}
+{"id":1294,"word":"比較","reading":"ひかく","part_of_speech":"名詞","jlpt_level":"N4","meaning":"名詞概念","example":{"japanese":"このケーキはとても甘くておいしいです。","reading":"このけーきはとてもあまくておいしいです。","chinese":"這個蛋糕非常甜，很好吃。"},"gloss_en":["comparison"],"quality_issues":["meaning_placeholder","missing_target_word"]}
+{"id":1295,"word":"派遣","reading":"はけん","part_of_speech":"名詞","jlpt_level":"N4","meaning":"名詞概念","example":{"japanese":"彼は料理が得意で、よく友達に作ってあげます。","reading":"かれはりょうりがとくいで、よくともだちにつくってあげます。","chinese":"他很擅長做料理，經常做給朋友吃。"},"gloss_en":["dispatch","despatch","deployment","temporary employee (esp. from an agency)"],"quality_issues":["meaning_placeholder","missing_target_word"]}
+{"id":1296,"word":"演奏","reading":"えんそう","part_of_speech":"名詞","jlpt_level":"N4","meaning":"男人、男性、形式、形狀","example":{"japanese":"この試合はとても接戦でした。","reading":"このしあいはとてもせっせんでした。","chinese":"這場比賽非常激烈。"},"gloss_en":["musical performance"],"quality_issues":["missing_target_word"]}
+{"id":1297,"word":"父親","reading":"ちちおや","part_of_speech":"名詞","jlpt_level":"N4","meaning":"名詞概念","example":{"japanese":"昨日は会社で大事な会議がありました。","reading":"きのうはかいしゃでだいじなかいぎがありました。","chinese":"昨天公司有重要的會議。"},"gloss_en":["father"],"quality_issues":["meaning_placeholder","missing_target_word"]}
+{"id":1298,"word":"社員","reading":"しゃいん","part_of_speech":"名詞","jlpt_level":"N4","meaning":"公司","example":{"japanese":"彼女は細かいことまで気が利きます。","reading":"かのじょはこまかいことまできがききます。","chinese":"她連細節也很細心體貼。"},"gloss_en":["company employee","member of a corporation","company stockholder (esp. in legal contexts)"],"quality_issues":["missing_target_word"]}
+{"id":1299,"word":"裁判","reading":"さいばん","part_of_speech":"名詞・助詞","jlpt_level":"N4","meaning":"試驗、嘗試","example":{"japanese":"この道を真っ直ぐ行けば駅に着きます。","reading":"このみちをまっすぐいけばえきにつきます。","chinese":"沿著這條路直走就到車站了。"},"gloss_en":["trial","judgement","judgment"],"quality_issues":["missing_target_word"]}
+{"id":1300,"word":"証拠","reading":"しょうこ","part_of_speech":"名詞","jlpt_level":"N4","meaning":"名詞概念","example":{"japanese":"彼は毎日メモを取る習慣があります。","reading":"かれはまいにちめもをとるしゅうかんがあります。","chinese":"他有每天做筆記的習慣。"},"gloss_en":["evidence","proof"],"quality_issues":["meaning_placeholder","missing_target_word"]}
+{"id":1301,"word":"調子","reading":"ちょうし","part_of_speech":"名詞","jlpt_level":"N4","meaning":"名詞概念","example":{"japanese":"最近、体の調子が少し悪いです。","reading":"さいきん、からだのちょうしがすこしわるいです。","chinese":"最近身體狀況稍微有點不好。"},"gloss_en":["tune","tone","key","pitch"],"quality_issues":["meaning_placeholder"]}
+{"id":1302,"word":"資金","reading":"しきん","part_of_speech":"名詞","jlpt_level":"N4","meaning":"名詞概念","example":{"japanese":"新しいビジネスを始めるための資金が必要です。","reading":"あたらしいびじねすをはじめるためのしきんがひつようです。","chinese":"需要資金來開始新的事業。"},"gloss_en":["funds","capital"],"quality_issues":["meaning_placeholder"]}
+{"id":1303,"word":"風呂","reading":"ふろ","part_of_speech":"名詞","jlpt_level":"N4","meaning":"名詞概念","example":{"japanese":"毎日お風呂に入ることは大切です。","reading":"まいにちおふろにはいることはたいせつです。","chinese":"每天洗澡是很重要的。"},"gloss_en":["bath","bathing","bathtub","bathroom"],"quality_issues":["meaning_placeholder"]}
+{"id":1310,"word":"パ","reading":"パ","part_of_speech":"名詞","jlpt_level":"N4","meaning":"名詞概念","example":{"japanese":"パソコンのパを押したら、画面が消えました。","reading":"ぱそこんのぱをおしたら、がめんがきえました。","chinese":"按下電腦的Pa鍵後，螢幕熄滅了。"},"gloss_en":["pas (ballet step)"],"quality_issues":["chinese_latin","meaning_placeholder","stale_llm_source"]}
+{"id":1313,"word":"ホ","reading":"ホ","part_of_speech":"名詞","jlpt_level":"N4","meaning":"名詞概念","example":{"japanese":"ドレミファソラシドの「ホ」は英語で「E」の音です。","reading":"どれみふぁそらしどの「ほ」はえいごで「E」のおとです。","chinese":"音階「ホ」在英語中是「E」的音。"},"gloss_en":["5th (in a sequence denoted by the iroha system)","e","v","E (note)"],"quality_issues":["meaning_placeholder","stale_llm_source"]}
+```

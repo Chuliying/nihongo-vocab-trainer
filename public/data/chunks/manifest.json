@@ -1,0 +1,8 @@
+{
+  "generated_at": "2026-06-02T10:28:39.357Z",
+  "source": "vocab_13000.json",
+  "chunk_size": 250,
+  "num_chunks": 52,
+  "total_entries": 13000,
+  "note": "tranche T (1-indexed) occupies chunks [(T-1)*4 … (T-1)*4+3]"
+}

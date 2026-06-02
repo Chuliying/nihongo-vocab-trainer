@@ -1,0 +1,66 @@
+{
+  "startTime": "2026-06-02T12:00:53.902Z",
+  "chunks": {
+    "40": {
+      "modified": 0,
+      "total": 250,
+      "timestamp": "2026-06-02T12:00:53.917Z"
+    },
+    "41": {
+      "modified": 0,
+      "total": 250,
+      "timestamp": "2026-06-02T12:00:53.932Z"
+    },
+    "42": {
+      "modified": 0,
+      "total": 250,
+      "timestamp": "2026-06-02T12:00:53.937Z"
+    },
+    "43": {
+      "modified": 0,
+      "total": 250,
+      "timestamp": "2026-06-02T12:00:53.941Z"
+    },
+    "44": {
+      "modified": 0,
+      "total": 250,
+      "timestamp": "2026-06-02T12:00:53.945Z"
+    },
+    "45": {
+      "modified": 0,
+      "total": 250,
+      "timestamp": "2026-06-02T12:00:53.948Z"
+    },
+    "46": {
+      "modified": 0,
+      "total": 250,
+      "timestamp": "2026-06-02T12:00:53.952Z"
+    },
+    "47": {
+      "modified": 0,
+      "total": 250,
+      "timestamp": "2026-06-02T12:00:53.956Z"
+    },
+    "48": {
+      "modified": 0,
+      "total": 250,
+      "timestamp": "2026-06-02T12:00:53.960Z"
+    },
+    "49": {
+      "modified": 0,
+      "total": 250,
+      "timestamp": "2026-06-02T12:00:53.963Z"
+    },
+    "50": {
+      "modified": 0,
+      "total": 250,
+      "timestamp": "2026-06-02T12:00:53.967Z"
+    },
+    "51": {
+      "modified": 0,
+      "total": 250,
+      "timestamp": "2026-06-02T12:00:53.971Z"
+    }
+  },
+  "endTime": "2026-06-02T12:00:53.971Z"
+}
