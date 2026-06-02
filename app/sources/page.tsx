@@ -6,15 +6,21 @@ import { Card } from "@/components/ui/card";
 const SOURCES = [
   {
     name: "JMdict / EDRDG",
-    note: "用於單字、假名、詞性與字典釋義對照。正式站需保留 EDRDG attribution 與 CC BY-SA 4.0 授權資訊。",
+    note: "用於單字、假名、詞性、priority tags 與字典釋義對照。需保留 EDRDG attribution 與 CC BY-SA 4.0 授權資訊。",
     href: "https://www.edrdg.org/edrdg/licence.html",
     label: "EDRDG licence"
   },
   {
-    name: "BCCWJ 語彙表",
-    note: "用作詞頻排序候選，協助建立 tranche 區間與常用詞順序。",
+    name: "Tranche / frequency layer",
+    note: "目前 10 個 tranche 是產品內部分層：依 JMdict priority tags 排序後每 1,000 詞切一層。這不是 JLPT 官方層級，也不是 BCCWJ 官方排名。",
     href: "https://clrd.ninjal.ac.jp/bccwj/freq-list.html",
-    label: "BCCWJ frequency list"
+    label: "BCCWJ frequency list reference"
+  },
+  {
+    name: "JLPT 等級標記",
+    note: "JLPT 官方公開考試科目與題型，但現行 N1-N5 沒有公開官方單字表。本專案的 jlpt_level 目前是頻率區間推估，只能作為學習提示，不能視為官方分類。",
+    href: "https://www.jlpt.jp/guideline/testsections.html",
+    label: "JLPT official test sections"
   },
   {
     name: "Tatoeba / Tanaka Corpus",

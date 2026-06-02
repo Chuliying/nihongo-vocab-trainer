@@ -501,11 +501,14 @@ def main() -> None:
             "related": [],
             "source": {
                 "dictionary": "JMdict / EDRDG",
-                "example": "generated fallback"
+                "example": "generated fallback",
+                "frequency": "JMdict priority tags"
             },
             "_quality": {
                 "gloss_en": item["glosses"][:4],
                 "priority": item["priority"][:4],
+                "frequency_source": "JMdict priority tags, not BCCWJ",
+                "jlpt_source": "rank heuristic; JLPT official vocabulary lists are not published",
             },
         }
         output_entries.append(entry)

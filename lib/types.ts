@@ -44,6 +44,7 @@ export type VocabEntry = {
   source: {
     dictionary: string;
     example: string;
+    frequency?: string;
   };
 };
 
