@@ -21,7 +21,7 @@ export function RelatedWords({
             type="button"
             disabled={!item.target_id}
             onClick={() => item.target_id && onSelect?.(item.target_id)}
-            className="flex flex-col items-start gap-0.5 rounded-xl border border-border/70 bg-background/40 px-3 py-2 text-left transition-colors enabled:hover:border-primary/50 enabled:hover:bg-primary/5 disabled:opacity-50"
+            className="flex flex-col items-start gap-0.5 rounded-lg border border-border/70 bg-background/40 px-3 py-2 text-left transition-colors enabled:hover:border-primary/50 enabled:hover:bg-primary/5 disabled:opacity-50"
           >
             <span className="font-serif text-sm font-medium">{item.word}</span>
             <span className="text-xs text-muted-foreground">

@@ -404,7 +404,10 @@ export function PracticePage({ tranches }: { tranches: Tranche[] }) {
                   </button>
                 </div>
 
-                <div className="no-scrollbar flex-1 space-y-4 overflow-y-auto px-5 py-4">
+                <div
+                  key={current.id}
+                  className="no-scrollbar flex-1 space-y-4 overflow-y-auto px-5 py-4"
+                >
                   <div>
                     <h2 className="font-serif text-3xl font-semibold">
                       {current.word}
@@ -439,7 +442,7 @@ export function PracticePage({ tranches }: { tranches: Tranche[] }) {
         </div>
 
         {/* Actions */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-0">
           <Button
             variant="secondary"
             size="icon"
