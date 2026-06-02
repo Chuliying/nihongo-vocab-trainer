@@ -4,7 +4,7 @@ A mobile-first Japanese vocabulary trainer for Traditional Chinese learners.
 
 ## Scope
 
-- 10,000 common Japanese words.
+- 13,000 common Japanese words.
 - Tranche-based browsing and progress.
 - Normal study mode and Random 30 mode.
 - Fixed-size flashcards with mobile swipe.
@@ -23,7 +23,7 @@ npm run dev
 
 The app reads:
 
-- `public/data/vocab_10000.json`
+- `public/data/vocab_13000.json`
 - `public/data/tranches.json`
 
 The current repository includes seed data so the UI can run while the public-data pipeline is expanded.

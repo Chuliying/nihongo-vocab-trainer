@@ -25,6 +25,7 @@ import {
   SheetTitle,
   SheetTrigger
 } from "@/components/ui/sheet";
+import { track } from "@vercel/analytics";
 import { useStudyProgress } from "@/lib/storage";
 import {
   filterVocab,
@@ -32,14 +33,17 @@ import {
   getJlptOptions,
   getPartOfSpeechOptions
 } from "@/lib/vocab";
-import type { Tranche, VocabEntry } from "@/lib/types";
+import type { PopularVerb, Tranche, VocabEntry } from "@/lib/types";
 
 const PAGE_SIZE = 24;
+type LibraryMode = "tranche" | "popular-verbs";
 
 export function LibraryPage({
+  popularVerbs,
   tranches,
   vocab
 }: {
+  popularVerbs: PopularVerb[];
   tranches: Tranche[];
   vocab: VocabEntry[];
 }) {
@@ -47,6 +51,7 @@ export function LibraryPage({
     useStudyProgress();
   const [query, setQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [libraryMode, setLibraryMode] = useState<LibraryMode>("tranche");
 
   const selectedTrancheId = progress.selectedTrancheId || 1;
   const selectedJlpt = progress.selectedJlpt || "全部";
@@ -66,27 +71,74 @@ export function LibraryPage({
     return counts;
   }, [progress.learnedWordIds, vocab]);
 
-  const filtered = useMemo(
+  const popularVerbIds = useMemo(
+    () => new Set(popularVerbs.map((verb) => verb.id)),
+    [popularVerbs]
+  );
+  const popularVerbLearned = useMemo(
     () =>
-      filterVocab(vocab, {
+      popularVerbs.filter((verb) => progress.learnedWordIds.includes(verb.id))
+        .length,
+    [popularVerbs, progress.learnedWordIds]
+  );
+
+  const filtered = useMemo(() => {
+    if (libraryMode === "popular-verbs") {
+      const queryText = query.trim().toLowerCase();
+      return vocab
+        .filter((entry) => popularVerbIds.has(entry.id))
+        .filter((entry) => {
+          const haystack =
+            `${entry.word} ${entry.reading} ${entry.meaning} ${entry.example.chinese}`.toLowerCase();
+          return !queryText || haystack.includes(queryText);
+        })
+        .sort((a, b) => a.frequency_rank - b.frequency_rank);
+    }
+    return filterVocab(vocab, {
         query,
         trancheId: selectedTrancheId,
         jlpt: selectedJlpt,
         partOfSpeech: selectedPart
-      }),
-    [query, selectedJlpt, selectedPart, selectedTrancheId, vocab]
-  );
+      });
+  }, [
+    libraryMode,
+    popularVerbIds,
+    query,
+    selectedJlpt,
+    selectedPart,
+    selectedTrancheId,
+    vocab
+  ]);
 
   const visible = filtered.slice(0, visibleCount);
   const selectedTranche =
     tranches.find((item) => item.id === selectedTrancheId) ?? tranches[0];
   const learnedHere = learnedCounts[selectedTrancheId] ?? 0;
   const activeFilters =
-    (selectedJlpt !== "全部" ? 1 : 0) + (selectedPart !== "全部" ? 1 : 0);
+    (selectedJlpt !== "全部" ? 1 : 0) +
+    (selectedPart !== "全部" ? 1 : 0) +
+    (libraryMode === "popular-verbs" ? 1 : 0);
 
   function setTranche(id: number) {
+    track("tranche_selected", { tranche: id, source: "library" });
+    setLibraryMode("tranche");
     setProgress({ selectedTrancheId: id, currentPracticeIndex: 0 });
     setVisibleCount(PAGE_SIZE);
+  }
+
+  function handleToggleLearned(wordId: number) {
+    if (!progress.learnedWordIds.includes(wordId)) {
+      const entry = vocab.find((item) => item.id === wordId);
+      if (entry) {
+        track("word_learned", {
+          word: entry.word,
+          jlpt: entry.jlpt_level,
+          tranche: entry.tranche_id,
+          source: libraryMode === "popular-verbs" ? "popular_verbs" : "library"
+        });
+      }
+    }
+    toggleLearned(wordId);
   }
 
   function selectRelated(targetId: number) {
@@ -121,30 +173,64 @@ export function LibraryPage({
         {/* Header */}
         <header className="mt-6">
           <p className="font-display text-xs italic text-muted-foreground">
-            {selectedTranche.rank_range}
+            {libraryMode === "popular-verbs"
+              ? "Top 300 verbs"
+              : selectedTranche.rank_range}
           </p>
           <h1 className="mt-1 font-serif text-2xl font-semibold sm:text-3xl">
-            {selectedTranche.title} · {selectedTranche.label}
+            {libraryMode === "popular-verbs"
+              ? "常用動詞 300"
+              : `${selectedTranche.title} · ${selectedTranche.label}`}
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-            {selectedTranche.description}
+            {libraryMode === "popular-verbs"
+              ? "從 10,000 詞庫中依 JMdict priority-derived rank 抽出的前 300 個常用動詞，含動詞變化 info。"
+              : selectedTranche.description}
           </p>
 
           <div className="mt-4 flex items-center gap-3">
             <Progress
-              value={Math.min(100, (learnedHere / 1000) * 100)}
+              value={
+                libraryMode === "popular-verbs"
+                  ? Math.min(100, (popularVerbLearned / 300) * 100)
+                  : Math.min(100, (learnedHere / 1000) * 100)
+              }
               className="max-w-xs"
             />
             <span className="font-display text-xs tabular-nums whitespace-nowrap text-muted-foreground">
-              {learnedHere} / 1000 學會
+              {libraryMode === "popular-verbs"
+                ? `${popularVerbLearned} / 300 學會`
+                : `${learnedHere} / 1000 學會`}
             </span>
           </div>
 
-          <Button asChild className="mt-4 w-full sm:w-auto">
-            <Link href={`/practice?tranche=${selectedTrancheId}`}>
-              <Sparkles className="size-4" /> 開始練習
-            </Link>
-          </Button>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            <Button asChild className="w-full sm:w-auto">
+              <Link href={`/practice?tranche=${selectedTrancheId}`}>
+                <Sparkles className="size-4" /> 開始練習
+              </Link>
+            </Button>
+            <Button
+              type="button"
+              variant={libraryMode === "popular-verbs" ? "default" : "outline"}
+              className="w-full sm:w-auto"
+              onClick={() => {
+                if (libraryMode !== "popular-verbs") {
+                  track("popular_verbs_opened");
+                }
+                setLibraryMode((mode) =>
+                  mode === "popular-verbs" ? "tranche" : "popular-verbs"
+                );
+                setVisibleCount(PAGE_SIZE);
+                setQuery("");
+              }}
+            >
+              <Sparkles className="size-4" />
+              {libraryMode === "popular-verbs"
+                ? "回到分層詞庫"
+                : "常用動詞 300"}
+            </Button>
+          </div>
         </header>
 
         {/* Search + filter */}
@@ -184,7 +270,7 @@ export function LibraryPage({
               </SheetHeader>
               <div className="space-y-5 px-5">
                 <div className="space-y-2">
-                  <Label>JLPT 等級</Label>
+                  <Label>推估等級</Label>
                   <Select
                     value={selectedJlpt}
                     onValueChange={(value) => {
@@ -241,6 +327,9 @@ export function LibraryPage({
           {filtered.length} 個單字
           {activeFilters > 0 ? (
             <span className="ml-2 inline-flex gap-1.5 align-middle">
+              {libraryMode === "popular-verbs" ? (
+                <Badge variant="secondary">常用動詞300</Badge>
+              ) : null}
               {selectedJlpt !== "全部" ? (
                 <Badge variant="secondary">{selectedJlpt}</Badge>
               ) : null}
@@ -263,7 +352,7 @@ export function LibraryPage({
                 key={entry.id}
                 entry={entry}
                 isLearned={progress.learnedWordIds.includes(entry.id)}
-                onToggleLearned={toggleLearned}
+                onToggleLearned={handleToggleLearned}
                 onRelatedSelect={selectRelated}
               />
             ))}

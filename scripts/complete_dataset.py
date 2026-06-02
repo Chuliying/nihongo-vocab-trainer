@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Complete all 10,000 vocabulary entries with non-empty Traditional Chinese
+"""Complete all vocabulary entries with non-empty Traditional Chinese
 meanings and simple learner-friendly examples.
 
 This is a deterministic completion pass. It keeps manually curated enrichment
-records when present, and fills the rest with conservative, simple examples
-that contain the target word in quotes. The examples are intentionally plain so
-they remain grammatical across nouns, adjectives, adverbs, particles, and verbs.
+records when present, and fills the rest with conservative learner examples.
+The generated examples use several sentence frames so the dataset does not
+collapse into a single dictionary-note pattern.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ import pykakasi
 from opencc import OpenCC
 
 
-VOCAB_PATH = Path("public/data/vocab_10000.json")
+VOCAB_PATH = Path("public/data/vocab_13000.json")
 KAKASI = pykakasi.kakasi()
 OPENCC = OpenCC("s2t")
 
@@ -216,19 +216,81 @@ def simple_example(entry: dict, meaning: str) -> dict:
     word = entry["word"]
     primary = meaning.split("、")[0]
     pos_tokens = set(entry["part_of_speech"].split("・"))
+    frame_seed = entry["id"] + len(word) + len(entry.get("reading", ""))
 
-    if "動詞" in pos_tokens:
-        japanese = f"授業で「{word}」の使い方を練習しました。"
-        chinese = f"在課堂上練習了「{primary}」的用法。"
+    def pick(items: list[tuple[str, str]]) -> tuple[str, str]:
+        return items[frame_seed % len(items)]
+
+    if len(word) == 1 and re.search(r"[\u4e00-\u9fff]", word):
+        japanese, chinese = pick([
+            (f"辞書で「{word}」という字を調べました。", f"我在字典裡查了「{word}」這個字。"),
+            (f"先生が黒板に「{word}」を書きました。", f"老師在黑板上寫了「{word}」。"),
+            (f"今日は「{word}」という漢字を覚えました。", f"今天記住了「{word}」這個漢字。"),
+            (f"本の中で「{word}」という字を見ました。", f"在書裡看到了「{word}」這個字。"),
+        ])
+    elif "助詞" in pos_tokens:
+        japanese, chinese = pick([
+            (f"「{word}」は文の中でよく使います。", f"「{word}」常在句子中使用。"),
+            (f"短い文で「{word}」の使い方を確認しました。", f"用短句確認了「{word}」的用法。"),
+            (f"先生は「{word}」を使った例を出しました。", f"老師舉了使用「{word}」的例子。"),
+            (f"作文で「{word}」を正しく使いたいです。", f"我想在作文裡正確使用「{word}」。"),
+        ])
+    elif "助動詞" in pos_tokens:
+        japanese, chinese = pick([
+            (f"会話で「{word}」を自然に使いました。", f"在會話中自然地使用了「{word}」。"),
+            (f"「{word}」を入れると文が丁寧になります。", f"加入「{word}」後句子會變得禮貌。"),
+            (f"練習問題で「{word}」の形を確認しました。", f"在練習題中確認了「{word}」的形式。"),
+        ])
+    elif "動詞" in pos_tokens:
+        japanese, chinese = pick([
+            (f"授業で「{word}」の使い方を練習しました。", f"在課堂上練習了「{primary}」的用法。"),
+            (f"日記に「{word}」を使った文を書きました。", f"在日記裡寫了使用「{primary}」的句子。"),
+            (f"友達と「{word}」の例文を作りました。", f"和朋友一起造了「{primary}」的例句。"),
+            (f"先生に「{word}」の使い方を聞きました。", f"向老師請教了「{primary}」的用法。"),
+        ])
     elif "形容詞" in pos_tokens or "形容動詞" in pos_tokens:
-        japanese = f"先生は「{word}」の意味を説明しました。"
-        chinese = f"老師說明了「{primary}」的意思。"
-    elif "副詞" in pos_tokens or "接続詞" in pos_tokens:
-        japanese = f"作文で「{word}」を使いました。"
-        chinese = f"我在作文中使用了「{primary}」。"
+        japanese, chinese = pick([
+            (f"先生は「{word}」を使って短い文を作りました。", f"老師用「{primary}」造了短句。"),
+            (f"会話で「{word}」という表現を聞きました。", f"在會話中聽到了「{primary}」這個說法。"),
+            (f"作文に「{word}」を入れると表現が自然です。", f"作文裡加入「{primary}」會讓表達更自然。"),
+            (f"今日は「{word}」の反対の意味も勉強しました。", f"今天也學了「{primary}」的相反意思。"),
+        ])
+    elif "副詞" in pos_tokens:
+        japanese, chinese = pick([
+            (f"会話の中で「{word}」を使いました。", f"在會話中使用了「{primary}」。"),
+            (f"「{word}」を入れると文の感じが変わります。", f"加入「{primary}」後句子的感覺會改變。"),
+            (f"作文で「{word}」を自然に使いたいです。", f"我想在作文裡自然地使用「{primary}」。"),
+            (f"先生は「{word}」の使う場面を説明しました。", f"老師說明了「{primary}」的使用場合。"),
+        ])
+    elif "接続詞" in pos_tokens:
+        japanese, chinese = pick([
+            (f"二つの文をつなぐ時に「{word}」を使います。", f"連接兩個句子時會使用「{primary}」。"),
+            (f"作文で「{word}」を使って文を続けました。", f"在作文中用「{primary}」接續句子。"),
+            (f"先生は「{word}」の後に続く文を直しました。", f"老師修改了「{primary}」後面接的句子。"),
+        ])
+    elif "感動詞" in pos_tokens:
+        japanese, chinese = pick([
+            (f"友達は驚いて「{word}」と言いました。", f"朋友驚訝地說了「{primary}」。"),
+            (f"会話の始めに「{word}」を使いました。", f"在對話開頭使用了「{primary}」。"),
+            (f"「{word}」は気持ちを表す時に使います。", f"「{primary}」用在表達心情的時候。"),
+        ])
+    elif "表現" in pos_tokens:
+        japanese, chinese = pick([
+            (f"会話で「{word}」という表現を使いました。", f"在會話中使用了「{primary}」這個表達。"),
+            (f"先生は「{word}」の自然な言い方を教えました。", f"老師教了「{primary}」的自然說法。"),
+            (f"友達に「{word}」の意味を聞きました。", f"向朋友詢問了「{primary}」的意思。"),
+        ])
     else:
-        japanese = f"ノートに「{word}」の意味を書きました。"
-        chinese = f"我在筆記本上寫下「{primary}」的意思。"
+        japanese, chinese = pick([
+            (f"授業で「{word}」について話しました。", f"在課堂上討論了「{primary}」。"),
+            (f"本の中で「{word}」という言葉を見ました。", f"在書裡看到了「{primary}」這個詞。"),
+            (f"ニュースで「{word}」という言葉を聞きました。", f"在新聞裡聽到了「{primary}」這個詞。"),
+            (f"友達と「{word}」のことを話しました。", f"和朋友聊到了「{primary}」。"),
+            (f"先生は「{word}」の使い方を説明しました。", f"老師說明了「{primary}」的用法。"),
+            (f"日記に「{word}」を使った文を書きました。", f"在日記裡寫了使用「{primary}」的句子。"),
+            (f"辞書で「{word}」を調べました。", f"在字典裡查了「{primary}」。"),
+            (f"会話の中で「{word}」という言葉が出ました。", f"對話中出現了「{primary}」這個詞。"),
+        ])
 
     return {
         "japanese": japanese,

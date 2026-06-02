@@ -74,6 +74,7 @@
   --font-sans: var(--font-zen), var(--font-noto-tc), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-shippori), "Hiragino Mincho ProN", "Yu Mincho", serif;
   --font-display: var(--font-fraunces), Georgia, serif;
+  --font-logo: var(--font-barlow), ui-sans-serif, system-ui, sans-serif;
 }
 
 * {
@@ -86,6 +87,8 @@ html {
   background: var(--background);
   /* prevent horizontal scroll on mobile from glow blur */
   overflow-x: hidden;
+  /* kill the rubber-band / overscroll bounce at top & bottom on mobile */
+  overscroll-behavior: none;
 }
 
 body {
@@ -96,6 +99,7 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  overscroll-behavior: none;
 }
 
 /* Soft warm light bleeding from the top — barely there */

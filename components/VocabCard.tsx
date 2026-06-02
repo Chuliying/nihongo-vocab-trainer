@@ -8,6 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
+function qualityLabel(score: string) {
+  if (score === "verb_curated") return "動詞精修";
+  if (score === "curated") return "精修";
+  if (score === "rule_completed") return "已補齊";
+  return "待檢查";
+}
+
 export function VocabCard({
   entry,
   isLearned,
@@ -28,9 +35,14 @@ export function VocabCard({
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <Badge variant={isLearned ? "default" : "outline"}>
-          {entry.jlpt_level}
-        </Badge>
+        <div className="flex flex-wrap gap-1.5">
+          <Badge variant={isLearned ? "default" : "outline"}>
+            推估 {entry.jlpt_level}
+          </Badge>
+          <Badge variant={entry.quality_score === "verb_curated" ? "default" : "secondary"}>
+            {qualityLabel(entry.quality_score)}
+          </Badge>
+        </div>
         <button
           type="button"
           onClick={() => onToggleLearned(entry.id)}

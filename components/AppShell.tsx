@@ -24,7 +24,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             aria-label="Nihongo 首頁"
           >
             <span className="font-serif text-xl leading-none text-primary">日</span>
-            <span className="font-display text-base italic tracking-tight">
+            <span className="font-logo text-base font-bold uppercase tracking-[0.16em]">
               Nihongo
             </span>
           </Link>

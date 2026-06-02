@@ -4,7 +4,7 @@
     "title": "Tranche 1",
     "rank_range": "1-1000",
     "label": "FOUNDATIONS",
-    "description": "最核心基礎詞、問候、日常名詞、基本動詞"
+    "description": "最高頻基礎詞、助詞、日常短語、核心動詞"
   },
   {
     "id": 2,
@@ -68,5 +68,26 @@
     "rank_range": "9001-10000",
     "label": "EXPANSION",
     "description": "補強詞彙、低頻但實用的延伸詞"
+  },
+  {
+    "id": 11,
+    "title": "Tranche 11",
+    "rank_range": "10001-11000",
+    "label": "EXTENDED READING",
+    "description": "閱讀常見詞、專門名詞與較正式表達"
+  },
+  {
+    "id": 12,
+    "title": "Tranche 12",
+    "rank_range": "11001-12000",
+    "label": "SPECIALIZED USE",
+    "description": "專門領域、書面語與延伸搭配"
+  },
+  {
+    "id": 13,
+    "title": "Tranche 13",
+    "rank_range": "12001-13000",
+    "label": "REFERENCE DEPTH",
+    "description": "查閱型詞彙、補充詞與低頻常見詞"
   }
 ]

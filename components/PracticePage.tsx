@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { track } from "@vercel/analytics";
 import { useStudyProgress } from "@/lib/storage";
 import { filterVocab, findRelatedTarget, shuffle } from "@/lib/vocab";
 import { cn } from "@/lib/utils";
@@ -112,6 +113,7 @@ export function PracticePage({
   }, [current, markSeen]);
 
   function updateMode(mode: PracticeMode) {
+    track("practice_mode", { mode, tranche: selectedTrancheId });
     if (mode === "sequential") {
       setProgress({
         practiceMode: mode,
@@ -163,6 +165,30 @@ export function PracticePage({
       randomSessionWordIds: []
     });
     setIsFlipped(true);
+  }
+
+  function flipToBack() {
+    if (!isFlipped && current) {
+      track("flashcard_flip", {
+        word: current.word,
+        jlpt: current.jlpt_level,
+        tranche: selectedTrancheId
+      });
+    }
+    setIsFlipped(true);
+  }
+
+  function handleToggleLearned() {
+    if (!current) return;
+    if (!isLearned) {
+      track("word_learned", {
+        word: current.word,
+        jlpt: current.jlpt_level,
+        tranche: selectedTrancheId,
+        source: "practice"
+      });
+    }
+    toggleLearned(current.id);
   }
 
   function onTouchStart(event: React.TouchEvent) {
@@ -258,6 +284,10 @@ export function PracticePage({
                   <Select
                     value={String(selectedTrancheId)}
                     onValueChange={(value) => {
+                      track("tranche_selected", {
+                        tranche: Number(value),
+                        source: "practice"
+                      });
                       setProgress({
                         selectedTrancheId: Number(value),
                         currentPracticeIndex: 0,
@@ -285,7 +315,10 @@ export function PracticePage({
                     <Button
                       variant="outline"
                       className="flex-1"
-                      onClick={startRandomSession}
+                      onClick={() => {
+                        track("random30_reshuffle", { tranche: selectedTrancheId });
+                        startRandomSession();
+                      }}
                     >
                       <Shuffle className="size-4" /> 重新抽 30 張
                     </Button>
@@ -316,11 +349,11 @@ export function PracticePage({
               {/* FRONT */}
               <button
                 type="button"
-                onClick={() => setIsFlipped(true)}
+                onClick={flipToBack}
                 className="flip-face flex flex-col items-center justify-center gap-5 rounded-3xl border border-border bg-card px-6 text-center shadow-[0_30px_70px_-32px_var(--glow)]"
               >
                 <Badge className="absolute left-5 top-5">
-                  {current.jlpt_level}
+                  推估 {current.jlpt_level}
                 </Badge>
                 <span className="font-serif text-[clamp(3.6rem,18vw,5.8rem)] leading-none font-semibold">
                   {current.word}
@@ -395,7 +428,7 @@ export function PracticePage({
 
           <Button
             variant={isLearned ? "default" : "outline"}
-            onClick={() => toggleLearned(current.id)}
+            onClick={handleToggleLearned}
             className="px-6"
           >
             <Check className="size-4" />

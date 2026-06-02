@@ -1,6 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Shippori_Mincho, Fraunces, Zen_Kaku_Gothic_New, Noto_Sans_TC } from "next/font/google";
+import {
+  Shippori_Mincho,
+  Fraunces,
+  Zen_Kaku_Gothic_New,
+  Noto_Sans_TC,
+  Barlow
+} from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
+
+// Logo wordmark — Barlow, used uppercase
+const barlow = Barlow({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-barlow",
+  display: "swap"
+});
 
 // Hero Japanese — an elegant, characterful mincho for kanji & kana
 const shippori = Shippori_Mincho({
@@ -55,9 +70,12 @@ export default function RootLayout({
   return (
     <html
       lang="zh-Hant"
-      className={`${shippori.variable} ${fraunces.variable} ${zen.variable} ${notoTC.variable}`}
+      className={`${shippori.variable} ${fraunces.variable} ${zen.variable} ${notoTC.variable} ${barlow.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }

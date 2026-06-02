@@ -46,6 +46,7 @@ export type VocabEntry = {
     example: string;
     frequency?: string;
   };
+  quality_score: "curated" | "verb_curated" | "rule_completed" | "needs_review" | string;
 };
 
 export type Tranche = {
@@ -54,6 +55,18 @@ export type Tranche = {
   rank_range: string;
   label: string;
   description: string;
+};
+
+export type PopularVerb = {
+  rank: number;
+  id: number;
+  word: string;
+  reading: string;
+  meaning: string;
+  frequency_rank: number;
+  tranche_id: number;
+  jlpt_level: VocabEntry["jlpt_level"];
+  verb_type: string;
 };
 
 export type StudyProgress = {

@@ -6,7 +6,7 @@ from pathlib import Path
 import pykakasi
 
 
-VOCAB_PATH = Path("public/data/vocab_10000.json")
+VOCAB_PATH = Path("public/data/vocab_13000.json")
 ENRICHMENT_DIR = Path("public/data/enrichment")
 
 
@@ -28,9 +28,18 @@ def main() -> None:
     for path in files:
         items = json.loads(path.read_text(encoding="utf-8"))
         for item in items:
+            if "word" not in item or "reading" not in item:
+                raise SystemExit(
+                    f"{path}: enrichment records must include word and reading for the 13,000-word dataset"
+                )
             entry = by_id.get(item["id"])
             if not entry:
                 raise SystemExit(f"{path}: unknown id {item['id']}")
+            if entry["word"] != item["word"] or entry["reading"] != item["reading"]:
+                raise SystemExit(
+                    f"{path}: id {item['id']} is {entry['word']}／{entry['reading']}, "
+                    f"not {item['word']}／{item['reading']}"
+                )
             entry["meaning"] = item["meaning"]
             entry["example"] = {
                 "japanese": item["example"]["japanese"],
