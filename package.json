@@ -12,7 +12,8 @@
     "enrich:export": "node scripts/export_enrichment_batch.js",
     "enrich:apply": "node scripts/apply_enrichment_batch.js",
     "validate:chunks": "node scripts/validate_chunks_strict.js",
-    "validate:data": "python3 scripts/validate_vocab.py public/data/vocab_13000.json public/data/tranches.json && node scripts/validate_chunks_strict.js"
+    "validate:data": "python3 scripts/validate_vocab.py public/data/vocab_13000.json public/data/tranches.json && node scripts/validate_chunks_strict.js",
+    "validate:agent-manifest": "node scripts/validate_agent_manifest.js"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
