@@ -114,7 +114,7 @@ export function ListMode({
           找不到符合條件的單字。
         </p>
       ) : (
-        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="mt-3 grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
           {filtered.map((entry) => (
             <VocabCard
               key={entry.id}
