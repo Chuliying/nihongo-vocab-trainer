@@ -93,13 +93,6 @@ export function ListMode({
 
   return (
     <div className="mt-2 pb-16">
-      <p className="font-display text-xs tracking-wide text-muted-foreground">
-        {isLoading ? "載入中…" : `${filtered.length} 個單字`}
-        {collection === "all" && loadedCount < TRANCHE_IDS.length && !isLoading
-          ? ` (已載入 ${loadedCount * 1000} / 13,000)`
-          : null}
-      </p>
-
       {isLoading ? (
         <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -114,17 +107,25 @@ export function ListMode({
           找不到符合條件的單字。
         </p>
       ) : (
-        <div className="mt-3 grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
-          {filtered.map((entry) => (
-            <VocabCard
-              key={entry.id}
-              entry={entry}
-              isLearned={learnedSet.has(entry.id)}
-              onToggleLearned={onToggleLearned}
-              onRelatedSelect={onRelatedSelect}
-            />
-          ))}
-        </div>
+        <>
+          <p className="font-display text-xs tracking-wide text-muted-foreground">
+            {filtered.length} 個單字
+            {collection === "all" && loadedCount < TRANCHE_IDS.length
+              ? ` (已載入 ${loadedCount * 1000} / 13,000)`
+              : null}
+          </p>
+          <div className="mt-3 grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
+            {filtered.map((entry) => (
+              <VocabCard
+                key={entry.id}
+                entry={entry}
+                isLearned={learnedSet.has(entry.id)}
+                onToggleLearned={onToggleLearned}
+                onRelatedSelect={onRelatedSelect}
+              />
+            ))}
+          </div>
+        </>
       )}
 
       {collection === "all" && <div ref={sentinelRef} className="h-1" />}
