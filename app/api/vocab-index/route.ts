@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { getVocabIndex } from "@/lib/vocab-data";
+import { getVocabIndex } from "@/lib/vocab-repository";
 
 // id → tranche_id map for learned-count tallies and related-word navigation.
 export const dynamic = "force-static";
 
 export async function GET() {
-  return NextResponse.json(getVocabIndex());
+  return NextResponse.json(await getVocabIndex());
 }
