@@ -1,0 +1,120 @@
+<h2>UI 改版 — 頁面結構方案</h2>
+<p class="subtitle">List mode 和 Card mode 整合在同一頁，移除 Tranches 滾動條，Filter 統一管理所有分類</p>
+
+<div class="section">
+  <div class="label">核心問題：List / Card 如何切換？</div>
+</div>
+
+<div class="cards">
+
+  <!-- Option A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:1rem;background:#f8f6f1;border-radius:8px;">
+      <div style="font-size:0.65rem;color:#888;text-align:center;margin-bottom:8px;">/ (單一路由，取代 /practice)</div>
+
+      <!-- top bar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div style="font-weight:700;font-size:0.75rem;">日語詞彙庫</div>
+        <div style="display:flex;gap:4px;">
+          <div style="padding:3px 10px;border-radius:20px;background:#2d6a4f;color:#fff;font-size:0.6rem;">☰ 列表</div>
+          <div style="padding:3px 10px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">☐ 卡片</div>
+        </div>
+      </div>
+
+      <!-- search + filter -->
+      <div style="display:flex;gap:4px;margin-bottom:8px;">
+        <div style="flex:1;background:#fff;border:1px solid #ddd;border-radius:8px;padding:5px 8px;font-size:0.6rem;color:#aaa;">🔍 搜尋單字…</div>
+        <div style="padding:5px 8px;border:1px solid #ddd;border-radius:8px;font-size:0.6rem;background:#fff;">⚙️ 篩選 ②</div>
+      </div>
+
+      <!-- results count -->
+      <div style="font-size:0.55rem;color:#999;margin-bottom:6px;">250 個單字 · N5 · 動詞</div>
+
+      <!-- grid preview -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;">
+        <div style="background:#fff;border:1px solid #e0ddd8;border-radius:6px;padding:8px;text-align:center;font-size:1rem;">食べる</div>
+        <div style="background:#fff;border:1px solid #e0ddd8;border-radius:6px;padding:8px;text-align:center;font-size:1rem;">行く</div>
+        <div style="background:#fff;border:1px solid #e0ddd8;border-radius:6px;padding:8px;text-align:center;font-size:1rem;">見る</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — 單頁雙模式</h3>
+      <p>合併成一個 <code>/</code> 路由，頂部切換 List／Card。<code>/practice</code> 廢除。狀態共用，切模式不影響 filter。</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>優點</h4><ul><li>最簡潔，無跳頁</li><li>Filter 自然共用</li></ul></div>
+        <div class="cons"><h4>缺點</h4><ul><li>需重構路由</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:1rem;background:#f8f6f1;border-radius:8px;">
+      <div style="font-size:0.65rem;color:#888;text-align:center;margin-bottom:8px;">/ 列表  →  /practice 卡片（共享 filter state）</div>
+
+      <!-- lib page top -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div style="font-weight:700;font-size:0.75rem;">詞彙庫</div>
+        <div style="padding:3px 10px;border-radius:20px;background:#2d6a4f;color:#fff;font-size:0.6rem;">▷ 練習模式</div>
+      </div>
+      <div style="display:flex;gap:4px;margin-bottom:6px;">
+        <div style="flex:1;background:#fff;border:1px solid #ddd;border-radius:8px;padding:5px 8px;font-size:0.6rem;color:#aaa;">🔍 搜尋…</div>
+        <div style="padding:5px 8px;border:1px solid #ddd;border-radius:8px;font-size:0.6rem;background:#fff;">⚙️</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px;">
+        <div style="background:#fff;border:1px solid #e0ddd8;border-radius:6px;padding:8px;text-align:center;font-size:0.9rem;">食べる</div>
+        <div style="background:#fff;border:1px solid #e0ddd8;border-radius:6px;padding:8px;text-align:center;font-size:0.9rem;">行く</div>
+        <div style="background:#fff;border:1px solid #e0ddd8;border-radius:6px;padding:8px;text-align:center;font-size:0.9rem;">見る</div>
+      </div>
+      <div style="text-align:center;font-size:0.55rem;color:#888;">→ 點「練習模式」跳到 /practice，沿用相同 filter</div>
+    </div>
+    <div class="card-body">
+      <h3>B — 兩頁共享 Filter 狀態</h3>
+      <p>保留 <code>/</code> 和 <code>/practice</code> 兩個路由，透過 localStorage 共享 filter。列表頁有「進入練習」按鈕帶著 filter 跳轉。</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>優點</h4><ul><li>改動較小</li><li>練習頁全螢幕沉浸</li></ul></div>
+        <div class="cons"><h4>缺點</h4><ul><li>頁面跳轉有斷點感</li><li>Filter 同步要額外處理</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option C -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:1rem;background:#f8f6f1;border-radius:8px;">
+      <div style="font-size:0.65rem;color:#888;text-align:center;margin-bottom:8px;">/ — 列表為主，卡片 overlay / drawer</div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div style="font-weight:700;font-size:0.75rem;">日語詞彙庫</div>
+        <div style="padding:3px 10px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">⚙️</div>
+      </div>
+      <div style="display:flex;gap:4px;margin-bottom:6px;">
+        <div style="flex:1;background:#fff;border:1px solid #ddd;border-radius:8px;padding:5px 8px;font-size:0.6rem;color:#aaa;">🔍 搜尋…</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px;opacity:0.35;">
+        <div style="background:#fff;border:1px solid #e0ddd8;border-radius:6px;padding:8px;text-align:center;font-size:0.9rem;">食べる</div>
+        <div style="background:#fff;border:1px solid #e0ddd8;border-radius:6px;padding:8px;text-align:center;font-size:0.9rem;">行く</div>
+        <div style="background:#fff;border:1px solid #e0ddd8;border-radius:6px;padding:8px;text-align:center;font-size:0.9rem;">見る</div>
+      </div>
+      <!-- overlay -->
+      <div style="border-radius:12px;background:rgba(255,255,255,0.97);border:1px solid #2d6a4f44;padding:8px;text-align:center;font-size:0.75rem;box-shadow:0 -4px 20px rgba(0,0,0,0.1);">
+        <div style="font-size:1.4rem;font-weight:700;">食べる</div>
+        <div style="font-size:0.55rem;color:#888;margin-top:2px;">tap to flip · swipe ↔</div>
+        <div style="display:flex;align-items:center;gap:4px;margin-top:6px;">
+          <div style="flex:1;height:3px;background:#eee;border-radius:4px;"><div style="width:40%;height:100%;background:#2d6a4f;border-radius:4px;"></div></div>
+          <div style="font-size:0.5rem;color:#999;">15 / 38</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — 列表為主，卡片浮層</h3>
+      <p>列表頁點「開始練習」後，卡片從底部滑入覆蓋列表（全螢幕 overlay/sheet）。Filter 自然共用，關掉卡片回到列表原位。</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>優點</h4><ul><li>沉浸感強，無路由跳轉</li><li>關閉回到原滾動位置</li></ul></div>
+        <div class="cons"><h4>缺點</h4><ul><li>卡片需要 overlay 管理</li><li>深連結較複雜</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:1.5rem;">點選你偏好的方案，或在 terminal 跟我說。</p>

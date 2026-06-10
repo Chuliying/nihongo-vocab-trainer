@@ -40,6 +40,28 @@ export function findRelatedTarget(vocab: VocabEntry[], targetId?: number) {
   return vocab.find((entry) => entry.id === targetId) ?? null;
 }
 
+export function filterByScope(
+  entries: VocabEntry[],
+  options: {
+    query: string;
+    jlpt: string;
+    partOfSpeech: string;
+  }
+): VocabEntry[] {
+  const query = options.query.trim().toLowerCase();
+  return entries.filter((entry) => {
+    const matchesJlpt =
+      options.jlpt === "全部" || entry.jlpt_level === options.jlpt;
+    const matchesPart =
+      options.partOfSpeech === "全部" ||
+      entry.part_of_speech.includes(options.partOfSpeech);
+    const haystack =
+      `${entry.word} ${entry.reading} ${entry.meaning} ${entry.example.chinese}`.toLowerCase();
+    const matchesQuery = !query || haystack.includes(query);
+    return matchesJlpt && matchesPart && matchesQuery;
+  });
+}
+
 export function shuffle<T>(items: T[]) {
   const copy = [...items];
   for (let index = copy.length - 1; index > 0; index -= 1) {

@@ -1,0 +1,138 @@
+<h2>卡片模式 — 雙 Session 設計</h2>
+<p class="subtitle">循序模式和 Random Session 各自保留進度，可自由切換</p>
+
+<div class="split">
+
+  <!-- Normal session -->
+  <div class="mockup">
+    <div class="mockup-header">循序模式（正常學習）</div>
+    <div class="mockup-body" style="font-size:0.75rem;">
+
+      <!-- top bar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:0.65rem;color:#888;">← 詞彙庫</div>
+        <!-- session toggle -->
+        <div style="display:flex;gap:2px;background:#f0ede8;border-radius:20px;padding:2px;">
+          <div style="padding:3px 10px;border-radius:18px;background:#fff;font-size:0.6rem;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,0.1);">循序</div>
+          <div style="padding:3px 10px;border-radius:18px;font-size:0.6rem;color:#888;">🎲 Random</div>
+        </div>
+        <div style="font-size:0.6rem;color:#888;">⚙️</div>
+      </div>
+
+      <!-- progress bar with drag handle -->
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;font-size:0.55rem;color:#999;margin-bottom:3px;">
+          <span>N4 · 動詞 · 常用動詞</span>
+          <span style="color:#2d6a4f;font-weight:600;">42 / 287</span>
+        </div>
+        <div style="position:relative;height:6px;background:#e8e4de;border-radius:4px;cursor:pointer;">
+          <div style="width:14.6%;height:100%;background:#2d6a4f;border-radius:4px;"></div>
+          <!-- drag handle -->
+          <div style="position:absolute;top:50%;left:14.6%;transform:translate(-50%,-50%);width:16px;height:16px;background:#fff;border:2px solid #2d6a4f;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.2);cursor:grab;"></div>
+        </div>
+        <div style="font-size:0.5rem;color:#bbb;margin-top:2px;text-align:center;">拖曳快速跳轉</div>
+      </div>
+
+      <!-- flashcard -->
+      <div style="background:#fff;border:1px solid #e0ddd8;border-radius:14px;padding:16px;text-align:center;margin-bottom:10px;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 8px 24px -8px rgba(45,106,79,0.15);">
+        <div style="font-size:0.55rem;color:#aaa;margin-bottom:6px;">推估 N4</div>
+        <div style="font-size:2.2rem;font-weight:700;">食べる</div>
+        <div style="font-size:0.55rem;color:#bbb;margin-top:8px;">tap to flip · swipe ↔</div>
+      </div>
+
+      <!-- actions -->
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;">
+        <div style="padding:6px;background:#f5f3ef;border-radius:8px;text-align:center;font-size:0.7rem;">←</div>
+        <div style="padding:6px 14px;background:#e8f5ee;border:1px solid #2d6a4f44;border-radius:8px;font-size:0.65rem;color:#2d6a4f;">✓ 標記學會</div>
+        <div style="padding:6px;background:#f5f3ef;border-radius:8px;text-align:center;font-size:0.7rem;">→</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Random session -->
+  <div class="mockup">
+    <div class="mockup-header">🎲 Random Session</div>
+    <div class="mockup-body" style="font-size:0.75rem;">
+
+      <!-- top bar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:0.65rem;color:#888;">← 詞彙庫</div>
+        <div style="display:flex;gap:2px;background:#f0ede8;border-radius:20px;padding:2px;">
+          <div style="padding:3px 10px;border-radius:18px;font-size:0.6rem;color:#888;">循序</div>
+          <div style="padding:3px 10px;border-radius:18px;background:#2d6a4f;color:#fff;font-size:0.6rem;font-weight:600;">🎲 Random</div>
+        </div>
+        <div style="font-size:0.6rem;color:#888;">⚙️</div>
+      </div>
+
+      <!-- progress bar with drag handle -->
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;font-size:0.55rem;color:#999;margin-bottom:3px;">
+          <span>🎲 Random Session</span>
+          <span style="color:#2d6a4f;font-weight:600;">7 / 30</span>
+        </div>
+        <div style="position:relative;height:6px;background:#e8e4de;border-radius:4px;cursor:pointer;">
+          <div style="width:23.3%;height:100%;background:#2d6a4f;border-radius:4px;"></div>
+          <div style="position:absolute;top:50%;left:23.3%;transform:translate(-50%,-50%);width:16px;height:16px;background:#fff;border:2px solid #2d6a4f;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.2);cursor:grab;"></div>
+        </div>
+      </div>
+
+      <!-- flashcard -->
+      <div style="background:#fff;border:1px solid #e0ddd8;border-radius:14px;padding:16px;text-align:center;margin-bottom:10px;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 8px 24px -8px rgba(45,106,79,0.15);">
+        <div style="font-size:0.55rem;color:#aaa;margin-bottom:6px;">推估 N5</div>
+        <div style="font-size:2.2rem;font-weight:700;">見る</div>
+        <div style="font-size:0.55rem;color:#bbb;margin-top:8px;">tap to flip · swipe ↔</div>
+      </div>
+
+      <!-- reshuffle -->
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;">
+        <div style="padding:6px;background:#f5f3ef;border-radius:8px;text-align:center;font-size:0.7rem;">←</div>
+        <div style="padding:6px 10px;background:#fff3e0;border:1px solid #e69c2244;border-radius:8px;font-size:0.6rem;color:#b36b00;">🎲 重新抽</div>
+        <div style="padding:6px;background:#f5f3ef;border-radius:8px;text-align:center;font-size:0.7rem;">→</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Random settings panel -->
+<div class="section" style="margin-top:1.5rem;">
+  <div class="label">Random Session 設定（⚙️ 面板內容）</div>
+  <div style="background:#faf9f6;border:1px solid #e8e4de;border-radius:12px;padding:1rem;margin-top:8px;max-width:360px;">
+
+    <div style="margin-bottom:12px;">
+      <div style="font-size:0.6rem;color:#888;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;">抽題範圍</div>
+      <div style="font-size:0.7rem;color:#555;">套用目前的 Filter（Collection、JLPT、詞性）</div>
+      <div style="font-size:0.6rem;color:#2d6a4f;margin-top:2px;">→ 目前：N4 · 動詞 · 全部 Collection（共 287 字）</div>
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <div style="font-size:0.6rem;color:#888;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;">抽取數量</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;">
+        <div style="padding:4px 10px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">10</div>
+        <div style="padding:4px 10px;border-radius:20px;background:#2d6a4f;color:#fff;font-size:0.6rem;">30</div>
+        <div style="padding:4px 10px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">50</div>
+        <div style="padding:4px 10px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">100</div>
+        <div style="padding:4px 10px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">全部</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <div style="font-size:0.6rem;color:#888;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;">包含已學會的單字？</div>
+      <div style="display:flex;gap:4px;">
+        <div style="padding:4px 10px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">是</div>
+        <div style="padding:4px 10px;border-radius:20px;background:#2d6a4f;color:#fff;font-size:0.6rem;">否（只抽未學）</div>
+      </div>
+    </div>
+
+    <div style="background:#fff3cd;border-radius:8px;padding:8px;font-size:0.6rem;color:#856404;margin-bottom:10px;">
+      ⚠️ 點「重新抽」會取代目前這組 Random Session，進度歸零
+    </div>
+
+    <div style="padding:8px 14px;background:#2d6a4f;color:#fff;border-radius:8px;font-size:0.7rem;text-align:center;cursor:pointer;">
+      🎲 重新抽 30 張
+    </div>
+
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:1rem;">這個方向對嗎？有需要調整的地方在 terminal 說。</p>

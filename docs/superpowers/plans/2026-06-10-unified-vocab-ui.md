@@ -30,6 +30,9 @@
 - `lib/types.ts` — add `CollectionId`, `JlptLevel`, `UnifiedState`
 - `lib/vocab.ts` — add `filterByScope` (replaces `filterVocab`'s tranche coupling)
 - `lib/vocab-client.ts` — add `fetchCollection`
+- `lib/vocab-data-db.ts` — add `getEntriesByPos` (single SQL query, avoids 13-query tranche iteration)
+- `lib/vocab-data-json.ts` — add `getEntriesByPos` (chunk scan, same interface)
+- `lib/vocab-repository.ts` — add `getEntriesByPos` facade
 
 **Delete (Task 13):**
 - `components/LibraryPage.tsx`
@@ -204,24 +207,115 @@ git commit -m "feat: add collections config module"
 
 ---
 
-## Task 3: `/api/collection/[id]/route.ts` — new collection endpoint
+## Task 3: `getEntriesByPos` — extend repository + create collection API route
 
 **Files:**
+- Modify: `lib/vocab-data-db.ts`
+- Modify: `lib/vocab-data-json.ts`
+- Modify: `lib/vocab-repository.ts`
 - Create: `app/api/collection/[id]/route.ts`
 
-This endpoint handles `popular-adj`, `popular-adv`, `popular-conj`. It iterates the 52 chunk files server-side, filters by `part_of_speech`, sorts by `frequency_rank`, and returns the top N entries.
+DB mode uses a single SQL query. JSON mode scans all chunks (already cached after first load).
+The route calls the repository — no tranche iteration, no JS-side sort needed.
 
-- [ ] **Step 1: Create the route file**
+- [ ] **Step 1: Add `getEntriesByPos` to `lib/vocab-data-db.ts`**
+
+Add after `getPopularEntries`:
+
+```typescript
+export async function getEntriesByPos(
+  pos: string,
+  limit: number
+): Promise<VocabEntry[]> {
+  const sql = getSql();
+  const rows = await sql<VocabRow[]>`
+    select
+      id, word, reading, part_of_speech, jlpt_level,
+      tranche_id, frequency_rank, meaning, quality_score,
+      example_json, source_json
+    from vocab_entries
+    where part_of_speech like ${"%" + pos + "%"}
+    order by frequency_rank asc
+    limit ${limit}
+  `;
+  if (rows.length === 0) return [];
+
+  const ids = rows.map((r) => r.id);
+  const verbRows = await sql<VerbInfoRow[]>`
+    select * from verb_info where vocab_id in ${sql(ids)} order by vocab_id asc
+  `;
+  const relatedRows = await sql<RelatedWordRow[]>`
+    select vocab_id, position, word, reading, meaning, target_id
+    from related_words
+    where vocab_id in ${sql(ids)}
+    order by vocab_id asc, position asc
+  `;
+
+  const verbById = new Map(verbRows.map((r) => [r.vocab_id, r]));
+  const relatedById = new Map<number, VocabEntry["related"]>();
+  for (const r of relatedRows) {
+    const cur = relatedById.get(r.vocab_id) || [];
+    cur.push({
+      word: r.word,
+      reading: r.reading,
+      meaning: r.meaning,
+      ...(r.target_id ? { target_id: r.target_id } : {}),
+    });
+    relatedById.set(r.vocab_id, cur);
+  }
+
+  return rows.map((r) =>
+    rowToEntry(r, verbById.get(r.id) || null, relatedById.get(r.id) || [])
+  );
+}
+```
+
+- [ ] **Step 2: Add `getEntriesByPos` to `lib/vocab-data-json.ts`**
+
+Add after `getPopularEntries`:
+
+```typescript
+export function getEntriesByPos(pos: string, limit: number): VocabEntry[] {
+  const results: VocabEntry[] = [];
+  for (let i = 0; i < NUM_CHUNKS; i++) {
+    for (const entry of loadChunk(i)) {
+      if (entry.part_of_speech.includes(pos)) results.push(entry);
+    }
+  }
+  results.sort((a, b) => a.frequency_rank - b.frequency_rank);
+  return results.slice(0, limit);
+}
+```
+
+- [ ] **Step 3: Add `getEntriesByPos` to `lib/vocab-repository.ts`**
+
+Add after `getPopularEntries`:
+
+```typescript
+export async function getEntriesByPos(
+  pos: string,
+  limit: number
+): Promise<VocabEntry[]> {
+  return repository().getEntriesByPos(pos, limit);
+}
+```
+
+- [ ] **Step 4: Verify TypeScript**
+
+```bash
+PATH=/Users/Chuliying/.nvm/versions/node/v20.19.4/bin:$PATH npx tsc --noEmit
+```
+
+- [ ] **Step 5: Create `app/api/collection/[id]/route.ts`**
 
 ```typescript
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getTrancheEntries } from "@/lib/vocab-data";
-import type { CollectionId, VocabEntry } from "@/lib/types";
+import { getEntriesByPos } from "@/lib/vocab-repository";
+import type { CollectionId } from "@/lib/types";
 import { getCollectionConfig } from "@/lib/collections";
 
 const COLLECTION_IDS: CollectionId[] = ["popular-adj", "popular-adv", "popular-conj"];
-const TRANCHE_IDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 
 export async function GET(
   _request: NextRequest,
@@ -232,40 +326,23 @@ export async function GET(
     return NextResponse.json({ error: "Unknown collection" }, { status: 404 });
   }
 
-  const collectionId = id as CollectionId;
-  const config = getCollectionConfig(collectionId);
+  const config = getCollectionConfig(id as CollectionId);
+  if (!config.pos) {
+    return NextResponse.json({ error: "Collection has no pos filter" }, { status: 400 });
+  }
 
-  // Load all tranches and collect matching entries
-  const allEntries: VocabEntry[] = [];
-  await Promise.all(
-    TRANCHE_IDS.map(async (tid) => {
-      const entries = await getTrancheEntries(tid);
-      for (const entry of entries) {
-        if (config.pos && entry.part_of_speech.includes(config.pos)) {
-          allEntries.push(entry);
-        }
-      }
-    })
-  );
-
-  // Sort by frequency rank (ascending = most common first)
-  allEntries.sort((a, b) => a.frequency_rank - b.frequency_rank);
-
-  const result = config.limit === Infinity
-    ? allEntries
-    : allEntries.slice(0, config.limit);
-
-  return NextResponse.json(result);
+  const entries = await getEntriesByPos(config.pos, config.limit);
+  return NextResponse.json(entries);
 }
 ```
 
-- [ ] **Step 2: Verify the route builds**
+- [ ] **Step 6: Verify TypeScript**
 
 ```bash
 PATH=/Users/Chuliying/.nvm/versions/node/v20.19.4/bin:$PATH npx tsc --noEmit
 ```
 
-- [ ] **Step 3: Smoke test the endpoint manually**
+- [ ] **Step 7: Smoke test**
 
 Start dev server:
 ```bash
@@ -274,22 +351,33 @@ PATH=/Users/Chuliying/.nvm/versions/node/v20.19.4/bin:$PATH npm run dev
 
 Then in another terminal:
 ```bash
-curl -s http://localhost:3000/api/collection/popular-adj | python3 -c "import sys,json; d=json.load(sys.stdin); print(len(d), d[0]['word'], d[0]['part_of_speech'])"
+curl -s http://localhost:3000/api/collection/popular-adj | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+print('count:', len(d))
+print('first word:', d[0]['word'], '|', d[0]['part_of_speech'])
+print('sorted by rank:', d[0]['frequency_rank'] <= d[-1]['frequency_rank'])
+"
 ```
 
-Expected: prints a count ≤ 200, first word, and a part_of_speech containing 形容詞.
+Expected: count ≤ 200, first word's part_of_speech contains 形容詞, sorted=True.
 
 ```bash
-curl -s http://localhost:3000/api/collection/unknown | python3 -c "import sys,json; print(json.load(sys.stdin))"
+curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/collection/unknown
 ```
 
-Expected: `{'error': 'Unknown collection'}` with HTTP 404.
+Expected: `404`.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
+git add lib/vocab-data-db.ts lib/vocab-data-json.ts lib/vocab-repository.ts
 git add app/api/collection/
-git commit -m "feat: add /api/collection/[id] endpoint for adj/adv/conj collections"
+git commit -m "feat: add getEntriesByPos to repository + /api/collection/[id] route
+
+DB mode: single SQL query with LIKE filter + ORDER BY frequency_rank.
+JSON mode: full chunk scan (cached) with JS sort.
+Route calls repository directly — no 13-tranche iteration."
 ```
 
 ---

@@ -1,4 +1,4 @@
-import type { VocabEntry } from "@/lib/types";
+import type { CollectionId, VocabEntry } from "@/lib/types";
 
 // Module-level caches so revisiting a tranche (or the index) never refetches.
 const trancheCache = new Map<number, Promise<VocabEntry[]>>();
@@ -43,4 +43,21 @@ export function fetchPopularVerbs(): Promise<VocabEntry[]> {
     });
   }
   return popularPromise;
+}
+
+const collectionCache = new Map<string, Promise<VocabEntry[]>>();
+
+export function fetchCollection(id: CollectionId): Promise<VocabEntry[]> {
+  if (id === "popular-verbs") return fetchPopularVerbs();
+  if (id === "all") return Promise.resolve([]);
+
+  let pending = collectionCache.get(id);
+  if (!pending) {
+    pending = getJson<VocabEntry[]>(`/api/collection/${id}`).catch((err) => {
+      collectionCache.delete(id);
+      throw err;
+    });
+    collectionCache.set(id, pending);
+  }
+  return pending;
 }

@@ -49,6 +49,33 @@ export type VocabEntry = {
   quality_score: "curated" | "verb_curated" | "rule_completed" | "needs_review" | string;
 };
 
+export type CollectionId =
+  | "all"
+  | "popular-verbs"
+  | "popular-adj"
+  | "popular-adv"
+  | "popular-conj";
+
+export type JlptLevel = "全部" | "N5" | "N4" | "N3" | "N2" | "N1";
+
+export type SessionMode = "sequential" | "random";
+
+export type UnifiedState = {
+  viewMode: "list" | "card";
+  collection: CollectionId;
+  jlpt: JlptLevel;
+  partOfSpeech: string;
+  sequentialIndex: number;
+  randomSessionIds: number[];
+  randomSessionIndex: number;
+  randomIncludeLearned: boolean;
+  randomQuantity: number | "all";
+  activeSession: SessionMode;
+  learnedWordIds: number[];
+  seenWordIds: number[];
+  lastUpdated: string;
+};
+
 export type Tranche = {
   id: number;
   title: string;

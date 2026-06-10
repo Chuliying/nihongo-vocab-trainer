@@ -1,0 +1,140 @@
+<h2>Filter 面板 — 放什麼？</h2>
+<p class="subtitle">目前 filter 只有詞性。改版後要整合所有分類與功能，以下是兩種組織方式。</p>
+
+<div class="split">
+
+  <!-- Option A: Grouped -->
+  <div class="mockup">
+    <div class="mockup-header">A — 分組式（推薦）</div>
+    <div class="mockup-body" style="font-size:0.75rem;space-y:8px;">
+
+      <div style="margin-bottom:14px;">
+        <div style="font-size:0.6rem;color:#888;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">詞庫範圍</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;">
+          <div style="padding:4px 10px;border-radius:20px;background:#2d6a4f;color:#fff;font-size:0.65rem;">全部 13,000</div>
+          <div style="padding:4px 10px;border-radius:20px;border:1px solid #ccc;font-size:0.65rem;">常用動詞 300</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <div style="font-size:0.6rem;color:#888;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">分層 Tranche</div>
+        <select style="width:100%;padding:5px 8px;border:1px solid #ddd;border-radius:8px;font-size:0.7rem;background:#fff;">
+          <option>全部 Tranche</option>
+          <option>初級 · 1–1000</option>
+          <option>基礎 · 1001–2000</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <div style="font-size:0.6rem;color:#888;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">JLPT 等級</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;">
+          <div style="padding:4px 10px;border-radius:20px;background:#2d6a4f;color:#fff;font-size:0.65rem;">全部</div>
+          <div style="padding:4px 10px;border-radius:20px;border:1px solid #ccc;font-size:0.65rem;">N5</div>
+          <div style="padding:4px 10px;border-radius:20px;border:1px solid #ccc;font-size:0.65rem;">N4</div>
+          <div style="padding:4px 10px;border-radius:20px;border:1px solid #ccc;font-size:0.65rem;">N3</div>
+          <div style="padding:4px 10px;border-radius:20px;border:1px solid #ccc;font-size:0.65rem;">N2</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <div style="font-size:0.6rem;color:#888;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">詞性</div>
+        <select style="width:100%;padding:5px 8px;border:1px solid #ddd;border-radius:8px;font-size:0.7rem;background:#fff;">
+          <option>全部詞性</option>
+          <option>動詞</option>
+          <option>名詞</option>
+          <option>形容詞</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <div style="font-size:0.6rem;color:#888;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">卡片模式練習方式</div>
+        <div style="display:flex;gap:4px;">
+          <div style="flex:1;padding:5px;border-radius:8px;border:1px solid #2d6a4f;background:#2d6a4f10;text-align:center;font-size:0.65rem;">循序</div>
+          <div style="flex:1;padding:5px;border-radius:8px;border:1px solid #ccc;text-align:center;font-size:0.65rem;">Random 30</div>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid #eee;padding-top:10px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:0.65rem;color:#888;cursor:pointer;">↺ 重設進度</div>
+        <div style="padding:6px 16px;background:#2d6a4f;color:#fff;border-radius:8px;font-size:0.7rem;">套用篩選</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option B: Compact chips -->
+  <div class="mockup">
+    <div class="mockup-header">B — 精簡 chip 式</div>
+    <div class="mockup-body" style="font-size:0.75rem;">
+
+      <div style="margin-bottom:12px;">
+        <div style="font-size:0.6rem;color:#888;letter-spacing:0.1em;margin-bottom:6px;">範圍</div>
+        <div style="display:flex;gap:4px;">
+          <div style="padding:4px 10px;border-radius:20px;background:#2d6a4f;color:#fff;font-size:0.65rem;">全部</div>
+          <div style="padding:4px 10px;border-radius:20px;border:1px solid #ccc;font-size:0.65rem;">動詞300</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <div style="font-size:0.6rem;color:#888;letter-spacing:0.1em;margin-bottom:6px;">Tranche</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;">
+          <div style="padding:4px 8px;border-radius:20px;background:#2d6a4f;color:#fff;font-size:0.6rem;">全部</div>
+          <div style="padding:4px 8px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">T1</div>
+          <div style="padding:4px 8px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">T2</div>
+          <div style="padding:4px 8px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">T3</div>
+          <div style="padding:4px 8px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">T4</div>
+          <div style="padding:4px 8px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">T5</div>
+          <div style="padding:4px 8px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">T6</div>
+          <div style="padding:4px 8px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">…</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <div style="font-size:0.6rem;color:#888;letter-spacing:0.1em;margin-bottom:6px;">JLPT</div>
+        <div style="display:flex;gap:4px;">
+          <div style="padding:4px 8px;border-radius:20px;background:#2d6a4f;color:#fff;font-size:0.6rem;">全部</div>
+          <div style="padding:4px 8px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">N5</div>
+          <div style="padding:4px 8px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">N4</div>
+          <div style="padding:4px 8px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">N3</div>
+          <div style="padding:4px 8px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">N2</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <div style="font-size:0.6rem;color:#888;letter-spacing:0.1em;margin-bottom:6px;">詞性</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;">
+          <div style="padding:4px 8px;border-radius:20px;background:#2d6a4f;color:#fff;font-size:0.6rem;">全部</div>
+          <div style="padding:4px 8px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">動詞</div>
+          <div style="padding:4px 8px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">名詞</div>
+          <div style="padding:4px 8px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">形容詞</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <div style="font-size:0.6rem;color:#888;letter-spacing:0.1em;margin-bottom:6px;">練習模式</div>
+        <div style="display:flex;gap:4px;">
+          <div style="padding:4px 10px;border-radius:20px;background:#2d6a4f;color:#fff;font-size:0.6rem;">循序</div>
+          <div style="padding:4px 10px;border-radius:20px;border:1px solid #ccc;font-size:0.6rem;">🎲 Random 30</div>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid #eee;padding-top:8px;">
+        <div style="font-size:0.65rem;color:#888;cursor:pointer;text-align:center;">↺ 重設進度</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="section" style="margin-top:1.5rem;">
+  <div class="label">兩種方案共同包含的項目</div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+    <span style="padding:4px 10px;border-radius:6px;background:#f0f0f0;font-size:0.7rem;">✅ 詞庫範圍（全部 / 動詞300）</span>
+    <span style="padding:4px 10px;border-radius:6px;background:#f0f0f0;font-size:0.7rem;">✅ Tranche 分層</span>
+    <span style="padding:4px 10px;border-radius:6px;background:#f0f0f0;font-size:0.7rem;">✅ JLPT 等級</span>
+    <span style="padding:4px 10px;border-radius:6px;background:#f0f0f0;font-size:0.7rem;">✅ 詞性</span>
+    <span style="padding:4px 10px;border-radius:6px;background:#f0f0f0;font-size:0.7rem;">✅ 練習模式（循序 / Random 30）</span>
+    <span style="padding:4px 10px;border-radius:6px;background:#f0f0f0;font-size:0.7rem;">✅ 重設進度</span>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:1rem;">偏好 A（分組式）還是 B（chip 式）？或在 terminal 跟我說。</p>

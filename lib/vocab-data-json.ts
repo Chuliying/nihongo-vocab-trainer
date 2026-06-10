@@ -82,3 +82,14 @@ export function getPopularEntries(): VocabEntry[] {
     .filter((entry) => POPULAR_IDS.has(entry.id))
     .sort((a, b) => a.frequency_rank - b.frequency_rank);
 }
+
+export function getEntriesByPos(pos: string, limit: number): VocabEntry[] {
+  const results: VocabEntry[] = [];
+  for (let i = 0; i < NUM_CHUNKS; i++) {
+    for (const entry of loadChunk(i)) {
+      if (entry.part_of_speech.includes(pos)) results.push(entry);
+    }
+  }
+  results.sort((a, b) => a.frequency_rank - b.frequency_rank);
+  return results.slice(0, limit);
+}

@@ -1,7 +1,5 @@
-import { PracticePage } from "@/components/PracticePage";
-import tranches from "@/public/data/tranches.json";
-import type { Tranche } from "@/lib/types";
+import { redirect } from "next/navigation";
 
 export default function Practice() {
-  return <PracticePage tranches={tranches as Tranche[]} />;
+  redirect("/");
 }

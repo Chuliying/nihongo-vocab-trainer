@@ -29,3 +29,10 @@ export async function getVocabIndex(): Promise<Record<number, number>> {
 export async function getPopularEntries(): Promise<VocabEntry[]> {
   return repository().getPopularEntries();
 }
+
+export async function getEntriesByPos(
+  pos: string,
+  limit: number
+): Promise<VocabEntry[]> {
+  return repository().getEntriesByPos(pos, limit);
+}
