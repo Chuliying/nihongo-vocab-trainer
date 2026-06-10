@@ -11,7 +11,7 @@
 ### T01 | provider-decision
 - Source IDs: [I01]
 - Source Fingerprints: I01=97e423015b47
-- Status: pending
+- Status: done
 - Priority: P1
 - Owner: human+ai
 - Summary: 預設選 Neon Postgres，並保留 Supabase/Turso/D1 作為替代方案。
@@ -46,11 +46,12 @@
 
 #### Execution Notes
 - 目前 AI 建議：Neon Postgres + Drizzle ORM。
+- 2026-06-10：已採 Neon Postgres-compatible schema 作為預設；Supabase Postgres 保持相容替代方案。`.env.example` 已保留 `DATABASE_URL` 與 `VOCAB_DATA_SOURCE=json` safe default。
 
 ### T02 | schema-design
 - Source IDs: [I02]
 - Source Fingerprints: I02=d3cefb7cfd9d
-- Status: pending
+- Status: in_progress
 - Priority: P1
 - Owner: ai
 - Summary: 把 `VocabEntry`、tranches、popular verbs、related words、verb info 映射到 DB tables。
@@ -105,11 +106,12 @@
 
 #### Execution Notes
 - `part_of_speech` 第一版先保持 denormalized。
+- 2026-06-10：已新增 `db/vocab_schema.sql`，涵蓋 corpus、raw metadata、popular verbs、embedding/candidate audit、`corpus_import_runs` 與 related `position`。
 
 ### T03 | import-pipeline
 - Source IDs: [I03]
 - Source Fingerprints: I03=f869a31dfaa2
-- Status: pending
+- Status: done
 - Priority: P1
 - Owner: ai
 - Summary: 用 deterministic 流程把目前 JSON 載入 DB，並在 import 前後驗證。
@@ -160,11 +162,12 @@
 
 #### Execution Notes
 - 目前 profile：13 tranches、13,000 vocab entries、300 popular verbs、約 25,990 related rows、735 verb info rows。
+- 2026-06-10：已新增 `scripts/import_vocab_to_db.ts` dry-run 與 `--write` Postgres import。依 `CLAUDE.md` 採 `runtime-chunks` 作為 runtime parity source，可 normalize 到 13,000 vocab、735 verb info、25,990 related、300 popular verbs，並可重建 `/api/tranche/[id]`、`/api/vocab-index`、`/api/popular-verbs` payload。實際寫入需 `DATABASE_URL`；目前環境未提供。
 
 ### T04 | validation-and-json-dependency-audit
 - Source IDs: [I04]
 - Source Fingerprints: I04=c026b64f2dac
-- Status: pending
+- Status: done
 - Priority: P1
 - Owner: ai
 - Summary: 把目前所有 JSON 依賴與 `validate_vocab.py` 規則納入 DB migration gates，避免 DB 化後漏掉資料品質保障。
@@ -223,11 +226,12 @@
 
 #### Execution Notes
 - 原本依賴確實主要都是 JSON artifacts；Phase 1 不應直接拔掉 JSON。
+- 2026-06-10：已新增 `scripts/audit_json_dependencies.py` 與 `docs/data/vocab-db-migration-audit.md`。已讓 `scripts/validate_vocab.py` 支援 optional third arg `popular_verbs_path`。
 
 ### T05 | related-vector-repair
 - Source IDs: [I05]
 - Source Fingerprints: I05=ec402fe91b9e
-- Status: pending
+- Status: in_progress
 - Priority: P2
 - Owner: ai
 - Summary: Migration 時用 embeddings 產生更好的 related-word links，先保留候選審核後再 apply。
@@ -291,11 +295,12 @@
 
 #### Execution Notes
 - 推薦順序：先把 corpus 匯入 staging DB，再用免費本機 FastEmbed 產生 embeddings，產生候選並 review，最後才 apply 到 JSON 或 production DB。T05 預設不阻塞 T06/T07；若本次 release 明確要求修正 related，才把 T05 加入 rollout 前置條件。
+- 2026-06-10：已安裝並 smoke test FastEmbed；新增 `scripts/generate_related_candidates.py` 與 `scripts/validate_related_candidates.py`。sample run 使用 `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`，100 source / 1000 candidate pool 產生 500 candidates，validator 通過。尚未做全量 embeddings、人工 review、apply/rollback。
 
 ### T06 | runtime-read-path
 - Source IDs: [I06]
 - Source Fingerprints: I06=a408ff5de36f
-- Status: pending
+- Status: done
 - Priority: P2
 - Owner: human+ai
 - Summary: 保留既有 API contracts，同時讓 server routes 可從 DB 而非 JSON 讀取。
@@ -346,6 +351,7 @@
 
 #### Execution Notes
 - 若保留 `force-static`，rollback 是 redeploy with `VOCAB_DATA_SOURCE=json`，不是只 flip env。
+- 2026-06-10：已建立 `lib/vocab-repository.ts` source-selecting facade、`lib/vocab-data-json.ts` chunk-backed implementation、`lib/vocab-data-db.ts` Postgres read implementation，API routes 已改用 repository。Neon import 成功，DB row counts 符合 13 tranches、13,000 vocab、735 verb_info、25,990 related、300 popular verbs；`VOCAB_DATA_SOURCE=json` 與 `VOCAB_DATA_SOURCE=db` repository parity/build/typecheck 均通過。Rollback 策略仍是 redeploy with `VOCAB_DATA_SOURCE=json`。
 
 ### T07 | rollout-and-observability
 - Source IDs: [I07]

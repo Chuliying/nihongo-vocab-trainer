@@ -5,7 +5,7 @@
 - Plan Slug: vocab-db-migration
 - Status: active
 - Created At: 2026-06-08
-- Updated At: 2026-06-09
+- Updated At: 2026-06-10
 - Pricing Checked At: 2026-06-08
 - Embedding Pricing Checked At: 2026-06-08
 - Project Baseline: 目前工作樹
@@ -20,14 +20,16 @@
 - Related-word links：約 25,990 筆 nested related rows。
 - Verb info：約 735 筆有 `verb_info`。
 - 目前讀取路徑：
-  - `lib/vocab-data.ts` 在 server-side 匯入完整 JSON。
+  - `lib/vocab-data.ts` 在 server-side lazy-load `public/data/chunks/vocab_chunk_*.json`。
+  - `public/data/vocab_13000.json` 仍作為 canonical full corpus / generator source。
   - `app/api/tranche/[id]/route.ts` 回傳單一 tranche。
   - `app/api/vocab-index/route.ts` 回傳 `id -> tranche_id`。
   - `app/api/popular-verbs/route.ts` 回傳常用動詞 entries。
+  - 2026-06-10 依 `CLAUDE.md` 與 `lib/vocab-data.ts`，DB runtime parity baseline 改採 runtime chunks；canonical full JSON 與 runtime chunks 仍有 11,213 筆 payload mismatch，需另行 reconcile。
 
 ## Current JSON Dependencies
 - Build/runtime 直接依賴：
-  - `lib/vocab-data.ts` imports `public/data/vocab_13000.json` and `public/data/popular_verbs_300.json`。
+  - `lib/vocab-data.ts` lazy-loads `public/data/chunks/vocab_chunk_*.json` and imports `public/data/popular_verbs_300.json`。
   - `app/page.tsx` imports `public/data/tranches.json`。
   - `app/practice/page.tsx` imports `public/data/tranches.json`。
   - `app/api/tranche/[id]/route.ts` imports `getTrancheEntries` and `TRANCHE_IDS` from `lib/vocab-data.ts`。
@@ -178,6 +180,7 @@ Edge/read-heavy 選擇：若想要非常小、全球分散的 read database，�
 - D15：`/api/popular-verbs` parity 必須維持現有排序：依 `frequency_rank` 排序，不是依 `popular_verbs.rank` 排序。
 - D16：Phase 1 static params 的 tranche id 來源先維持 `tranches.json`，或由 repository 顯式提供 `getTrancheIds()`；不可讓 API route 偷引入 full vocab JSON 只為取得 ids。
 - D17：Related repair 是 migration 期間可並行的資料品質改善，不是 DB runtime rollout 的阻塞條件；只有當 release scope 明確要求修正 related 時，T05 才升級為 T07 前置條件。
+- D18：DB runtime parity 的 import source 採 `runtime-chunks` (`public/data/chunks/*`)，因 `CLAUDE.md` 和 `lib/vocab-data.ts` 都指向 chunks 作為目前 app source-of-truth；dry-run 仍會報告 canonical full JSON 與 chunks 的 mismatch。
 
 ## Implementation Sections
 
