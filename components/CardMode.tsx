@@ -105,15 +105,29 @@ export function CardMode({
     sessionWords.length === 0 ? 0 : Math.min(currentIndex, sessionWords.length - 1);
 
   const current = sessionWords[safeIndex];
-  const isLearned = current ? learnedWordIds.includes(current.id) : false;
+  const learnedSet = useMemo(() => new Set(learnedWordIds), [learnedWordIds]);
+  const isLearned = current ? learnedSet.has(current.id) : false;
 
   useEffect(() => {
     if (current && isLearned) sessionLearnedRef.current.add(current.id);
   }, [current, isLearned]);
 
+  // Index sync: when filters shrink sessionWords, safeIndex clamps below the
+  // persisted currentIndex. Write the corrected value back so persisted state
+  // matches what's displayed. markSeen is NOT called here — only on explicit
+  // navigation — so an involuntary clamp doesn't mark a word as seen.
   useEffect(() => {
-    if (current) onMarkSeen(current.id);
-  }, [current, onMarkSeen]);
+    if (sessionWords.length > 0 && safeIndex !== currentIndex) {
+      setIndex(safeIndex);
+    }
+  }, [safeIndex, currentIndex, sessionWords.length, setIndex]);
+
+  function navigateTo(index: number) {
+    setIndex(index);
+    setIsFlipped(false);
+    const word = sessionWords[index];
+    if (word) onMarkSeen(word.id);
+  }
 
   function go(delta: number) {
     if (sessionWords.length === 0) return;
@@ -123,8 +137,7 @@ export function CardMode({
       return;
     }
     const clamped = Math.max(0, next);
-    setIndex(clamped);
-    setIsFlipped(false);
+    navigateTo(clamped);
   }
 
   function flipToBack() {
@@ -271,8 +284,7 @@ export function CardMode({
         value={safeIndex}
         max={sessionWords.length}
         onChange={(i) => {
-          setIndex(i);
-          setIsFlipped(false);
+          navigateTo(i);
           setShowEndSummary(false);
         }}
         label={progressLabel}
