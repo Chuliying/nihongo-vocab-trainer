@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Layers, Sparkles, Info } from "lucide-react";
+import { CreditCard, Info, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function AppShellInner({ children }: { children: React.ReactNode }) {
@@ -41,8 +41,8 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Layers className="size-4" />
-              <span className="hidden sm:inline">詞庫</span>
+              <List className="size-4" />
+              <span className="hidden sm:inline">列表</span>
             </Link>
             <Link
               href="/?view=card"
@@ -54,8 +54,8 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Sparkles className="size-4" />
-              <span className="hidden sm:inline">練習</span>
+              <CreditCard className="size-4" />
+              <span className="hidden sm:inline">卡片</span>
             </Link>
             <Link
               href="/sources"

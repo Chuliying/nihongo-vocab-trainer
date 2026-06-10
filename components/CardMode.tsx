@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Settings2, Undo2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ListOrdered, Settings2, Shuffle, Undo2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { DraggableProgress } from "@/components/ui/DraggableProgress";
 import { FilterSheet } from "@/components/FilterSheet";
@@ -222,14 +222,18 @@ export function CardMode({
                 setIsFlipped(false);
                 setShowEndSummary(false);
               }}
+              aria-label={mode === "sequential" ? "循序模式" : "隨機模式"}
+              title={mode === "sequential" ? "循序" : "隨機"}
               className={cn(
-                "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                "flex size-8 items-center justify-center rounded-full transition-colors",
                 activeSession === mode
                   ? "bg-card text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              {mode === "sequential" ? "循序" : "Random"}
+              {mode === "sequential"
+                ? <ListOrdered className="size-4" />
+                : <Shuffle className="size-4" />}
             </button>
           ))}
         </div>
