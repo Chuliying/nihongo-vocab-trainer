@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { CreditCard, Info, List } from "lucide-react";
+import { Info, Layers, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function AppShellInner({ children }: { children: React.ReactNode }) {
@@ -54,7 +54,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <CreditCard className="size-4" />
+              <Layers className="size-4" />
               <span className="hidden sm:inline">卡片</span>
             </Link>
             <Link
