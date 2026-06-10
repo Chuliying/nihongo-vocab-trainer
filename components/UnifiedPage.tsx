@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { CardMode } from "@/components/CardMode";
@@ -76,10 +76,10 @@ function UnifiedPageInner() {
     });
   }
 
-  function handleRelatedSelect(targetId: number) {
+  const handleRelatedSelect = useCallback((targetId: number) => {
     const found = boundedEntries.find((e) => e.id === targetId);
     if (found) setQuery(found.word);
-  }
+  }, [boundedEntries]);
 
   if (!isHydrated) {
     return (

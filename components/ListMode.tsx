@@ -49,6 +49,8 @@ export function ListMode({
     setLoadingMore(true);
     try {
       const newEntries = await fetchTranche(next);
+      // Guard against StrictMode double-invoke: skip if tranche already added
+      if (loadedIdsRef.current.includes(next)) return;
       loadedIdsRef.current = [...loadedIdsRef.current, next];
       setAllEntries((prev) => [...prev, ...newEntries]);
       setLoadedCount((n) => n + 1);
@@ -86,6 +88,7 @@ export function ListMode({
     [sourceEntries, query, jlpt, partOfSpeech]
   );
 
+  const learnedSet = useMemo(() => new Set(learnedWordIds), [learnedWordIds]);
   const isLoading = loadingEntries || (collection === "all" && loadedCount === 0);
 
   return (
@@ -116,7 +119,7 @@ export function ListMode({
             <VocabCard
               key={entry.id}
               entry={entry}
-              isLearned={learnedWordIds.includes(entry.id)}
+              isLearned={learnedSet.has(entry.id)}
               onToggleLearned={onToggleLearned}
               onRelatedSelect={onRelatedSelect}
             />

@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Check } from "lucide-react";
 import type { VocabEntry } from "@/lib/types";
 import { RelatedWords } from "@/components/RelatedWords";
@@ -15,7 +16,7 @@ function qualityLabel(score: string) {
   return "待檢查";
 }
 
-export function VocabCard({
+export const VocabCard = memo(function VocabCard({
   entry,
   isLearned,
   onToggleLearned,
@@ -92,4 +93,4 @@ export function VocabCard({
       </details>
     </Card>
   );
-}
+});
