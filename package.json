@@ -13,7 +13,13 @@
     "enrich:apply": "node scripts/apply_enrichment_batch.js",
     "validate:chunks": "node scripts/validate_chunks_strict.js",
     "validate:data": "python3 scripts/validate_vocab.py public/data/vocab_13000.json public/data/tranches.json && node scripts/validate_chunks_strict.js",
-    "validate:agent-manifest": "node scripts/validate_agent_manifest.js"
+    "validate:agent-manifest": "node scripts/validate_agent_manifest.js",
+    "audit:json-deps": "python3 scripts/audit_json_dependencies.py",
+    "db:import:dry-run": "npx tsx scripts/import_vocab_to_db.ts --source=runtime-chunks --check-api-parity",
+    "db:import": "npx tsx scripts/import_vocab_to_db.ts --source=runtime-chunks --check-api-parity --write",
+    "validate:runtime-repository": "npx tsx scripts/validate_runtime_repository.ts",
+    "related:candidates:sample": "python3 scripts/generate_related_candidates.py --limit 100 --top-k 5",
+    "related:candidates:validate": "python3 scripts/validate_related_candidates.py scratch/vocab-db-migration/related_candidates.sample.jsonl"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -28,6 +34,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^1.17.0",
     "next": "^15.3.3",
+    "postgres": "^3.4.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^3.6.0",

@@ -112,11 +112,12 @@ def load_json(path: Path):
 
 
 def main() -> None:
-    if len(sys.argv) != 3:
-        fail("usage: validate_vocab.py vocab_13000.json tranches.json")
+    if len(sys.argv) not in (3, 4):
+        fail("usage: validate_vocab.py vocab_13000.json tranches.json [popular_verbs_300.json]")
 
     vocab_path = Path(sys.argv[1])
     tranches_path = Path(sys.argv[2])
+    popular_verbs_path = Path(sys.argv[3]) if len(sys.argv) == 4 else Path("public/data/popular_verbs_300.json")
     vocab = load_json(vocab_path)
     tranches = load_json(tranches_path)
 
@@ -200,12 +201,11 @@ def main() -> None:
         if count != 1000:
             fail(f"tranche {tranche['id']} has {count} entries; expected 1000")
 
-    validate_popular_verbs(vocab)
+    validate_popular_verbs(vocab, popular_verbs_path)
     print("OK: schema validation passed")
 
 
-def validate_popular_verbs(vocab) -> None:
-    path = Path("public/data/popular_verbs_300.json")
+def validate_popular_verbs(vocab, path: Path) -> None:
     if not path.exists():
         return
     verbs = load_json(path)
