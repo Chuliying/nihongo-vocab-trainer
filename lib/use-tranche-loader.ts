@@ -24,6 +24,9 @@ export function useTrancheLoader(collection: CollectionId): TrancheLoaderResult 
 
   const loadNext = useCallback(async () => {
     if (collectionRef.current !== "all") return;
+    // loadingMoreRef is the real re-entry guard: it's set synchronously before
+    // the await below, so a StrictMode double-invoke (or rapid IntersectionObserver
+    // fires) bails here before starting a second fetch.
     if (loadingMoreRef.current) return;
     const next = TRANCHE_IDS.find((id) => !loadedIdsRef.current.includes(id));
     if (!next) return;
@@ -31,7 +34,6 @@ export function useTrancheLoader(collection: CollectionId): TrancheLoaderResult 
     setLoadingMore(true);
     try {
       const newEntries = await fetchTranche(next);
-      if (loadedIdsRef.current.includes(next)) return; // StrictMode guard
       loadedIdsRef.current = [...loadedIdsRef.current, next];
       setEntries((prev) => [...prev, ...newEntries]);
       setLoadedCount((n) => n + 1);

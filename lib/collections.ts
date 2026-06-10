@@ -8,7 +8,9 @@ export type CollectionConfig = {
 };
 
 export const COLLECTIONS: CollectionConfig[] = [
-  { id: "all", label: "全部 13,000 語", limit: Infinity },
+  // limit 0 = no bounded fetch; "all" uses tranche loading instead of getEntriesByPos.
+  // (0 also serializes cleanly to JSON, unlike Infinity which becomes null.)
+  { id: "all", label: "全部 13,000 語", limit: 0 },
   { id: "popular-verbs", label: "常用動詞", limit: 300 },
   { id: "popular-adj", label: "常用形容詞", limit: 200, pos: "形容詞" },
   { id: "popular-adv", label: "常用副詞", limit: 150, pos: "副詞" },

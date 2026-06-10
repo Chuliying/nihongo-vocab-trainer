@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { CollectionId, JlptLevel, SessionMode, UnifiedState } from "@/lib/types";
 
@@ -113,6 +113,11 @@ export function useUnifiedState() {
   const searchParams = useSearchParams();
   const [state, setState] = useState<UnifiedState>(DEFAULT_STATE);
   const [isHydrated, setIsHydrated] = useState(false);
+  // Set true right before our own state→URL router.replace. The URL→state effect
+  // consumes and clears it so it ignores the searchParams change we caused
+  // ourselves, reacting only to genuinely external navigation. This makes the
+  // anti-loop guard explicit instead of relying on normalize() equality.
+  const pendingUrlUpdate = useRef(false);
 
   // Initial hydration: merge localStorage + URL params
   useEffect(() => {
@@ -126,6 +131,11 @@ export function useUnifiedState() {
   // URL → state: react to external navigation (e.g. clicking header links)
   useEffect(() => {
     if (!isHydrated) return;
+    // Skip the searchParams change we triggered ourselves in the state→URL effect.
+    if (pendingUrlUpdate.current) {
+      pendingUrlUpdate.current = false;
+      return;
+    }
     const fromUrl = stateFromSearchParams(searchParams);
     setState((current) => {
       if (
@@ -145,6 +155,8 @@ export function useUnifiedState() {
     if (!isHydrated) return;
     const params = buildUrlParams(state);
     const qs = params.toString();
+    // Flag this as a self-triggered URL change so the URL→state effect skips it.
+    pendingUrlUpdate.current = true;
     router.replace(qs ? `/?${qs}` : "/", { scroll: false });
   }, [state.collection, state.jlpt, state.partOfSpeech, state.viewMode]); // eslint-disable-line react-hooks/exhaustive-deps
 

@@ -39,13 +39,6 @@ function UnifiedPageInner() {
     return () => { ignore = true; };
   }, [state.collection]);
 
-  // Fix #review: auto-switch "all" → "popular-verbs" when entering card mode via URL/link
-  useEffect(() => {
-    if (state.viewMode === "card" && state.collection === "all") {
-      patch({ collection: "popular-verbs" });
-    }
-  }, [state.viewMode, state.collection]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const partOfSpeechOptions = useMemo(
     () => getPartOfSpeechOptions(boundedEntries),
     [boundedEntries]

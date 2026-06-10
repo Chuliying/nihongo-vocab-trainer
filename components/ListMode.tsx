@@ -75,7 +75,7 @@ export function ListMode({
           <p className="font-display text-xs tracking-wide text-muted-foreground">
             {filtered.length} 個單字
             {collection === "all" && loadedCount < TRANCHE_IDS.length
-              ? ` (已載入 ${loadedCount * 1000} / 13,000)`
+              ? ` (已載入 ${trancheEntries.length.toLocaleString()} 筆，第 ${loadedCount}/${TRANCHE_IDS.length} 批)`
               : null}
           </p>
           <div className="mt-3 grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
