@@ -1,18 +1,18 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Layers, Sparkles, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const NAV = [
-  { href: "/", label: "Library", icon: Layers },
-  { href: "/practice", label: "Practice", icon: Sparkles },
-  { href: "/sources", label: "Sources", icon: Info }
-];
-
-export function AppShell({ children }: { children: React.ReactNode }) {
+function AppShellInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const viewMode = searchParams.get("view");
+  const isOnHome = pathname === "/";
+  const isCardMode = isOnHome && viewMode === "card";
+  const isListMode = isOnHome && !isCardMode;
 
   return (
     <div className="relative min-h-svh">
@@ -31,30 +31,57 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </span>
           </Link>
           <nav className="flex items-center gap-1" aria-label="主要導覽">
-            {NAV.map(({ href, label, icon: Icon }) => {
-              const active =
-                href === "/" ? pathname === "/" : pathname.startsWith(href);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
-                    active
-                      ? "bg-primary/15 text-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <Icon className="size-4" />
-                  <span className="hidden sm:inline">{label}</span>
-                </Link>
-              );
-            })}
+            <Link
+              href="/"
+              aria-current={isListMode ? "page" : undefined}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                isListMode
+                  ? "bg-primary/15 text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Layers className="size-4" />
+              <span className="hidden sm:inline">Library</span>
+            </Link>
+            <Link
+              href="/?view=card"
+              aria-current={isCardMode ? "page" : undefined}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                isCardMode
+                  ? "bg-primary/15 text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Sparkles className="size-4" />
+              <span className="hidden sm:inline">Practice</span>
+            </Link>
+            <Link
+              href="/sources"
+              aria-current={pathname === "/sources" ? "page" : undefined}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                pathname === "/sources"
+                  ? "bg-primary/15 text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Info className="size-4" />
+              <span className="hidden sm:inline">Sources</span>
+            </Link>
           </nav>
         </div>
       </header>
       <div className="relative z-10 pt-14">{children}</div>
     </div>
+  );
+}
+
+export function AppShell({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense>
+      <AppShellInner>{children}</AppShellInner>
+    </Suspense>
   );
 }

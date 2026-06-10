@@ -53,49 +53,55 @@ export function ListMode({
   const cols = useColumns(parentRef);
 
   const [allEntries, setAllEntries] = useState<VocabEntry[]>([]);
-  const [loadedTranches, setLoadedTranches] = useState<number[]>([]);
+  const [loadedCount, setLoadedCount] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  // Use refs to avoid stale closures in async callbacks
+  const loadedIdsRef = useRef<number[]>([]);
+  const loadingMoreRef = useRef(false);
+  const collectionRef = useRef(collection);
+  collectionRef.current = collection;
 
   const loadNextTranche = useCallback(async () => {
-    if (collection !== "all") return;
-    const next = TRANCHE_IDS.find((id) => !loadedTranches.includes(id));
+    if (collectionRef.current !== "all") return;
+    if (loadingMoreRef.current) return;
+    const next = TRANCHE_IDS.find((id) => !loadedIdsRef.current.includes(id));
     if (!next) return;
+    loadingMoreRef.current = true;
     setLoadingMore(true);
     try {
       const newEntries = await fetchTranche(next);
+      loadedIdsRef.current = [...loadedIdsRef.current, next];
       setAllEntries((prev) => [...prev, ...newEntries]);
-      setLoadedTranches((prev) => [...prev, next]);
+      setLoadedCount((n) => n + 1);
     } finally {
+      loadingMoreRef.current = false;
       setLoadingMore(false);
     }
-  }, [collection, loadedTranches]);
+  }, []);
 
+  // Reset + kick off first load when collection becomes "all"
   useEffect(() => {
     if (collection !== "all") return;
     setAllEntries([]);
-    setLoadedTranches([]);
+    setLoadedCount(0);
+    loadedIdsRef.current = [];
+    loadingMoreRef.current = false;
     setLoadingMore(false);
-  }, [collection]);
+    loadNextTranche();
+  }, [collection, loadNextTranche]);
 
-  useEffect(() => {
-    if (collection === "all" && loadedTranches.length === 0 && !loadingMore) {
-      loadNextTranche();
-    }
-  }, [collection, loadedTranches.length, loadingMore, loadNextTranche]);
-
+  // Sentinel IntersectionObserver — stable, no deps that change on every load
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel || collection !== "all") return;
     const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !loadingMore) loadNextTranche();
-      },
-      { rootMargin: "400px" }
+      ([entry]) => { if (entry.isIntersecting) loadNextTranche(); },
+      { rootMargin: "600px" }
     );
     obs.observe(sentinel);
     return () => obs.disconnect();
-  }, [collection, loadingMore, loadNextTranche]);
+  }, [collection, loadNextTranche]);
 
   const sourceEntries = collection === "all" ? allEntries : entries;
 
@@ -119,14 +125,14 @@ export function ListMode({
     overscan: 3,
   });
 
-  const isLoading = loadingEntries || (collection === "all" && loadedTranches.length === 0);
+  const isLoading = loadingEntries || (collection === "all" && loadedCount === 0);
 
   return (
     <div className="mt-2">
       <p className="font-display text-xs tracking-wide text-muted-foreground">
         {isLoading ? "載入中…" : `${filtered.length} 個單字`}
-        {collection === "all" && loadedTranches.length < TRANCHE_IDS.length && !isLoading
-          ? ` (已載入 ${loadedTranches.length * 1000} / 13,000)`
+        {collection === "all" && loadedCount < TRANCHE_IDS.length && !isLoading
+          ? ` (已載入 ${loadedCount * 1000} / 13,000)`
           : null}
       </p>
 

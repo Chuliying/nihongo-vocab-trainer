@@ -97,12 +97,24 @@ function buildUrlParams(state: UnifiedState): URLSearchParams {
   return p;
 }
 
+function stateFromSearchParams(params: URLSearchParams): Pick<UnifiedState, "collection" | "jlpt" | "partOfSpeech" | "viewMode"> {
+  const c = params.get("collection");
+  const j = params.get("jlpt");
+  return {
+    collection: (c && VALID_COLLECTIONS.includes(c as CollectionId) ? c : "all") as CollectionId,
+    jlpt: (j && VALID_JLPT.includes(j as JlptLevel) ? j : "全部") as JlptLevel,
+    partOfSpeech: params.get("pos") ?? "全部",
+    viewMode: params.get("view") === "card" ? "card" : "list",
+  };
+}
+
 export function useUnifiedState() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [state, setState] = useState<UnifiedState>(DEFAULT_STATE);
   const [isHydrated, setIsHydrated] = useState(false);
 
+  // Initial hydration: merge localStorage + URL params
   useEffect(() => {
     const stored = readStorage();
     const urlPatch = parseUrlParams(searchParams);
@@ -110,6 +122,31 @@ export function useUnifiedState() {
     setState(initial);
     setIsHydrated(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // URL → state: react to external navigation (e.g. clicking header links)
+  useEffect(() => {
+    if (!isHydrated) return;
+    const fromUrl = stateFromSearchParams(searchParams);
+    setState((current) => {
+      if (
+        current.collection === fromUrl.collection &&
+        current.jlpt === fromUrl.jlpt &&
+        current.partOfSpeech === fromUrl.partOfSpeech &&
+        current.viewMode === fromUrl.viewMode
+      ) return current;
+      const next = normalize({ ...current, ...fromUrl });
+      writeStorage(next);
+      return next;
+    });
+  }, [searchParams, isHydrated]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // state → URL: keep URL in sync after patch() calls
+  useEffect(() => {
+    if (!isHydrated) return;
+    const params = buildUrlParams(state);
+    const qs = params.toString();
+    router.replace(qs ? `/?${qs}` : "/", { scroll: false });
+  }, [state.collection, state.jlpt, state.partOfSpeech, state.viewMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const patch = useCallback((updates: Partial<UnifiedState>) => {
     setState((current) => {
@@ -119,19 +156,9 @@ export function useUnifiedState() {
         lastUpdated: new Date().toISOString(),
       });
       writeStorage(next);
-      const isFilterUpdate =
-        "collection" in updates ||
-        "jlpt" in updates ||
-        "partOfSpeech" in updates ||
-        "viewMode" in updates;
-      if (isFilterUpdate) {
-        const params = buildUrlParams(next);
-        const qs = params.toString();
-        router.replace(qs ? `/?${qs}` : "/", { scroll: false });
-      }
       return next;
     });
-  }, [router]);
+  }, []);
 
   const toggleLearned = useCallback((wordId: number) => {
     setState((current) => {

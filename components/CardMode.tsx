@@ -173,11 +173,25 @@ export function CardMode({
       ? "Random Session"
       : `${collectionLabel}${jlpt !== "全部" ? ` · ${jlpt}` : ""}${partOfSpeech !== "全部" ? ` · ${partOfSpeech}` : ""}`;
 
-  if (loadingEntries || (sessionWords.length === 0 && !loadingEntries)) {
+  // Show skeleton while loading OR while we have no words but are expecting some (non-all collection still loading)
+  const showSkeleton = loadingEntries;
+  const showEmpty = !loadingEntries && sessionWords.length === 0;
+
+  if (showSkeleton || showEmpty) {
     return (
       <main className="mx-auto flex min-h-[calc(100svh-3.5rem)] max-w-md flex-col items-center justify-center gap-4 px-4">
-        {loadingEntries ? (
+        {showSkeleton ? (
           <div className="h-[clamp(22rem,60svh,34rem)] w-full animate-pulse rounded-3xl border border-border/60 bg-card/50" />
+        ) : collection === "all" ? (
+          <div className="flex flex-col items-center gap-3 text-center">
+            <p className="text-sm text-muted-foreground">
+              卡片模式請先選擇一個詞庫（常用動詞、常用形容詞等）。
+            </p>
+            <Button variant="outline" onClick={onBackToList}>
+              <ArrowLeft className="size-4" />
+              回到列表選擇詞庫
+            </Button>
+          </div>
         ) : (
           <p className="text-sm text-muted-foreground">目前沒有可練習的單字。</p>
         )}

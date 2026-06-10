@@ -23,18 +23,32 @@ function UnifiedPageInner() {
   const [query, setQuery] = useState("");
   const [boundedEntries, setBoundedEntries] = useState<VocabEntry[]>([]);
   const [loadingEntries, setLoadingEntries] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
 
+  // Fix #4: use ignore flag to prevent stale async races on rapid collection switches
   useEffect(() => {
+    let ignore = false;
     const config = getCollectionConfig(state.collection);
     if (config.endpoint === "all-tranches") {
       setBoundedEntries([]);
+      setLoadingEntries(false);
       return;
     }
     setLoadingEntries(true);
+    setFetchError(false);
     fetchCollection(state.collection)
-      .then(setBoundedEntries)
-      .finally(() => setLoadingEntries(false));
+      .then((d) => { if (!ignore) setBoundedEntries(d); })
+      .catch(() => { if (!ignore) setFetchError(true); })
+      .finally(() => { if (!ignore) setLoadingEntries(false); });
+    return () => { ignore = true; };
   }, [state.collection]);
+
+  // Fix #review: auto-switch "all" → "popular-verbs" when entering card mode via URL/link
+  useEffect(() => {
+    if (state.viewMode === "card" && state.collection === "all") {
+      patch({ collection: "popular-verbs" });
+    }
+  }, [state.viewMode, state.collection]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const partOfSpeechOptions = useMemo(
     () => getPartOfSpeechOptions(boundedEntries),
@@ -112,7 +126,7 @@ function UnifiedPageInner() {
           onRelatedSelect={handleRelatedSelect}
           onBackToList={() => patch({ viewMode: "list" })}
           onCollectionChange={(id: CollectionId) =>
-            patch({ collection: id, sequentialIndex: 0 })
+            patch({ collection: id, sequentialIndex: 0, partOfSpeech: "全部" })
           }
           onJlptChange={(level: JlptLevel) =>
             patch({ jlpt: level, sequentialIndex: 0 })
@@ -149,7 +163,12 @@ function UnifiedPageInner() {
               size="icon"
               className="size-9 rounded-xl"
               aria-label="卡片模式"
-              onClick={() => patch({ viewMode: "card" })}
+              onClick={() =>
+                patch({
+                  viewMode: "card",
+                  collection: state.collection === "all" ? "popular-verbs" : state.collection,
+                })
+              }
             >
               <Layers className="size-4" />
             </Button>
@@ -171,7 +190,7 @@ function UnifiedPageInner() {
             partOfSpeechOptions={partOfSpeechOptions}
             activeFilterCount={activeFilterCount}
             onCollectionChange={(id) =>
-              patch({ collection: id, sequentialIndex: 0 })
+              patch({ collection: id, sequentialIndex: 0, partOfSpeech: "全部" })
             }
             onJlptChange={(level) => patch({ jlpt: level, sequentialIndex: 0 })}
             onPartOfSpeechChange={(pos) =>
@@ -192,6 +211,11 @@ function UnifiedPageInner() {
           />
         </div>
 
+        {fetchError && (
+          <p className="mt-4 text-sm text-destructive">
+            載入失敗，請重新整理頁面。
+          </p>
+        )}
         <ListMode
           collection={state.collection}
           entries={boundedEntries}
