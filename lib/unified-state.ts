@@ -18,7 +18,6 @@ const DEFAULT_STATE: UnifiedState = {
   randomQuantity: 30,
   activeSession: "sequential",
   learnedWordIds: [],
-  seenWordIds: [],
   lastUpdated: new Date(0).toISOString(),
 };
 
@@ -39,13 +38,13 @@ function normalize(raw: Partial<UnifiedState> | null): UnifiedState {
         : Array.isArray(legacyRaw?.learnedWordIds)
         ? (legacyRaw.learnedWordIds as number[])
         : [],
-    seenWordIds: Array.isArray(base.seenWordIds) ? base.seenWordIds : [],
     collection: VALID_COLLECTIONS.includes(base.collection as CollectionId)
       ? (base.collection as CollectionId)
       : "all",
     jlpt: VALID_JLPT.includes(base.jlpt as JlptLevel)
       ? (base.jlpt as JlptLevel)
       : "全部",
+    viewMode: base.viewMode === "card" ? "card" : "list",
   };
 }
 
@@ -63,7 +62,6 @@ function readStorage(): UnifiedState {
       const parsed = JSON.parse(legacy) as Record<string, unknown>;
       return normalize({
         learnedWordIds: parsed.learnedWordIds as number[] | undefined,
-        seenWordIds: parsed.seenWordIds as number[] | undefined,
       });
     } catch { /* ignore */ }
   }
@@ -183,19 +181,6 @@ export function useUnifiedState() {
     });
   }, []);
 
-  const markSeen = useCallback((wordId: number) => {
-    setState((current) => {
-      if (current.seenWordIds.includes(wordId)) return current;
-      const next = normalize({
-        ...current,
-        seenWordIds: [...current.seenWordIds, wordId],
-        lastUpdated: new Date().toISOString(),
-      });
-      writeStorage(next);
-      return next;
-    });
-  }, []);
-
   const resetProgress = useCallback(() => {
     const next = normalize({ ...DEFAULT_STATE, lastUpdated: new Date().toISOString() });
     writeStorage(next);
@@ -203,8 +188,8 @@ export function useUnifiedState() {
   }, []);
 
   return useMemo(
-    () => ({ state, isHydrated, patch, toggleLearned, markSeen, resetProgress }),
-    [state, isHydrated, patch, toggleLearned, markSeen, resetProgress]
+    () => ({ state, isHydrated, patch, toggleLearned, resetProgress }),
+    [state, isHydrated, patch, toggleLearned, resetProgress]
   );
 }
 

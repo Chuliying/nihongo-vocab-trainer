@@ -72,7 +72,6 @@ export type UnifiedState = {
   randomQuantity: number | "all";
   activeSession: SessionMode;
   learnedWordIds: number[];
-  seenWordIds: number[];
   lastUpdated: string;
 };
 

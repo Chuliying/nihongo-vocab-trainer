@@ -14,7 +14,7 @@ import { track } from "@vercel/analytics";
 import type { CollectionId, JlptLevel, SessionMode, VocabEntry } from "@/lib/types";
 
 function UnifiedPageInner() {
-  const { state, isHydrated, patch, toggleLearned, markSeen, resetProgress } =
+  const { state, isHydrated, patch, toggleLearned, resetProgress } =
     useUnifiedState();
 
   const [query, setQuery] = useState("");
@@ -110,18 +110,36 @@ function UnifiedPageInner() {
           onSetSequentialIndex={(i) => patch({ sequentialIndex: i })}
           onSetRandomIndex={(i) => patch({ randomSessionIndex: i })}
           onGenerateRandom={() => generateRandomSession(boundedEntries)}
-          onMarkSeen={markSeen}
           onToggleLearned={toggleLearned}
           onRelatedSelect={handleRelatedSelect}
           onBackToList={() => patch({ viewMode: "list" })}
           onCollectionChange={(id: CollectionId) =>
-            patch({ collection: id, sequentialIndex: 0, partOfSpeech: "全部" })
+            patch({
+              collection: id,
+              sequentialIndex: 0,
+              partOfSpeech: "全部",
+              randomSessionIds: [],
+              randomSessionIndex: 0,
+              activeSession: "sequential",
+            })
           }
           onJlptChange={(level: JlptLevel) =>
-            patch({ jlpt: level, sequentialIndex: 0 })
+            patch({
+              jlpt: level,
+              sequentialIndex: 0,
+              randomSessionIds: [],
+              randomSessionIndex: 0,
+              activeSession: "sequential",
+            })
           }
           onPartOfSpeechChange={(pos) =>
-            patch({ partOfSpeech: pos, sequentialIndex: 0 })
+            patch({
+              partOfSpeech: pos,
+              sequentialIndex: 0,
+              randomSessionIds: [],
+              randomSessionIndex: 0,
+              activeSession: "sequential",
+            })
           }
           onRandomIncludeLearnedChange={(val) =>
             patch({ randomIncludeLearned: val })
@@ -154,11 +172,32 @@ function UnifiedPageInner() {
               partOfSpeechOptions={partOfSpeechOptions}
               activeFilterCount={activeFilterCount}
               onCollectionChange={(id) =>
-                patch({ collection: id, sequentialIndex: 0, partOfSpeech: "全部" })
+                patch({
+                  collection: id,
+                  sequentialIndex: 0,
+                  partOfSpeech: "全部",
+                  randomSessionIds: [],
+                  randomSessionIndex: 0,
+                  activeSession: "sequential",
+                })
               }
-              onJlptChange={(level) => patch({ jlpt: level, sequentialIndex: 0 })}
+              onJlptChange={(level) =>
+                patch({
+                  jlpt: level,
+                  sequentialIndex: 0,
+                  randomSessionIds: [],
+                  randomSessionIndex: 0,
+                  activeSession: "sequential",
+                })
+              }
               onPartOfSpeechChange={(pos) =>
-                patch({ partOfSpeech: pos, sequentialIndex: 0 })
+                patch({
+                  partOfSpeech: pos,
+                  sequentialIndex: 0,
+                  randomSessionIds: [],
+                  randomSessionIndex: 0,
+                  activeSession: "sequential",
+                })
               }
               onResetProgress={resetProgress}
             />
@@ -168,9 +207,34 @@ function UnifiedPageInner() {
               collection={state.collection}
               jlpt={state.jlpt}
               partOfSpeech={state.partOfSpeech}
-              onRemoveCollection={() => patch({ collection: "all" })}
-              onRemoveJlpt={() => patch({ jlpt: "全部" })}
-              onRemovePartOfSpeech={() => patch({ partOfSpeech: "全部" })}
+              onRemoveCollection={() =>
+                patch({
+                  collection: "all",
+                  sequentialIndex: 0,
+                  partOfSpeech: "全部",
+                  randomSessionIds: [],
+                  randomSessionIndex: 0,
+                  activeSession: "sequential",
+                })
+              }
+              onRemoveJlpt={() =>
+                patch({
+                  jlpt: "全部",
+                  sequentialIndex: 0,
+                  randomSessionIds: [],
+                  randomSessionIndex: 0,
+                  activeSession: "sequential",
+                })
+              }
+              onRemovePartOfSpeech={() =>
+                patch({
+                  partOfSpeech: "全部",
+                  sequentialIndex: 0,
+                  randomSessionIds: [],
+                  randomSessionIndex: 0,
+                  activeSession: "sequential",
+                })
+              }
             />
           </div>
           {fetchError && (

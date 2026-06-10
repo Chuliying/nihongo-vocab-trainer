@@ -14,27 +14,6 @@ export function getJlptOptions(vocab: VocabEntry[]) {
   return order.filter((value) => value === "全部" || values.has(value as VocabEntry["jlpt_level"]));
 }
 
-export function filterVocab(
-  vocab: VocabEntry[],
-  options: {
-    query: string;
-    trancheId: number;
-    jlpt: string;
-    partOfSpeech: string;
-  }
-) {
-  const query = options.query.trim().toLowerCase();
-  return vocab.filter((entry) => {
-    const matchesTranche = entry.tranche_id === options.trancheId;
-    const matchesJlpt = options.jlpt === "全部" || entry.jlpt_level === options.jlpt;
-    const matchesPart =
-      options.partOfSpeech === "全部" || entry.part_of_speech.includes(options.partOfSpeech);
-    const haystack = `${entry.word} ${entry.reading} ${entry.meaning} ${entry.example.chinese}`.toLowerCase();
-    const matchesQuery = !query || haystack.includes(query);
-    return matchesTranche && matchesJlpt && matchesPart && matchesQuery;
-  });
-}
-
 export function findRelatedTarget(vocab: VocabEntry[], targetId?: number) {
   if (!targetId) return null;
   return vocab.find((entry) => entry.id === targetId) ?? null;

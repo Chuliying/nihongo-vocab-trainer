@@ -35,7 +35,6 @@ type Props = {
   onSetSequentialIndex: (i: number) => void;
   onSetRandomIndex: (i: number) => void;
   onGenerateRandom: () => void;
-  onMarkSeen: (id: number) => void;
   onToggleLearned: (id: number) => void;
   onRelatedSelect: (targetId: number) => void;
   onBackToList: () => void;
@@ -66,7 +65,6 @@ export function CardMode({
   onSetSequentialIndex,
   onSetRandomIndex,
   onGenerateRandom,
-  onMarkSeen,
   onToggleLearned,
   onRelatedSelect,
   onBackToList,
@@ -114,8 +112,7 @@ export function CardMode({
 
   // Index sync: when filters shrink sessionWords, safeIndex clamps below the
   // persisted currentIndex. Write the corrected value back so persisted state
-  // matches what's displayed. markSeen is NOT called here — only on explicit
-  // navigation — so an involuntary clamp doesn't mark a word as seen.
+  // matches what's displayed.
   useEffect(() => {
     if (sessionWords.length > 0 && safeIndex !== currentIndex) {
       setIndex(safeIndex);
@@ -125,8 +122,6 @@ export function CardMode({
   function navigateTo(index: number) {
     setIndex(index);
     setIsFlipped(false);
-    const word = sessionWords[index];
-    if (word) onMarkSeen(word.id);
   }
 
   function go(delta: number) {
