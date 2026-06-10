@@ -156,7 +156,7 @@ export function FilterSheet({
               <div className="space-y-2">
                 <Label>包含已學會的單字</Label>
                 <div className="flex gap-2">
-                  {(["否（只抽未學）", "是"] as const).map((label, i) => {
+                  {(["否", "是"] as const).map((label, i) => {
                     const val = i === 1;
                     return (
                       <button
