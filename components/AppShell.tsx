@@ -10,9 +10,13 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const viewMode = searchParams.get("view");
+  const collection = searchParams.get("collection");
   const isOnHome = pathname === "/";
   const isCardMode = isOnHome && viewMode === "card";
   const isListMode = isOnHome && !isCardMode;
+  // When no collection is selected ("all"), default to popular-verbs in card mode
+  // so the header link never lands on the empty "please pick a collection" state.
+  const cardHref = `/?view=card&collection=${collection ?? "popular-verbs"}`;
 
   return (
     <div className="relative min-h-svh">
@@ -45,7 +49,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
               <span className="hidden sm:inline">列表</span>
             </Link>
             <Link
-              href="/?view=card"
+              href={cardHref}
               aria-current={isCardMode ? "page" : undefined}
               className={cn(
                 "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
