@@ -16,7 +16,9 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const isListMode = isOnHome && !isCardMode;
   // When no collection is selected ("all"), default to popular-verbs in card mode
   // so the header link never lands on the empty "please pick a collection" state.
-  const cardHref = `/?view=card&collection=${collection ?? "popular-verbs"}`;
+  // Param order matches buildUrlParams() so all app-generated URLs share one
+  // canonical shape.
+  const cardHref = `/?collection=${collection ?? "popular-verbs"}&view=card`;
 
   return (
     <div className="relative min-h-svh">

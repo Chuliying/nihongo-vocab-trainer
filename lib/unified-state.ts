@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { CollectionId, JlptLevel, SessionMode, UnifiedState } from "@/lib/types";
 
 const STORAGE_KEY = "nihongo-vocab-trainer:unified";
@@ -25,6 +25,11 @@ const VALID_COLLECTIONS: CollectionId[] = [
   "all", "popular-verbs", "popular-adj", "popular-adv", "popular-conj",
 ];
 const VALID_JLPT: JlptLevel[] = ["全部", "N5", "N4", "N3", "N2", "N1"];
+
+// Fields the URL owns. They are derived from useSearchParams on every render
+// and updated by rewriting the URL — never copied into React state, so the
+// address bar, the header nav, and the page content cannot drift apart.
+type UrlState = Pick<UnifiedState, "viewMode" | "collection" | "jlpt" | "partOfSpeech">;
 
 function normalize(raw: Partial<UnifiedState> | null): UnifiedState {
   const base = raw ?? {};
@@ -73,29 +78,7 @@ function writeStorage(state: UnifiedState) {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
-function parseUrlParams(params: URLSearchParams): Partial<UnifiedState> {
-  const patch: Partial<UnifiedState> = {};
-  const c = params.get("collection");
-  if (c && VALID_COLLECTIONS.includes(c as CollectionId)) patch.collection = c as CollectionId;
-  const j = params.get("jlpt");
-  if (j && VALID_JLPT.includes(j as JlptLevel)) patch.jlpt = j as JlptLevel;
-  const p = params.get("pos");
-  if (p) patch.partOfSpeech = p;
-  const v = params.get("view");
-  if (v === "list" || v === "card") patch.viewMode = v;
-  return patch;
-}
-
-function buildUrlParams(state: UnifiedState): URLSearchParams {
-  const p = new URLSearchParams();
-  if (state.collection !== "all") p.set("collection", state.collection);
-  if (state.jlpt !== "全部") p.set("jlpt", state.jlpt);
-  if (state.partOfSpeech !== "全部") p.set("pos", state.partOfSpeech);
-  if (state.viewMode !== "list") p.set("view", state.viewMode);
-  return p;
-}
-
-function stateFromSearchParams(params: URLSearchParams): Pick<UnifiedState, "collection" | "jlpt" | "partOfSpeech" | "viewMode"> {
+function urlStateFrom(params: URLSearchParams): UrlState {
   const c = params.get("collection");
   const j = params.get("jlpt");
   return {
@@ -106,85 +89,109 @@ function stateFromSearchParams(params: URLSearchParams): Pick<UnifiedState, "col
   };
 }
 
-export function useUnifiedState() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [state, setState] = useState<UnifiedState>(DEFAULT_STATE);
-  const [isHydrated, setIsHydrated] = useState(false);
-  // Set true right before our own state→URL router.replace. The URL→state effect
-  // consumes and clears it so it ignores the searchParams change we caused
-  // ourselves, reacting only to genuinely external navigation. This makes the
-  // anti-loop guard explicit instead of relying on normalize() equality.
-  const pendingUrlUpdate = useRef(false);
+function buildUrlParams(state: UrlState): URLSearchParams {
+  const p = new URLSearchParams();
+  if (state.collection !== "all") p.set("collection", state.collection);
+  if (state.jlpt !== "全部") p.set("jlpt", state.jlpt);
+  if (state.partOfSpeech !== "全部") p.set("pos", state.partOfSpeech);
+  if (state.viewMode !== "list") p.set("view", state.viewMode);
+  return p;
+}
 
-  // Initial hydration: merge localStorage + URL params
+function pickUrlFields(updates: Partial<UnifiedState>): Partial<UrlState> {
+  const out: Partial<UrlState> = {};
+  if (updates.viewMode !== undefined) out.viewMode = updates.viewMode;
+  if (updates.collection !== undefined) out.collection = updates.collection;
+  if (updates.jlpt !== undefined) out.jlpt = updates.jlpt;
+  if (updates.partOfSpeech !== undefined) out.partOfSpeech = updates.partOfSpeech;
+  return out;
+}
+
+// Rewrite the query string in place. Next.js syncs useSearchParams with the
+// native History API, so this re-renders consumers without a server roundtrip.
+function replaceUrl(qs: string) {
+  window.history.replaceState(null, "", qs ? `/?${qs}` : "/");
+}
+
+// Hydration lifecycle, strictly one-way:
+//   "pending"   — first paint, localStorage not read yet (render a skeleton)
+//   "restoring" — bare URL on a cold open: last session's view/filters were
+//                 pushed into the URL; serve the stored snapshot until the new
+//                 search params arrive so the UI doesn't flash defaults
+//   "done"      — the URL owns its fields from here on
+type Hydration = "pending" | "restoring" | "done";
+
+export function useUnifiedState() {
+  const searchParams = useSearchParams();
+
+  // URL-owned fields: derived, never stored.
+  const urlState = useMemo(() => urlStateFrom(searchParams), [searchParams]);
+
+  // Session/progress fields live in React state and persist to localStorage.
+  // (Full UnifiedState shape for convenience; its URL fields only matter
+  // during the brief "restoring" window.)
+  const [localState, setLocalState] = useState<UnifiedState>(DEFAULT_STATE);
+  const [hydration, setHydration] = useState<Hydration>("pending");
+
+  // Mount: load stored progress. On a bare URL, push last session's
+  // view/filters back into it — a one-shot restore, not an ongoing sync.
+  // A URL that already has params is taken at face value (shareable links
+  // render the same for everyone, regardless of local storage).
   useEffect(() => {
     const stored = readStorage();
-    const urlPatch = parseUrlParams(searchParams);
-    const initial = normalize({ ...stored, ...urlPatch });
-    setState(initial);
-    setIsHydrated(true);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // URL → state: react to external navigation (e.g. clicking header links)
-  useEffect(() => {
-    if (!isHydrated) return;
-    // Skip the searchParams change we triggered ourselves in the state→URL effect.
-    if (pendingUrlUpdate.current) {
-      pendingUrlUpdate.current = false;
-      return;
+    setLocalState(stored);
+    const restoredQs = buildUrlParams(stored).toString();
+    if (window.location.search === "" && restoredQs !== "") {
+      setHydration("restoring");
+      replaceUrl(restoredQs);
+    } else {
+      setHydration("done");
     }
-    const fromUrl = stateFromSearchParams(searchParams);
-    setState((current) => {
-      if (
-        current.collection === fromUrl.collection &&
-        current.jlpt === fromUrl.jlpt &&
-        current.partOfSpeech === fromUrl.partOfSpeech &&
-        current.viewMode === fromUrl.viewMode
-      ) return current;
-      const next = normalize({ ...current, ...fromUrl });
-      writeStorage(next);
-      return next;
-    });
-  }, [searchParams, isHydrated]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // state → URL: keep URL in sync after patch() calls
-  useEffect(() => {
-    if (!isHydrated) return;
-    const params = buildUrlParams(state);
-    const qs = params.toString();
-    // Flag this as a self-triggered URL change so the URL→state effect skips it.
-    pendingUrlUpdate.current = true;
-    router.replace(qs ? `/?${qs}` : "/", { scroll: false });
-  }, [state.collection, state.jlpt, state.partOfSpeech, state.viewMode]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const patch = useCallback((updates: Partial<UnifiedState>) => {
-    setState((current) => {
-      const next = normalize({
-        ...current,
-        ...updates,
-        lastUpdated: new Date().toISOString(),
-      });
-      writeStorage(next);
-      return next;
-    });
   }, []);
 
+  // The restored params arrived (or the user navigated) — URL takes over.
+  useEffect(() => {
+    if (hydration === "restoring" && searchParams.toString() !== "") {
+      setHydration("done");
+    }
+  }, [hydration, searchParams]);
+
+  const state = useMemo<UnifiedState>(
+    () => (hydration === "restoring" ? localState : { ...localState, ...urlState }),
+    [hydration, localState, urlState]
+  );
+
+  const isHydrated = hydration !== "pending";
+
+  // Single persistence point: every settled state change lands in storage.
+  useEffect(() => {
+    if (!isHydrated) return;
+    writeStorage({ ...state, lastUpdated: new Date().toISOString() });
+  }, [state, isHydrated]);
+
+  const patch = useCallback(
+    (updates: Partial<UnifiedState>) => {
+      setLocalState((current) => ({ ...current, ...updates }));
+      const urlUpdates = pickUrlFields(updates);
+      if (Object.keys(urlUpdates).length > 0) {
+        replaceUrl(buildUrlParams({ ...urlState, ...urlUpdates }).toString());
+      }
+    },
+    [urlState]
+  );
+
   const toggleLearned = useCallback((wordId: number) => {
-    setState((current) => {
-      const learnedWordIds = current.learnedWordIds.includes(wordId)
+    setLocalState((current) => ({
+      ...current,
+      learnedWordIds: current.learnedWordIds.includes(wordId)
         ? current.learnedWordIds.filter((id) => id !== wordId)
-        : [...current.learnedWordIds, wordId];
-      const next = normalize({ ...current, learnedWordIds, lastUpdated: new Date().toISOString() });
-      writeStorage(next);
-      return next;
-    });
+        : [...current.learnedWordIds, wordId],
+    }));
   }, []);
 
   const resetProgress = useCallback(() => {
-    const next = normalize({ ...DEFAULT_STATE, lastUpdated: new Date().toISOString() });
-    writeStorage(next);
-    setState(next);
+    setLocalState(DEFAULT_STATE);
+    replaceUrl("");
   }, []);
 
   return useMemo(
