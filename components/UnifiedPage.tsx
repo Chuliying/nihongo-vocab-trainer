@@ -1,13 +1,11 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { LayoutGrid, Layers } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { CardMode } from "@/components/CardMode";
 import { FilterSheet } from "@/components/FilterSheet";
 import { ListMode } from "@/components/ListMode";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getCollectionConfig } from "@/lib/collections";
 import { useUnifiedState } from "@/lib/unified-state";
@@ -146,76 +144,51 @@ function UnifiedPageInner() {
 
   return (
     <AppShell>
-      <main className="mx-auto w-full max-w-5xl px-4 pb-16 pt-5">
-        <div className="flex items-center gap-2">
-          <div className="flex gap-0.5 rounded-2xl border border-border bg-card p-0.5">
-            <Button
-              variant="default"
-              size="icon"
-              className="size-9 rounded-xl"
-              aria-label="列表模式"
-              onClick={() => patch({ viewMode: "list" })}
-            >
-              <LayoutGrid className="size-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-9 rounded-xl"
-              aria-label="卡片模式"
-              onClick={() =>
-                patch({
-                  viewMode: "card",
-                  collection: state.collection === "all" ? "popular-verbs" : state.collection,
-                })
+      <main className="mx-auto w-full max-w-5xl px-4">
+        {/* Sticky filter bar — sits just below the fixed header (h-14) */}
+        <div className="sticky top-14 z-30 bg-background/90 pb-2 pt-4 backdrop-blur">
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Input
+                value={query}
+                placeholder="搜尋單字、假名、釋義"
+                onChange={(e) => setQuery(e.target.value)}
+                className="pl-4"
+              />
+            </div>
+            <FilterSheet
+              collection={state.collection}
+              jlpt={state.jlpt}
+              partOfSpeech={state.partOfSpeech}
+              partOfSpeechOptions={partOfSpeechOptions}
+              activeFilterCount={activeFilterCount}
+              onCollectionChange={(id) =>
+                patch({ collection: id, sequentialIndex: 0, partOfSpeech: "全部" })
               }
-            >
-              <Layers className="size-4" />
-            </Button>
-          </div>
-
-          <div className="relative flex-1">
-            <Input
-              value={query}
-              placeholder="搜尋單字、假名、釋義"
-              onChange={(e) => setQuery(e.target.value)}
-              className="pl-4"
+              onJlptChange={(level) => patch({ jlpt: level, sequentialIndex: 0 })}
+              onPartOfSpeechChange={(pos) =>
+                patch({ partOfSpeech: pos, sequentialIndex: 0 })
+              }
+              onResetProgress={resetProgress}
             />
           </div>
-
-          <FilterSheet
-            collection={state.collection}
-            jlpt={state.jlpt}
-            partOfSpeech={state.partOfSpeech}
-            partOfSpeechOptions={partOfSpeechOptions}
-            activeFilterCount={activeFilterCount}
-            onCollectionChange={(id) =>
-              patch({ collection: id, sequentialIndex: 0, partOfSpeech: "全部" })
-            }
-            onJlptChange={(level) => patch({ jlpt: level, sequentialIndex: 0 })}
-            onPartOfSpeechChange={(pos) =>
-              patch({ partOfSpeech: pos, sequentialIndex: 0 })
-            }
-            onResetProgress={resetProgress}
-          />
+          <div className="mt-2">
+            <ActiveFilterChips
+              collection={state.collection}
+              jlpt={state.jlpt}
+              partOfSpeech={state.partOfSpeech}
+              onRemoveCollection={() => patch({ collection: "all" })}
+              onRemoveJlpt={() => patch({ jlpt: "全部" })}
+              onRemovePartOfSpeech={() => patch({ partOfSpeech: "全部" })}
+            />
+          </div>
+          {fetchError && (
+            <p className="mt-2 text-sm text-destructive">
+              載入失敗，請重新整理頁面。
+            </p>
+          )}
         </div>
 
-        <div className="mt-2">
-          <ActiveFilterChips
-            collection={state.collection}
-            jlpt={state.jlpt}
-            partOfSpeech={state.partOfSpeech}
-            onRemoveCollection={() => patch({ collection: "all" })}
-            onRemoveJlpt={() => patch({ jlpt: "全部" })}
-            onRemovePartOfSpeech={() => patch({ partOfSpeech: "全部" })}
-          />
-        </div>
-
-        {fetchError && (
-          <p className="mt-4 text-sm text-destructive">
-            載入失敗，請重新整理頁面。
-          </p>
-        )}
         <ListMode
           collection={state.collection}
           entries={boundedEntries}

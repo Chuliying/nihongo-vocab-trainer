@@ -42,7 +42,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
               )}
             >
               <Layers className="size-4" />
-              <span className="hidden sm:inline">Library</span>
+              <span className="hidden sm:inline">詞庫</span>
             </Link>
             <Link
               href="/?view=card"
@@ -55,7 +55,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
               )}
             >
               <Sparkles className="size-4" />
-              <span className="hidden sm:inline">Practice</span>
+              <span className="hidden sm:inline">練習</span>
             </Link>
             <Link
               href="/sources"
