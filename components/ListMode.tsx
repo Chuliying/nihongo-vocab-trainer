@@ -1,16 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { VocabCard } from "@/components/VocabCard";
-import { fetchTranche } from "@/lib/vocab-client";
+import { useTrancheLoader, TRANCHE_IDS } from "@/lib/use-tranche-loader";
 import { filterByScope } from "@/lib/vocab";
 import type { CollectionId, JlptLevel, VocabEntry } from "@/lib/types";
 
-const TRANCHE_IDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
-
 type Props = {
   collection: CollectionId;
-  entries: VocabEntry[];
+  entries: VocabEntry[];       // bounded collection entries (non-"all")
   loadingEntries: boolean;
   jlpt: JlptLevel;
   partOfSpeech: string;
@@ -31,57 +29,23 @@ export function ListMode({
   onToggleLearned,
   onRelatedSelect,
 }: Props) {
+  const { entries: trancheEntries, loadedCount, loadingMore, loadNext } =
+    useTrancheLoader(collection);
+
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const [allEntries, setAllEntries] = useState<VocabEntry[]>([]);
-  const [loadedCount, setLoadedCount] = useState(0);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const loadedIdsRef = useRef<number[]>([]);
-  const loadingMoreRef = useRef(false);
-  const collectionRef = useRef(collection);
-  collectionRef.current = collection;
-
-  const loadNextTranche = useCallback(async () => {
-    if (collectionRef.current !== "all") return;
-    if (loadingMoreRef.current) return;
-    const next = TRANCHE_IDS.find((id) => !loadedIdsRef.current.includes(id));
-    if (!next) return;
-    loadingMoreRef.current = true;
-    setLoadingMore(true);
-    try {
-      const newEntries = await fetchTranche(next);
-      // Guard against StrictMode double-invoke: skip if tranche already added
-      if (loadedIdsRef.current.includes(next)) return;
-      loadedIdsRef.current = [...loadedIdsRef.current, next];
-      setAllEntries((prev) => [...prev, ...newEntries]);
-      setLoadedCount((n) => n + 1);
-    } finally {
-      loadingMoreRef.current = false;
-      setLoadingMore(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (collection !== "all") return;
-    setAllEntries([]);
-    setLoadedCount(0);
-    loadedIdsRef.current = [];
-    loadingMoreRef.current = false;
-    setLoadingMore(false);
-    loadNextTranche();
-  }, [collection, loadNextTranche]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel || collection !== "all") return;
     const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) loadNextTranche(); },
+      ([e]) => { if (e.isIntersecting) loadNext(); },
       { rootMargin: "600px" }
     );
     obs.observe(sentinel);
     return () => obs.disconnect();
-  }, [collection, loadNextTranche]);
+  }, [collection, loadNext]);
 
-  const sourceEntries = collection === "all" ? allEntries : entries;
+  const sourceEntries = collection === "all" ? trancheEntries : entries;
 
   const filtered = useMemo(
     () => filterByScope(sourceEntries, { query, jlpt, partOfSpeech }),
@@ -131,9 +95,7 @@ export function ListMode({
       {collection === "all" && <div ref={sentinelRef} className="h-1" />}
 
       {loadingMore && (
-        <p className="py-6 text-center text-sm text-muted-foreground">
-          載入中…
-        </p>
+        <p className="py-6 text-center text-sm text-muted-foreground">載入中…</p>
       )}
     </div>
   );

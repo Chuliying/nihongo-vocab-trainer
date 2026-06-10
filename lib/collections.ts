@@ -5,15 +5,14 @@ export type CollectionConfig = {
   label: string;
   limit: number;
   pos?: string;
-  endpoint: "all-tranches" | "popular-verbs" | "collection-api";
 };
 
 export const COLLECTIONS: CollectionConfig[] = [
-  { id: "all", label: "全部 13,000 語", limit: Infinity, endpoint: "all-tranches" },
-  { id: "popular-verbs", label: "常用動詞", limit: 300, endpoint: "popular-verbs" },
-  { id: "popular-adj", label: "常用形容詞", limit: 200, pos: "形容詞", endpoint: "collection-api" },
-  { id: "popular-adv", label: "常用副詞", limit: 150, pos: "副詞", endpoint: "collection-api" },
-  { id: "popular-conj", label: "常用接続詞", limit: 100, pos: "接続詞", endpoint: "collection-api" },
+  { id: "all", label: "全部 13,000 語", limit: Infinity },
+  { id: "popular-verbs", label: "常用動詞", limit: 300 },
+  { id: "popular-adj", label: "常用形容詞", limit: 200, pos: "形容詞" },
+  { id: "popular-adv", label: "常用副詞", limit: 150, pos: "副詞" },
+  { id: "popular-conj", label: "常用接続詞", limit: 100, pos: "接続詞" },
 ];
 
 export function getCollectionConfig(id: CollectionId): CollectionConfig {

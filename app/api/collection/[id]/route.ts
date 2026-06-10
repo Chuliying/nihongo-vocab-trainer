@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 import { getEntriesByPos } from "@/lib/vocab-repository";
 import type { CollectionId } from "@/lib/types";
 import { getCollectionConfig } from "@/lib/collections";
 
 const COLLECTION_IDS: CollectionId[] = ["popular-adj", "popular-adv", "popular-conj"];
 
+export const dynamic = "force-static";
+
+export async function generateStaticParams() {
+  return COLLECTION_IDS.map((id) => ({ id }));
+}
+
 export async function GET(
-  _request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;

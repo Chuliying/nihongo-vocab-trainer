@@ -7,7 +7,6 @@ import { CardMode } from "@/components/CardMode";
 import { FilterSheet } from "@/components/FilterSheet";
 import { ListMode } from "@/components/ListMode";
 import { Input } from "@/components/ui/input";
-import { getCollectionConfig } from "@/lib/collections";
 import { useUnifiedState } from "@/lib/unified-state";
 import { fetchCollection } from "@/lib/vocab-client";
 import { getPartOfSpeechOptions, shuffle } from "@/lib/vocab";
@@ -26,8 +25,7 @@ function UnifiedPageInner() {
   // Fix #4: use ignore flag to prevent stale async races on rapid collection switches
   useEffect(() => {
     let ignore = false;
-    const config = getCollectionConfig(state.collection);
-    if (config.endpoint === "all-tranches") {
+    if (state.collection === "all") {
       setBoundedEntries([]);
       setLoadingEntries(false);
       return;
