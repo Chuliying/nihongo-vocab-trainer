@@ -72,6 +72,13 @@ const REVIEWED_SUPPRESS = new Map([
   ["なう\tなう", "derivational suffix surface"],
   ["しめる\tしめる", "auxiliary causative or honorific surface"],
   ["づく\tづく", "derivational suffix surface"],
+  ["ゆく\tゆく", "literary lexical surface requires historical conjugation policy"],
+  ["ゆる\tゆる", "archaic lexical surface requires historical conjugation policy"],
+  ["ござる\tござる", "archaic or auxiliary honorific surface is not represented by the modern full schema"],
+  ["みつ\tみつ", "archaic lexical surface requires historical conjugation policy"],
+  ["ひる\tひる", "archaic lexical surface requires historical conjugation policy"],
+  ["明る\tあかる", "archaic lexical surface requires historical conjugation policy"],
+  ["らっしゃる\tらっしゃる", "clipped honorific auxiliary surface"],
 ]);
 const GODAN_RU_EXCEPTIONS = new Set([
   "帰る",
@@ -478,6 +485,63 @@ const REVIEWED_KURU = new Set([
   "やってくる\tやってくる",
 ]);
 
+const REVIEWED_HONORIFIC_IRREGULAR = new Map([
+  [
+    "くださる\tくださる",
+    {
+      verb_type: "五段動詞（敬語不規則）",
+      dictionary_form: "くださる",
+      masu_form: "くださいます",
+      te_form: "くださって",
+      ta_form: "くださった",
+      nai_form: "くださらない",
+      potential_form: "くだされる",
+      passive_form: "くださられる",
+      causative_form: "くださらせる",
+      imperative_form: "ください",
+      conditional_form: "くだされば",
+      volitional_form: "くださろう",
+      notes: "reviewed honorific irregular conjugation",
+    },
+  ],
+  [
+    "いらっしゃる\tいらっしゃる",
+    {
+      verb_type: "五段動詞（敬語不規則）",
+      dictionary_form: "いらっしゃる",
+      masu_form: "いらっしゃいます",
+      te_form: "いらっしゃって",
+      ta_form: "いらっしゃった",
+      nai_form: "いらっしゃらない",
+      potential_form: "いらっしゃれる",
+      passive_form: "いらっしゃられる",
+      causative_form: "いらっしゃらせる",
+      imperative_form: "いらっしゃい",
+      conditional_form: "いらっしゃれば",
+      volitional_form: "いらっしゃろう",
+      notes: "reviewed honorific irregular conjugation",
+    },
+  ],
+  [
+    "おっしゃる\tおっしゃる",
+    {
+      verb_type: "五段動詞（敬語不規則）",
+      dictionary_form: "おっしゃる",
+      masu_form: "おっしゃいます",
+      te_form: "おっしゃって",
+      ta_form: "おっしゃった",
+      nai_form: "おっしゃらない",
+      potential_form: "おっしゃれる",
+      passive_form: "おっしゃられる",
+      causative_form: "おっしゃらせる",
+      imperative_form: "おっしゃい",
+      conditional_form: "おっしゃれば",
+      volitional_form: "おっしゃろう",
+      notes: "reviewed honorific irregular conjugation",
+    },
+  ],
+]);
+
 function isKanaOnly(word) {
   return /^[ぁ-ゟ]+$/.test(String(word || ""));
 }
@@ -646,6 +710,13 @@ function inferCandidate(entry) {
       verb_info: conjugateKuru(word),
     };
   }
+  if (hasVerbToken && REVIEWED_HONORIFIC_IRREGULAR.has(lexicalKey(entry))) {
+    return {
+      confidence: "high",
+      reason: "exact surface and reading in reviewed honorific irregular lexicon",
+      verb_info: REVIEWED_HONORIFIC_IRREGULAR.get(lexicalKey(entry)),
+    };
+  }
   if (hasVerbToken && REVIEWED_GODAN.has(lexicalKey(entry))) {
     return {
       confidence: "high",
@@ -686,6 +757,9 @@ function validateReviewedLexicon(entries) {
   const matches = new Map(Array.from(REVIEWED_ICHIDAN, (key) => [key, []]));
   const godanMatches = new Map(Array.from(REVIEWED_GODAN, (key) => [key, []]));
   const kuruMatches = new Map(Array.from(REVIEWED_KURU, (key) => [key, []]));
+  const honorificMatches = new Map(
+    Array.from(REVIEWED_HONORIFIC_IRREGULAR.keys(), (key) => [key, []])
+  );
   const suppressMatches = new Map(Array.from(REVIEWED_SUPPRESS.keys(), (key) => [key, []]));
   const reviewedAmbiguousMatches = new Map(
     Array.from(REVIEWED_DERIVED_OR_AMBIGUOUS, (key) => [key, []])
@@ -695,6 +769,7 @@ function validateReviewedLexicon(entries) {
     if (matches.has(key)) matches.get(key).push(entry);
     if (godanMatches.has(key)) godanMatches.get(key).push(entry);
     if (kuruMatches.has(key)) kuruMatches.get(key).push(entry);
+    if (honorificMatches.has(key)) honorificMatches.get(key).push(entry);
     if (suppressMatches.has(key)) suppressMatches.get(key).push(entry);
     if (reviewedAmbiguousMatches.has(key)) reviewedAmbiguousMatches.get(key).push(entry);
   }
@@ -742,6 +817,20 @@ function validateReviewedLexicon(entries) {
       entry._quality?.verb_info_restore?.reason === "exact surface and reading in reviewed kuru lexicon";
     if (!entry._quality?.verb_info_quarantine && !restoredByLexicon) {
       errors.push(`${JSON.stringify(key)} is neither quarantined nor a matching reviewed kuru restore`);
+    }
+  }
+  for (const [key, found] of honorificMatches) {
+    if (found.length !== 1) {
+      errors.push(`${JSON.stringify(key)} reviewed honorific matched ${found.length} entries`);
+      continue;
+    }
+    const entry = found[0];
+    const restoredByLexicon =
+      entry.verb_info?.verb_type === "五段動詞（敬語不規則）" &&
+      entry._quality?.verb_info_restore?.reason ===
+        "exact surface and reading in reviewed honorific irregular lexicon";
+    if (!entry._quality?.verb_info_quarantine && !restoredByLexicon) {
+      errors.push(`${JSON.stringify(key)} is neither quarantined nor a matching honorific restore`);
     }
   }
   for (const [key, found] of suppressMatches) {

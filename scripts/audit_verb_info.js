@@ -63,6 +63,10 @@ function explicitlySuppressed(entry) {
   return Boolean(entry._quality && entry._quality.verb_info_suppressed);
 }
 
+function explicitlyRestored(entry) {
+  return Boolean(entry._quality && entry._quality.verb_info_restore);
+}
+
 function obviousMechanicalErrors(entry) {
   const info = entry.verb_info || {};
   const word = String(entry.word || "");
@@ -95,11 +99,13 @@ function categoryFor(entry, mechanicalErrors, missing) {
   if (generatedSuspect(entry)) return "generated_suspect";
   if (missing.length > 0) return "missing_fields";
   if (mechanicalErrors.length > 0) return "mechanical_error";
+  if (explicitlyRestored(entry)) return "reviewed_verb_info";
   return "needs_linguistic_review";
 }
 
 function severityFor(category) {
   if (category === "verb_info_suppressed") return "info";
+  if (category === "reviewed_verb_info") return "info";
   if (category === "generated_mechanical_error") return "blocker";
   if (category === "auxiliary_expression_generated") return "blocker";
   if (category === "missing_verb_info") return "review";
@@ -118,6 +124,7 @@ function summarize(rows) {
     withVerbInfo: 0,
     missingVerbInfo: 0,
     suppressedVerbInfo: 0,
+    reviewedVerbInfo: 0,
     generatedSuspect: 0,
     mechanicalError: 0,
   };
@@ -127,6 +134,7 @@ function summarize(rows) {
     if (row.has_verb_info) summary.withVerbInfo++;
     else if (row.suppressed_verb_info) summary.suppressedVerbInfo++;
     else summary.missingVerbInfo++;
+    if (row.reviewed_verb_info) summary.reviewedVerbInfo++;
     if (row.generated_suspect) summary.generatedSuspect++;
     if (row.mechanical_errors.length) summary.mechanicalError++;
   }
@@ -151,6 +159,7 @@ function main() {
         chunk_index: index,
         has_verb_info: Boolean(entry.verb_info),
         suppressed_verb_info: explicitlySuppressed(entry),
+        reviewed_verb_info: explicitlyRestored(entry),
         independent_verb_pos: hasIndependentVerbPos(entry),
         generated_suspect: generatedSuspect(entry),
         auxiliary_or_expression: isAuxiliaryOrExpression(entry),
