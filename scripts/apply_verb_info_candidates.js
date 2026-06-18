@@ -22,10 +22,10 @@ const REQUIRED_FIELDS = [
 function usage() {
   console.error(
     [
-      "usage: node scripts/apply_verb_info_candidates.js [--candidates <path>] [--confidence high] [--write]",
+      "usage: node scripts/apply_verb_info_candidates.js [--candidates <path>] [--confidence high|suppress] [--write]",
       "",
       "Restores vetted verb_info candidates from _quality.verb_info_quarantine.",
-      "Dry-run by default; currently only high confidence is allowed.",
+      "Dry-run by default. high restores verb_info; suppress records an explicit no-conjugation decision.",
     ].join("\n")
   );
   process.exit(1);
@@ -74,6 +74,14 @@ function validateVerbInfo(candidate, entry) {
   return errors;
 }
 
+function validateSuppression(candidate, entry) {
+  const errors = [];
+  if (candidate.verb_info) errors.push("suppression candidate must not have verb_info");
+  if (!entry._quality || !entry._quality.verb_info_quarantine) errors.push("entry has no quarantine payload");
+  if (entry.verb_info) errors.push("entry already has verb_info");
+  return errors;
+}
+
 function writeChangedFiles(changedFiles, byId) {
   for (const filePath of changedFiles) {
     const entries = Array.from(byId.values())
@@ -92,7 +100,9 @@ function main() {
   const candidatePath = path.resolve(argValue(args, "--candidates", DEFAULT_CANDIDATES));
   const confidence = argValue(args, "--confidence", "high");
   const write = args.includes("--write");
-  if (confidence !== "high") throw new Error("Only --confidence high is allowed for automatic apply");
+  if (!["high", "suppress"].includes(confidence)) {
+    throw new Error("Only --confidence high or suppress is allowed for automatic apply");
+  }
 
   const candidates = readJson(candidatePath).rows.filter((row) => row.confidence === confidence);
   const byId = readChunksById();
@@ -109,23 +119,34 @@ function main() {
   for (const candidate of candidates) {
     const location = byId.get(candidate.id);
     if (!location) throw new Error(`id ${candidate.id} from candidates not found in chunks`);
-    const errors = validateVerbInfo(candidate, location.entry);
+    const errors =
+      confidence === "suppress"
+        ? validateSuppression(candidate, location.entry)
+        : validateVerbInfo(candidate, location.entry);
     if (errors.length) {
       throw new Error(`id ${candidate.id} ${candidate.word}: ${errors.join("; ")}`);
     }
 
     summary.eligible += 1;
     if (write) {
-      location.entry.verb_info = {
-        ...candidate.verb_info,
-        notes: "deterministic high-confidence restore",
-      };
       location.entry._quality = location.entry._quality || {};
-      location.entry._quality.verb_info_restore = {
-        source: path.relative(process.cwd(), candidatePath),
-        confidence: candidate.confidence,
-        reason: candidate.reason,
-      };
+      if (confidence === "suppress") {
+        location.entry._quality.verb_info_suppressed = {
+          source: path.relative(process.cwd(), candidatePath),
+          reason: candidate.reason,
+          previous: location.entry._quality.verb_info_quarantine.previous,
+        };
+      } else {
+        location.entry.verb_info = {
+          ...candidate.verb_info,
+          notes: "deterministic high-confidence restore",
+        };
+        location.entry._quality.verb_info_restore = {
+          source: path.relative(process.cwd(), candidatePath),
+          confidence: candidate.confidence,
+          reason: candidate.reason,
+        };
+      }
       delete location.entry._quality.verb_info_quarantine;
       changedFiles.add(location.filePath);
     }

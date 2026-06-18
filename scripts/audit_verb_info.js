@@ -59,6 +59,10 @@ function generatedSuspect(entry) {
   );
 }
 
+function explicitlySuppressed(entry) {
+  return Boolean(entry._quality && entry._quality.verb_info_suppressed);
+}
+
 function obviousMechanicalErrors(entry) {
   const info = entry.verb_info || {};
   const word = String(entry.word || "");
@@ -83,6 +87,7 @@ function missingFields(entry) {
 }
 
 function categoryFor(entry, mechanicalErrors, missing) {
+  if (!entry.verb_info && explicitlySuppressed(entry)) return "verb_info_suppressed";
   if (!entry.verb_info && hasIndependentVerbPos(entry)) return "missing_verb_info";
   if (!entry.verb_info) return "not_independent_verb_no_info";
   if (isAuxiliaryOrExpression(entry) && generatedSuspect(entry)) return "auxiliary_expression_generated";
@@ -94,6 +99,7 @@ function categoryFor(entry, mechanicalErrors, missing) {
 }
 
 function severityFor(category) {
+  if (category === "verb_info_suppressed") return "info";
   if (category === "generated_mechanical_error") return "blocker";
   if (category === "auxiliary_expression_generated") return "blocker";
   if (category === "missing_verb_info") return "review";
@@ -111,6 +117,7 @@ function summarize(rows) {
     bySeverity: {},
     withVerbInfo: 0,
     missingVerbInfo: 0,
+    suppressedVerbInfo: 0,
     generatedSuspect: 0,
     mechanicalError: 0,
   };
@@ -118,6 +125,7 @@ function summarize(rows) {
     summary.byCategory[row.category] = (summary.byCategory[row.category] || 0) + 1;
     summary.bySeverity[row.severity] = (summary.bySeverity[row.severity] || 0) + 1;
     if (row.has_verb_info) summary.withVerbInfo++;
+    else if (row.suppressed_verb_info) summary.suppressedVerbInfo++;
     else summary.missingVerbInfo++;
     if (row.generated_suspect) summary.generatedSuspect++;
     if (row.mechanical_errors.length) summary.mechanicalError++;
@@ -142,6 +150,7 @@ function main() {
         file,
         chunk_index: index,
         has_verb_info: Boolean(entry.verb_info),
+        suppressed_verb_info: explicitlySuppressed(entry),
         independent_verb_pos: hasIndependentVerbPos(entry),
         generated_suspect: generatedSuspect(entry),
         auxiliary_or_expression: isAuxiliaryOrExpression(entry),
