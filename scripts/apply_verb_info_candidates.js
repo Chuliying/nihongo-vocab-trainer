@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 const DEFAULT_CANDIDATES = path.join(process.cwd(), "scratch", "cleanup_pipeline", "verb_info_candidates.json");
+const DEFAULT_REVIEW = path.join(process.cwd(), "reviews", "verb_info_medium_review_2026-06-18.json");
 const CHUNKS_DIR = path.join(process.cwd(), "public", "data", "chunks");
 const REQUIRED_FIELDS = [
   "verb_type",
@@ -22,10 +23,10 @@ const REQUIRED_FIELDS = [
 function usage() {
   console.error(
     [
-      "usage: node scripts/apply_verb_info_candidates.js [--candidates <path>] [--confidence high|suppress] [--write]",
+      "usage: node scripts/apply_verb_info_candidates.js [--candidates <path>] [--confidence high|medium|suppress] [--review <path>] [--write]",
       "",
       "Restores vetted verb_info candidates from _quality.verb_info_quarantine.",
-      "Dry-run by default. high restores verb_info; suppress records an explicit no-conjugation decision.",
+      "Dry-run by default. medium requires an explicit tracked review allowlist.",
     ].join("\n")
   );
   process.exit(1);
@@ -40,6 +41,22 @@ function argValue(args, flag, fallback) {
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
+}
+
+function approvedIdsFor(confidence, reviewPath) {
+  if (confidence !== "medium") return null;
+  const review = readJson(reviewPath);
+  if (review.candidate_confidence !== "medium") {
+    throw new Error(`review ${reviewPath} is not for medium candidates`);
+  }
+  if (!Array.isArray(review.approved_ids) || review.approved_ids.length !== review.approved_count) {
+    throw new Error(`review ${reviewPath} has an invalid approved_ids count`);
+  }
+  const approved = new Set(review.approved_ids);
+  if (approved.size !== review.approved_ids.length) {
+    throw new Error(`review ${reviewPath} contains duplicate approved IDs`);
+  }
+  return approved;
 }
 
 function readChunksById() {
@@ -98,19 +115,26 @@ function main() {
   if (args.includes("--help") || args.includes("-h")) usage();
 
   const candidatePath = path.resolve(argValue(args, "--candidates", DEFAULT_CANDIDATES));
+  const reviewPath = path.resolve(argValue(args, "--review", DEFAULT_REVIEW));
   const confidence = argValue(args, "--confidence", "high");
   const write = args.includes("--write");
-  if (!["high", "suppress"].includes(confidence)) {
-    throw new Error("Only --confidence high or suppress is allowed for automatic apply");
+  if (!["high", "medium", "suppress"].includes(confidence)) {
+    throw new Error("Only --confidence high, medium, or suppress is allowed");
   }
 
-  const candidates = readJson(candidatePath).rows.filter((row) => row.confidence === confidence);
+  const confidenceCandidates = readJson(candidatePath).rows.filter((row) => row.confidence === confidence);
+  const approvedIds = approvedIdsFor(confidence, reviewPath);
+  const candidates = approvedIds
+    ? confidenceCandidates.filter((candidate) => approvedIds.has(candidate.id))
+    : confidenceCandidates;
   const byId = readChunksById();
   const changedFiles = new Set();
   const summary = {
     mode: write ? "write" : "dry-run",
     confidence,
     candidates: candidates.length,
+    excludedByReview: confidenceCandidates.length - candidates.length,
+    review: approvedIds ? path.relative(process.cwd(), reviewPath) : null,
     eligible: 0,
     skipped: 0,
     files: 0,

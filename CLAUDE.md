@@ -1,6 +1,6 @@
 # nihongo-vocab-trainer — 工作狀態
 
-更新日期：2026-06-17
+更新日期：2026-06-19
 
 ## 目前狀況
 
@@ -26,8 +26,8 @@
 ```json
 {
   "entries": 13000,
-  "badEntries": 7484,
-  "issueCount": 16592
+  "badEntries": 7424,
+  "issueCount": 16424
 }
 ```
 
@@ -99,7 +99,7 @@ npm run db:import:dry-run
 {
   "tranches": 13,
   "vocab_entries": 13000,
-  "verb_info": 735,
+  "verb_info": 678,
   "related_words": 25990,
   "popular_verbs": 300
 }
@@ -142,7 +142,7 @@ Schema 已有：
 
 - Local candidate generator：`scripts/generate_related_candidates.py`
 - Validator：`scripts/validate_related_candidates.py`
-- 目前是 FastEmbed local/offline flow；sample 曾通過，但尚未做全量 embedding、review、apply/rollback。
+- 目前是 FastEmbed + NumPy local/offline flow；矩陣 batch top-k sample 已通過結構驗證，但尚未做全量 embedding、語義 review、apply/rollback。
 - 現有 `related` 皆有 `target_id`，總數 25,990。
 
 ## 新目標
@@ -155,15 +155,17 @@ Schema 已有：
 
 ## 動詞變化風險（Blocker）
 
-目前 `verb_info` 不能信任，必須在大量內容清理和 related vector 前先處理。
+舊的 generated `verb_info` 已完成 quarantine review；未經審核的生成 forms 不再外露。
 
 最新 audit：
 
 ```json
 {
   "verbLike": 735,
-  "withVerbInfo": 300,
-  "missingVerbInfo": 435,
+  "withVerbInfo": 678,
+  "missingVerbInfo": 0,
+  "suppressedVerbInfo": 57,
+  "reviewedVerbInfo": 613,
   "generatedSuspect": 0,
   "mechanicalError": 0
 }
@@ -182,7 +184,8 @@ Schema 已有：
 - 不能把 verb rows 丟給便宜模型批量改例句，否則例句活用可能沿用錯誤資料。
 - related vector repair 必須等動詞和 meaning/example 穩定後再做。
 - 670 筆原本的 `frequencyGeneratedVerbInfo` 已移到 `_quality.verb_info_quarantine`，正式 `verb_info` 設為 `null`；錯誤 forms 不再進 UI/DB import。
-- 後續要從 `scratch/cleanup_pipeline/verb_info_candidates.json` 的 high/medium/review queue 逐步恢復正確 forms。
+- 435 筆 quarantine 已全部處理；目前 candidate queue 為 0。
+- 歷史 medium review 已固定在 `reviews/verb_info_medium_review_2026-06-18.json`：186 approved、16 rejected。後續更嚴格 deterministic review 又 suppress 其中 3 筆 approved ambiguous surfaces，artifact 保留兩階段決策。
 
 ## 迭代紀錄
 
@@ -720,6 +723,166 @@ DB sync：
 - cheap model 仍只適合候選生成；高模型 review 不能移除。
 - 下一步可先限制 cheap batch 到單義、常見具體名詞，降低高模型 review 成本；多義/專業詞移入 semantic review。
 
+### Iteration 011 — verb review artifact + matrix related prototype
+
+狀態：補齊歷史審核追溯資料；related generator 已移除 Python 13,000×13,000 雙迴圈，尚未 apply related。
+
+動詞：
+
+- 由 `f191329` snapshot 重建 202 筆 medium queue。
+- 固定 review artifact：
+  - approved：186
+  - rejected potential/derived surfaces：16
+- `apply_verb_info_candidates.js` 的 medium mode 只會取 tracked review allowlist。
+- 在 `f191329` snapshot dry-run：
+
+```json
+{
+  "confidence": "medium",
+  "candidates": 186,
+  "excludedByReview": 16,
+  "eligible": 186
+}
+```
+
+- 目前 `dbcad07` 已先完成全部 quarantine review，因此 current queue 是 0；不重放歷史 patch。
+- 186 筆歷史 approved 中，`取れる`、`まくれる`、`引ける` 後來被更嚴格規則 suppress；artifact 以 `superseded_approved_ids` 明確記錄。
+
+目前 verb audit：
+
+```json
+{
+  "verbLike": 735,
+  "withVerbInfo": 678,
+  "missingVerbInfo": 0,
+  "suppressedVerbInfo": 57,
+  "reviewedVerbInfo": 613,
+  "generatedSuspect": 0,
+  "mechanicalError": 0
+}
+```
+
+Related prototype：
+
+- `.venv` 已加入 ignore，依賴固定在 `requirements-related.txt`。
+- 新增 `npm run related:setup`。
+- embeddings 轉為 normalized NumPy matrix。
+- scoring 使用 batch matrix multiplication + `argpartition` top-k。
+- 預設要求 source/target 至少共享一個 POS token；cross-POS 必須顯式開啟。
+- run header 保存 embedding text version、filters、run id、model、hash。
+- 20×100 sample：86 candidates，validator passed；抽查顯示比無 POS gate 明顯合理，但 corpus 仍有錯誤 POS/模板例句，因此只可作 proposed review artifact。
+- `db/vocab_schema.sql` 現況只有一個 `similarity_score` 宣告，舊摘要中的 duplicate 已被後續 commit 修正。
+
+Runtime / import：
+
+```json
+{
+  "runtime_repository": {
+    "ok": true,
+    "source": "db",
+    "vocab_entries": 13000
+  },
+  "db_dry_run": {
+    "verb_info": 678,
+    "related_words": 25990,
+    "api_parity": true
+  }
+}
+```
+
+省成本反省：
+
+- 不重跑已由 `dbcad07` 完成的 435 筆動詞 apply；改用 snapshot dry-run 證明 allowlist，避免重複 DB import。
+- NumPy batch scoring 將昂貴工作移到 BLAS matrix multiplication；不建立 13,000×13,000 全矩陣，記憶體由 batch size 控制。
+- POS gate 在 top-k 前縮小候選集合，減少人工 review 無關詞的成本。
+- related 尚不應全量產生或 apply：目前 7,444 筆 bad entries 會污染 embedding。下一步先繼續 100–300 筆 reviewed content，再決定 embedding checkpoint。
+
+### Iteration 012 — third reviewed content batch
+
+狀態：本 checkpoint 共 100 筆已完成 cheap candidate、deterministic gate、high-model review、chunks apply 與 Neon sync。
+
+批次策略：
+
+- manifest 固定分流：`cheap_model_candidate + latin`
+- 額外要求：
+  - 無 semantic review flags
+  - 非動詞、非文法詞、非片假名 review、非專名
+  - 常見、具體、英語 gloss 1–2 個
+- exporter 新增 `--ids` allowlist，讓同一批 ID 與順序可 deterministic 重建。
+
+流程：
+
+1. `gpt-5.4-mini high` 產生 20 + 40 + 40 筆 candidates。
+2. 每批先跑 deterministic dry-run。
+3. Gate 阻擋 2 次不允許的 field drift（`四季`、`気候`），恢復原例句後重跑。
+4. `gpt-5.5 high` 對三批逐筆 review。
+5. 高模型修改：
+   - batch 003：14 / 20
+   - batch 004：28 / 40
+   - batch 005：24 / 40
+6. 三批 reviewed artifacts 再 dry-run，全部通過後 apply。
+
+結果：
+
+```json
+{
+  "batch": {
+    "rows": 100,
+    "changedMeaning": 100,
+    "changedExample": 97,
+    "issueDelta": {
+      "before": 294,
+      "after": 0
+    }
+  },
+  "quality": {
+    "badEntriesBefore": 7444,
+    "badEntriesAfter": 7384,
+    "issueCountBefore": 16484,
+    "issueCountAfter": 16304,
+    "cheapModelCandidateAfter": 2393
+  },
+  "verbInvariant": {
+    "generatedSuspect": 0,
+    "mechanicalError": 0,
+    "candidateQueue": 0
+  }
+}
+```
+
+DB dry-run：
+
+```json
+{
+  "vocab_entries": 13000,
+  "verb_info": 678,
+  "related_words": 25990,
+  "api_parity": true
+}
+```
+
+Neon sync：
+
+```json
+{
+  "import_run_id": "f0b7464f-d219-4757-a4f3-772ed93213d7",
+  "vocab_entries": 13000,
+  "verb_info": 678,
+  "related_words": 25990,
+  "popular_verbs": 300,
+  "runtime_repository_ok": true,
+  "build": "passed"
+}
+```
+
+省成本反省：
+
+- 三批 high review 修改率分別為 70%、70%、60%；cheap model 不能直接 apply。
+- 修改集中在例句難度、日中精確對應、多義詞說明與自然搭配。下一批應把 prompt 加入「避免不必要第二義」和「優先短 N5 句」的正反例。
+- 明確 `--ids` 比 offset 切片安全；manifest 更新後仍能重現 batch，不會因前批 apply 導致跳號。
+- Deterministic field gate 連高模型 review 都能抓到越權修改，不能省略。
+- 累積到 100 筆才一次 DB sync/build；相較每 20 筆同步，少做 4 次 import/build。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
@@ -864,8 +1027,9 @@ Note：`npm run build` 目前可在 DB mode 通過。曾出現多次 `ECONNRESET
 Related candidates sample：
 
 ```bash
-python3 scripts/generate_related_candidates.py --limit 100 --top-k 5
-python3 scripts/validate_related_candidates.py scratch/vocab-db-migration/related_candidates.sample.jsonl
+npm run related:setup
+npm run related:candidates:sample
+npm run related:candidates:validate
 ```
 
 ## 下一步
@@ -874,6 +1038,6 @@ python3 scripts/validate_related_candidates.py scratch/vocab-db-migration/relate
 2. 若 DB password 被 rotate，更新 Vercel `DATABASE_URL` 和本地 `.env.local`，再跑 repository validation。
 3. 第一批 cheap model 只取 `cheap_model_candidate + latin`，用 manifest exporter 固定 id/order，apply gate 必須 dry-run 通過且抽樣 review 後才寫 chunks。
 4. `semantic_review`、`katakana_review`、`grammar_high_risk`、verb medium/review 不給 cheap model；用高模型/人工小批次。
-5. 動詞下一步只處理 `verb_info_candidates.json` medium/review 的抽樣規則，不要直接 apply。
+5. 動詞 quarantine queue 已清空；後續只 audit 新資料或修正 65 筆既有 linguistic-review forms，不重放歷史 medium patch。
 6. 每批資料更新後：先 JSON/local validation；checkpoint 才 DB import/parity；milestone 才 build/redeploy。
-7. 清完 meaning/example 且 high-confidence verb forms 恢復後，再跑全量 FastEmbed candidate generation。
+7. 清完 meaning/example 後，再跑全量 FastEmbed candidate generation；sample 即使 validator 通過也不能直接 apply。

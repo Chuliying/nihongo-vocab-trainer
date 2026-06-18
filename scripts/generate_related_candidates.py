@@ -12,7 +12,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import math
 import sys
 import uuid
 from datetime import datetime, timezone
@@ -31,6 +30,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--limit", type=int, default=100, help="number of source entries to process; 0 means all")
     parser.add_argument("--candidate-pool-limit", type=int, default=1000, help="candidate pool size; 0 means all")
     parser.add_argument("--top-k", type=int, default=5)
+    parser.add_argument("--score-batch-size", type=int, default=256)
+    parser.add_argument(
+        "--allow-cross-pos",
+        action="store_true",
+        help="allow candidates without a shared part-of-speech token",
+    )
     parser.add_argument("--out", default=str(DEFAULT_OUT))
     parser.add_argument("--source", choices=("runtime-chunks",), default="runtime-chunks")
     return parser.parse_args()
@@ -64,21 +69,17 @@ def embedding_text(entry: dict) -> str:
     return "\n".join(parts)
 
 
-def normalize(vector) -> list[float]:
-    values = [float(item) for item in vector]
-    norm = math.sqrt(sum(item * item for item in values))
-    if norm == 0:
-        return values
-    return [item / norm for item in values]
-
-
-def dot(left: list[float], right: list[float]) -> float:
-    return sum(a * b for a, b in zip(left, right))
+def pos_tokens(entry: dict) -> set[str]:
+    return {
+        token.strip()
+        for token in str(entry.get("part_of_speech", "")).split("・")
+        if token.strip()
+    }
 
 
 def reason_for(source: dict, target: dict, score: float) -> dict:
-    source_pos = set(str(source.get("part_of_speech", "")).split("・"))
-    target_pos = set(str(target.get("part_of_speech", "")).split("・"))
+    source_pos = pos_tokens(source)
+    target_pos = pos_tokens(target)
     return {
         "similarity": round(score, 6),
         "shared_part_of_speech": sorted(source_pos & target_pos),
@@ -93,8 +94,8 @@ def is_candidate(source: dict, target: dict) -> tuple[bool, list[str]]:
         return False, ["self-link"]
     if source.get("word") == target.get("word") and source.get("reading") == target.get("reading"):
         return False, ["duplicate-word-reading"]
-    source_pos = set(str(source.get("part_of_speech", "")).split("・"))
-    target_pos = set(str(target.get("part_of_speech", "")).split("・"))
+    source_pos = pos_tokens(source)
+    target_pos = pos_tokens(target)
     if source_pos & target_pos:
         filters.append("shared-pos")
     if source.get("jlpt_level") == target.get("jlpt_level"):
@@ -108,8 +109,12 @@ def main() -> int:
     args = parse_args()
     try:
         from fastembed import TextEmbedding
+        import numpy as np
     except ImportError:
-        print("ERROR: fastembed is not installed. Run: python3 -m pip install --user fastembed", file=sys.stderr)
+        print(
+            "ERROR: dependencies are missing. Create .venv and install fastembed numpy there.",
+            file=sys.stderr,
+        )
         return 2
 
     vocab = load_runtime_vocab()
@@ -122,8 +127,14 @@ def main() -> int:
     texts = [embedding_text(entry) for entry in candidate_pool]
     text_hash = hashlib.sha256("\n---\n".join(texts).encode("utf-8")).hexdigest()
     model = TextEmbedding(model_name=args.model)
-    vectors = [normalize(vector) for vector in model.embed(texts)]
-    dimensions = len(vectors[0]) if vectors else 0
+    vectors = np.asarray(list(model.embed(texts)), dtype=np.float32)
+    norms = np.linalg.norm(vectors, axis=1, keepdims=True)
+    vectors = np.divide(vectors, norms, out=np.zeros_like(vectors), where=norms != 0)
+    dimensions = int(vectors.shape[1]) if vectors.size else 0
+    indices_by_pos: dict[str, set[int]] = {}
+    for target_index, target in enumerate(candidate_pool):
+        for token in pos_tokens(target):
+            indices_by_pos.setdefault(token, set()).add(target_index)
 
     run_id = str(uuid.uuid4())
     out_path = Path(args.out)
@@ -142,7 +153,13 @@ def main() -> int:
             "model": args.model,
             "dimensions": dimensions,
             "embedding_text_hash": text_hash,
+            "embedding_text_version": "word-reading-meaning-pos-jlpt-example-v1",
             "top_k": args.top_k,
+            "filters_json": {
+                "self_link": "exclude",
+                "duplicate_word_reading": "exclude",
+                "shared_part_of_speech": "optional" if args.allow_cross_pos else "required",
+            },
             "source_count": len(sources),
             "candidate_pool_count": len(candidate_pool),
             "corpus_count": len(vocab),
@@ -150,36 +167,56 @@ def main() -> int:
         }
         handle.write(json.dumps(header, ensure_ascii=False) + "\n")
 
-        for source_index, source in enumerate(sources):
-            if source_index >= len(candidate_pool):
-                break
-            scored = []
-            for target_index, target in enumerate(candidate_pool):
-                ok, filters = is_candidate(source, target)
-                if not ok:
+        source_count = min(len(sources), len(candidate_pool))
+        batch_size = max(1, args.score_batch_size)
+        for batch_start in range(0, source_count, batch_size):
+            batch_end = min(batch_start + batch_size, source_count)
+            score_matrix = vectors[batch_start:batch_end] @ vectors.T
+            for batch_offset, source_index in enumerate(range(batch_start, batch_end)):
+                source = sources[source_index]
+                scores = score_matrix[batch_offset]
+                if args.allow_cross_pos:
+                    eligible_indices = np.arange(len(candidate_pool), dtype=np.int32)
+                else:
+                    eligible = set()
+                    for token in pos_tokens(source):
+                        eligible.update(indices_by_pos.get(token, ()))
+                    eligible_indices = np.fromiter(eligible, dtype=np.int32)
+                if eligible_indices.size == 0:
                     continue
-                score = dot(vectors[source_index], vectors[target_index])
-                scored.append((score, target, filters))
-            scored.sort(key=lambda item: item[0], reverse=True)
-            for rank, (score, target, filters) in enumerate(scored[: args.top_k], start=1):
-                row = {
-                    "type": "related_word_candidate",
-                    "run_id": run_id,
-                    "source_vocab_id": source["id"],
-                    "target_vocab_id": target["id"],
-                    "rank": rank,
-                    "similarity_score": round(score, 6),
-                    "method": "fastembed-cosine",
-                    "status": "proposed",
-                    "source_word": source.get("word"),
-                    "target_word": target.get("word"),
-                    "target_reading": target.get("reading"),
-                    "target_meaning": target.get("meaning"),
-                    "reason_json": reason_for(source, target, score),
-                    "filters_matched_json": filters,
-                }
-                handle.write(json.dumps(row, ensure_ascii=False) + "\n")
-                candidate_count += 1
+                eligible_scores = scores[eligible_indices]
+                candidate_limit = min(eligible_indices.size, args.top_k + 2)
+                partition = np.argpartition(eligible_scores, -candidate_limit)[-candidate_limit:]
+                partition = partition[np.argsort(eligible_scores[partition])[::-1]]
+                top_indices = eligible_indices[partition]
+                selected = []
+                for target_index in top_indices:
+                    target = candidate_pool[int(target_index)]
+                    ok, filters = is_candidate(source, target)
+                    if not ok:
+                        continue
+                    selected.append((float(scores[target_index]), target, filters))
+                    if len(selected) == args.top_k:
+                        break
+                for rank, (score, target, filters) in enumerate(selected, start=1):
+                    row = {
+                        "type": "related_word_candidate",
+                        "run_id": run_id,
+                        "source_vocab_id": source["id"],
+                        "target_vocab_id": target["id"],
+                        "rank": rank,
+                        "similarity_score": round(score, 6),
+                        "method": "fastembed-cosine",
+                        "status": "proposed",
+                        "source_word": source.get("word"),
+                        "target_word": target.get("word"),
+                        "target_reading": target.get("reading"),
+                        "target_meaning": target.get("meaning"),
+                        "reason_json": reason_for(source, target, score),
+                        "filters_matched_json": filters,
+                    }
+                    handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+                    candidate_count += 1
 
     print(
         json.dumps(
