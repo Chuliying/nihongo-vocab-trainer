@@ -6,6 +6,7 @@ const { QUALITY_REASONS, qualityIssuesForEntry } = require("./vocab_quality");
 const CHUNKS_DIR = path.join(process.cwd(), "public", "data", "chunks");
 const OUT_DIR = path.join(process.cwd(), "scratch", "cleanup_pipeline");
 const DEFAULT_OUT = path.join(OUT_DIR, "cleanup_manifest.json");
+const MANUAL_SEMANTIC_REVIEW_WORDS = new Set(["本田"]);
 
 function readEntries() {
   return fs
@@ -96,13 +97,20 @@ function semanticReviewFlags(entry) {
   const frequencyRank = Number(entry.frequency_rank || 0);
 
   if (tokens.includes("未分類")) flags.push("unclassified_pos");
+  if (MANUAL_SEMANTIC_REVIEW_WORDS.has(String(entry.word || ""))) flags.push("manual_semantic_review");
   if (frequencyRank >= 9000) flags.push("very_low_frequency");
+  if (/[A-Za-zΑ-Ωα-ω]/.test(String(entry.word || ""))) flags.push("non_japanese_symbol");
   if (hasScientificName(gloss)) flags.push("scientific_name");
   if (/\b(plant|tree|shrub|flower|fish|bird|insect|moth|beetle|fungus)\b/i.test(gloss)) {
     flags.push("taxonomy_or_nature_term");
   }
-  if (/\b(surname|given name|place name|company|brand|trademark|product name|station name|newspaper|district in Tokyo)\b/i.test(gloss)) {
+  if (
+    /\b(surname|given name|place name|company|brand|trademark|product name|station name|newspaper|district in Tokyo|city|prefecture|province|town|village)\b/i.test(gloss)
+  ) {
     flags.push("proper_name_or_brand");
+  }
+  if (/^[ぁ-ゟ]{1,3}$/.test(String(entry.word || "")) && frequencyRank >= 3000) {
+    flags.push("short_kana_low_frequency");
   }
   if (/\b(archaism|archaic|obsolete|classical Japanese|Buddhist|Buddhism|Shinto|kabuki|noh|sumo|mahjong)\b/i.test(gloss)) {
     flags.push("domain_or_register_specific");

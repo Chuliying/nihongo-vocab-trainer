@@ -599,6 +599,127 @@ npm run build
 - 沒有跑全量 content LLM，因為本版只 checkpoint metadata/verb deterministic work。
 - `validate:chunks` 仍預期失敗，因為 7,484 個內容品質問題是後續目標，不是本版阻擋點。
 
+### Iteration 009 — first reviewed cheap content batch
+
+狀態：20 筆 latin/content 已套用 chunks，另修正 1 筆 semantic translation；Neon 已同步。
+
+流程：
+
+1. 重新收緊 manifest：
+   - city/prefecture/town/village 等地名進 `semantic_review`
+   - 低頻短假名詞進 `semantic_review`
+2. `gpt-5.4-mini` 產生 20 筆候選。
+3. manifest apply gate dry-run：issue delta `54 -> 0`。
+4. `gpt-5.5 high` 逐筆語義審核，抓出 14 筆需要修改。
+5. 修正後再次 dry-run，再正式 apply。
+6. `4095 乗客` 的舊中文翻譯另建 semantic correction，避免繞過 field drift gate。
+
+結果：
+
+```json
+{
+  "batch": {
+    "rows": 20,
+    "changedMeaning": 20,
+    "changedExample": 17,
+    "issueDelta": {
+      "before": 54,
+      "after": 0
+    }
+  },
+  "semanticCorrection": {
+    "rows": 1,
+    "changedExample": 1
+  },
+  "quality": {
+    "badEntriesBefore": 7484,
+    "badEntriesAfter": 7464,
+    "issueCountBefore": 16592,
+    "issueCountAfter": 16538
+  },
+  "manifest": {
+    "cheap_model_candidate": 2479,
+    "semantic_review": 1618
+  }
+}
+```
+
+DB sync：
+
+```json
+{
+  "import_run_id": "e2089546-0f18-4600-8b26-e18630748023",
+  "vocab_entries": 13000,
+  "verb_info": 300,
+  "related_words": 25990,
+  "popular_verbs": 300
+}
+```
+
+省成本反省：
+
+- 便宜模型適合產候選，但本批 20 筆有 14 筆被高模型指出語義或搭配可改善；不能直接全自動 apply。
+- 高模型只做 review/差異修正，比讓它從頭生成 20 筆省 context。
+- 先加地名與低頻短假名分流，cheap bucket 從 2,671 降到 2,499，避免不必要的高模型返工。
+- 下一批應維持「cheap generate -> deterministic gate -> high-model review」；若高模型修改率持續高於約 30%，需要再收窄 cheap bucket 或改善 prompt。
+
+### Iteration 010 — second reviewed cheap content batch
+
+狀態：第二批 20 筆已套用 chunks，Neon 已同步。
+
+新增分流：
+
+- 非日文符號（Latin/Greek alphabet）進 `semantic_review`
+- `本田` 這類已確認的專門詞進 manual semantic review
+
+結果：
+
+```json
+{
+  "batch": {
+    "rows": 20,
+    "changedMeaning": 20,
+    "changedExample": 17,
+    "issueDelta": {
+      "before": 54,
+      "after": 0
+    }
+  },
+  "quality": {
+    "badEntriesBefore": 7464,
+    "badEntriesAfter": 7444,
+    "issueCountBefore": 16538,
+    "issueCountAfter": 16484
+  },
+  "review": {
+    "firstBatchRequiredChanges": 14,
+    "secondBatchRequiredChanges": 9,
+    "firstBatchChangeRate": "70%",
+    "secondBatchChangeRate": "45%"
+  }
+}
+```
+
+DB sync：
+
+```json
+{
+  "import_run_id": "7b77e25e-2e45-4580-a150-00d7aeba1c5a",
+  "vocab_entries": 13000,
+  "verb_info": 300,
+  "related_words": 25990,
+  "popular_verbs": 300,
+  "runtime_repository_ok": true
+}
+```
+
+省成本反省：
+
+- prompt 改良後，高模型修改率由 70% 降到 45%，方向有效但仍高於 30% 目標。
+- 常見錯誤已集中成：繁中用詞不自然、過度擴義、法律/專業角色錯置、例句主語或語意指向不準。
+- cheap model 仍只適合候選生成；高模型 review 不能移除。
+- 下一步可先限制 cheap batch 到單義、常見具體名詞，降低高模型 review 成本；多義/專業詞移入 semantic review。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
