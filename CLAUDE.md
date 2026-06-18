@@ -26,8 +26,8 @@
 ```json
 {
   "entries": 13000,
-  "badEntries": 7424,
-  "issueCount": 16424
+  "badEntries": 7344,
+  "issueCount": 16190
 }
 ```
 
@@ -837,10 +837,10 @@ Runtime / import：
   },
   "quality": {
     "badEntriesBefore": 7444,
-    "badEntriesAfter": 7384,
+    "badEntriesAfter": 7344,
     "issueCountBefore": 16484,
-    "issueCountAfter": 16304,
-    "cheapModelCandidateAfter": 2393
+    "issueCountAfter": 16190,
+    "cheapModelCandidateAfter": 2353
   },
   "verbInvariant": {
     "generatedSuspect": 0,
@@ -865,7 +865,7 @@ Neon sync：
 
 ```json
 {
-  "import_run_id": "f0b7464f-d219-4757-a4f3-772ed93213d7",
+  "import_run_id": "85663922-4970-4626-ab08-794e2ff75edb",
   "vocab_entries": 13000,
   "verb_info": 678,
   "related_words": 25990,
@@ -881,6 +881,7 @@ Neon sync：
 - 修改集中在例句難度、日中精確對應、多義詞說明與自然搭配。下一批應把 prompt 加入「避免不必要第二義」和「優先短 N5 句」的正反例。
 - 明確 `--ids` 比 offset 切片安全；manifest 更新後仍能重現 batch，不會因前批 apply 導致跳號。
 - Deterministic field gate 連高模型 review 都能抓到越權修改，不能省略。
+- Candidate generation 與 review 可以並行，但 chunk apply 不可並行：兩個 apply process 會各自讀取完整 chunk 後覆寫同一檔案。本輪曾因此覆蓋 40 筆，經統計 delta 發現後已串行重套並驗證 100 筆全數生效。
 - 累積到 100 筆才一次 DB sync/build；相較每 20 筆同步，少做 4 次 import/build。
 
 ## 最低成本 Flow
