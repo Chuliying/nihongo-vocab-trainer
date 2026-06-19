@@ -1022,6 +1022,92 @@ Neon / build：
 - 100 筆累積後才做一次 Neon import 與 build；沒有 redeploy，因資料 API 為 DB runtime 且 production deploy 本身未變。
 - related 全量 embeddings 繼續延後；先少 297 個污染 embedding text 的內容 issues，避免重算與重審候選。
 
+### Iteration 015 — fifth reviewed content checkpoint
+
+狀態：再完成 100 筆 deterministic 選批、候選、逐筆 review、gate、串行 apply、Neon sync 與 build。
+
+選批：
+
+- current manifest：`cheap_model_candidate + latin`
+- 固定 100 個 ID 與順序
+- `semantic_review_flags` 全為空
+- 優先生活、教育、健康、交通、自然與一般抽象名詞
+- 排除專名、地名、軍事詞、性暴力、宗教冷僻義與容易二義漂移的詞
+
+流程：
+
+1. 第一版候選只修改 meaning/example。
+2. dry-run gate 阻擋 id `6184 消耗` 的非必要繁中例句 drift；恢復原值，只修 meaning。
+3. 第一版 gate 通過：298 issues → 0。
+4. 第二遍語言 review 修正 7 筆：
+   - `返事を躊躇` → `返事をするのを躊躇`
+   - `愛を誓いにする` → `誓いを交わす`
+   - `吹奏楽をする` → `吹奏楽部に入る`
+   - `力の蓄積になる` → `知識が蓄積される`
+   - 綽號例句的日中稱呼對應
+   - `出生の日付` → `出生地`
+   - 大騷動句移除不必要的引用動詞
+5. reviewed artifact 再次 dry-run：100 unique IDs、全 high confidence、繁中無 Latin、298 issues → 0。
+6. 單一程序串行 apply，逐 ID payload mismatch 為 0。
+
+品質結果：
+
+```json
+{
+  "before": {
+    "badEntries": 7244,
+    "issueCount": 15893
+  },
+  "after": {
+    "badEntries": 7144,
+    "issueCount": 15595
+  },
+  "batch": {
+    "rows": 100,
+    "changedMeaning": 100,
+    "changedExample": 99,
+    "issuesBefore": 298,
+    "issuesAfter": 0,
+    "artifactMismatches": []
+  }
+}
+```
+
+動詞驗證：
+
+```json
+{
+  "withVerbInfo": 678,
+  "suppressedVerbInfo": 57,
+  "candidateQueue": 0,
+  "generatedSuspect": 0,
+  "mechanicalError": 0
+}
+```
+
+Neon / build：
+
+```json
+{
+  "import_run_id": "c4fe351e-62ee-4013-93bd-fdeb829293e4",
+  "vocab_entries": 13000,
+  "verb_info": 678,
+  "related_words": 25990,
+  "popular_verbs": 300,
+  "api_parity": true,
+  "runtime_repository_ok": true,
+  "build": "passed"
+}
+```
+
+省成本反省：
+
+- 先排除高風險語義類別，再集中處理 100 個可用短句教學的詞，降低 review 分支與 context 切換。
+- required-field gate 再次阻止只需 meaning 的 row 被順手重寫例句，證明 field-level allowlist 能避免不必要 review。
+- 第二遍修正集中在日語格助詞與固定搭配；下一批可在候選 prompt 增加「名詞 + する／なる／交わす等搭配須以自然語料感覆核」，減少後修。
+- 仍採同一 session 兩遍處理，沒有額外模型呼叫成本；但獨立審核性不足，正式擴到 200–300 筆前應恢復 cheap candidate 與高模型 review 分離。
+- 每 100 筆只做一次 DB import/build，未 redeploy；related 全量 embedding 繼續等內容污染顯著下降後再跑。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
