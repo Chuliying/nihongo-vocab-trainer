@@ -933,6 +933,95 @@ Related generator 修正：
 - related sample 使用 100×1000 而非全量 13,000×13,000；先驗證 pipeline、filter 與 artifact schema，再考慮昂貴全量 embedding。
 - 目前 corpus 仍有大量 meaning/example issues，向量候選只保留 proposed 狀態；先改善內容可避免之後重算 embeddings 與重做人工 review。
 
+### Iteration 014 — fourth reviewed content checkpoint
+
+狀態：下一批 100 筆 latin/content 已完成 deterministic 選批、兩遍內容處理、gate、串行 apply、Neon sync 與 build。
+
+選批規則：
+
+- current manifest：`cheap_model_candidate + latin`
+- 明確固定 100 個 ID 與順序
+- `semantic_review_flags` 必須為空
+- 排除動詞、文法詞、純片假名、品牌地名、專名、學名、軍事冷僻詞與低頻短假名
+- 優先常見、單義、可用短 N4/N5 句表達的名詞、形容詞與副詞
+
+流程：
+
+1. 產生第一版 100 筆候選，只允許修改 meaning/example。
+2. deterministic dry-run gate 第一次阻擋 id `4919 對話` 的非必要例句 drift；恢復原本自然例句。
+3. 第一版 gate 通過：297 issues → 0。
+4. 第二遍逐筆語言 review，修正 8 筆：
+   - 避免把 `熱中` 過度翻成「沉迷」
+   - `審判` 不混入不精確的「裁判員」制度用語
+   - `一只手錶` 改為台灣慣用量詞「一支手錶」
+   - `国に認可` 改為自然的 `国から認可`
+   - `排出`、`見通し` 改為更自然搭配
+   - `日焼け` 未明示疼痛時譯為中性的「曬黑」
+   - 移除 `悪質` 重複釋義
+5. reviewed artifact 再次 dry-run，100 筆全部通過後串行 apply。
+
+品質結果：
+
+```json
+{
+  "before": {
+    "badEntries": 7344,
+    "issueCount": 16190
+  },
+  "after": {
+    "badEntries": 7244,
+    "issueCount": 15893
+  },
+  "batch": {
+    "rows": 100,
+    "changedMeaning": 100,
+    "changedExample": 99,
+    "issuesBefore": 297,
+    "issuesAfter": 0,
+    "artifactMismatches": []
+  }
+}
+```
+
+動詞驗證：
+
+```json
+{
+  "withVerbInfo": 678,
+  "suppressedVerbInfo": 57,
+  "candidateQueue": 0,
+  "generatedSuspect": 0,
+  "mechanicalError": 0
+}
+```
+
+Neon / build：
+
+```json
+{
+  "import_run_id": "bd669ddf-e64b-4aa1-aad6-8bad8edff9e1",
+  "vocab_entries": 13000,
+  "verb_info": 678,
+  "related_words": 25990,
+  "popular_verbs": 300,
+  "runtime_repository_ok": true,
+  "build": "passed"
+}
+```
+
+驗證注意：
+
+- `npm run validate:chunks` 是「全 13,000 筆必須零 issue」的終局 gate；目前剩餘 15,893 issues，因此預期失敗。
+- 本批採用 reviewed artifact 與逐 ID payload 比對驗證，100 筆全部一致且 batch issues 為 0。
+
+省成本反省：
+
+- 先用 risk/semantic flags 與明確 ID allowlist 縮小到 100 筆，避免把高風險詞送進一般內容流程。
+- 第一遍就跑 field-drift gate，阻止無必要重寫既有自然例句；可減少第二遍 review context。
+- 本輪候選與嚴格 review 都在同一 Codex session 分兩遍完成，節省額外 model/context 成本，但審核獨立性弱於 `gpt-5.4-mini candidate → gpt-5.5 review`。後續大批次仍應恢復獨立高模型 review。
+- 100 筆累積後才做一次 Neon import 與 build；沒有 redeploy，因資料 API 為 DB runtime 且 production deploy 本身未變。
+- related 全量 embeddings 繼續延後；先少 297 個污染 embedding text 的內容 issues，避免重算與重審候選。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
