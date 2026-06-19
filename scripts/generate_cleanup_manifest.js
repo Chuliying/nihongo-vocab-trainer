@@ -6,7 +6,15 @@ const { QUALITY_REASONS, qualityIssuesForEntry } = require("./vocab_quality");
 const CHUNKS_DIR = path.join(process.cwd(), "public", "data", "chunks");
 const OUT_DIR = path.join(process.cwd(), "scratch", "cleanup_pipeline");
 const DEFAULT_OUT = path.join(OUT_DIR, "cleanup_manifest.json");
+const EXAMPLE_TARGET_STATUS = path.join(OUT_DIR, "example_target_status.json");
 const MANUAL_SEMANTIC_REVIEW_WORDS = new Set(["本田"]);
+
+function readExampleTargetStatus() {
+  if (!fs.existsSync(EXAMPLE_TARGET_STATUS)) return {};
+  return JSON.parse(fs.readFileSync(EXAMPLE_TARGET_STATUS, "utf8")).status || {};
+}
+
+const EXAMPLE_TARGETS = readExampleTargetStatus();
 
 function readEntries() {
   return fs
@@ -95,8 +103,10 @@ function semanticReviewFlags(entry) {
   const glosses = Array.isArray(quality.gloss_en) ? quality.gloss_en.map(String) : [];
   const gloss = glosses.join(" ; ");
   const frequencyRank = Number(entry.frequency_rank || 0);
+  const targetStatus = EXAMPLE_TARGETS[String(entry.id)];
 
   if (tokens.includes("未分類")) flags.push("unclassified_pos");
+  if (targetStatus && targetStatus.token_match === false) flags.push("example_target_token_mismatch");
   if (MANUAL_SEMANTIC_REVIEW_WORDS.has(String(entry.word || ""))) flags.push("manual_semantic_review");
   if (frequencyRank >= 9000) flags.push("very_low_frequency");
   if (/[A-Za-zΑ-Ωα-ω]/.test(String(entry.word || ""))) flags.push("non_japanese_symbol");
@@ -126,7 +136,7 @@ function semanticReviewFlags(entry) {
     flags.push("register_review");
   }
   if (
-    /\b(admiral|commodore|army|military|armed forces|troops?|soldier|marine|air force|aircraft carrier|ammunition|torpedo|sniping|reconnaissance|mercenary|lieutenant|sergeant|fortification|stronghold|prisoner of war|assault|invasion|deployment|battle formation|war front|cold war)\b/i.test(
+    /\b(admiral|commodore|army|military|armed forces|troops?|soldier|marine|air force|aircraft carrier|ammunition|torpedo|sniping|shooting|marksmanship|reconnaissance|mercenary|lieutenant|sergeant|fortification|stronghold|prisoner of war|assault|invasion|deployment|battle formation|war front|cold war)\b/i.test(
       gloss
     )
   ) {
@@ -264,6 +274,9 @@ function main() {
   const payload = {
     generated_at: new Date().toISOString(),
     source: "public/data/chunks",
+    example_target_audit: fs.existsSync(EXAMPLE_TARGET_STATUS)
+      ? path.relative(process.cwd(), EXAMPLE_TARGET_STATUS)
+      : null,
     rule: "fixed bad-entry manifest; consume by manifest_index/id, not dynamic bad-only slicing",
     summary: summarize(rows),
     rows,

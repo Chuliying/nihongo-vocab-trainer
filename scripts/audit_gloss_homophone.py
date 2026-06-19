@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""L1 gloss homophone audit (0 model token).
+"""L1 gloss entry-source audit (0 model token).
 
 The legacy pipeline matched JMdict by reading only, so some entries inherited the
 English gloss of the WRONG same-reading homophone (e.g. ちょうど -> furniture instead
 of "exactly"). This script uses jamdict + JMdict priority tags to detect those
-entries deterministically and emit the correct top-priority sense for each.
+entries deterministically. A successful match proves that a gloss belongs to the
+word's JMdict entry; it does NOT prove the correct contextual sense.
 
 Output: JSON { generated_at, summary, flagged: [ {id, word, reading, meaning,
 current_gloss, corrupt_sense, correct_gloss, correct_pos} ] }
@@ -157,7 +158,7 @@ def main():
             true_gloss_set = entry_gloss_set(own)
             if gnorm & true_gloss_set:
                 summary["kanji_pinned_ok"] += 1  # gloss is from the right (kanji) entry
-                set_status(row["id"], "jmdict_verified")
+                set_status(row["id"], "jmdict_entry_matched")
                 continue
             # gloss does NOT match this word's own entry; did it come from another homophone?
             other = [e for e in all_ents if e is not own and (gnorm & entry_gloss_set(e))]
@@ -198,7 +199,7 @@ def main():
             })
         else:
             summary["gloss_from_correct_or_top"] += 1
-            set_status(row["id"], "jmdict_verified")
+            set_status(row["id"], "jmdict_entry_matched")
 
     out = {
         "generated_at": str(date.today()),

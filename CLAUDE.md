@@ -2,6 +2,154 @@
 
 更新日期：2026-06-19
 
+## 接手入口（先讀這段）
+
+### 當前唯一主目標
+
+持續把 `low_value_example` 換成自然、可教學、讀音正確的真實日語例句。每累積
+**100 筆 accepted rows** 才同步一次 Neon。meaning cleanup 可獨立進行，但不要
+為了處理例句順手修改 meaning、`verb_info`、related 或 `quality_score`。
+
+目前 authoritative state：
+
+```json
+{
+  "entries": 13000,
+  "badEntries": 9540,
+  "issueCount": 22252,
+  "lowValueExample": 4166,
+  "legacyMeaningUnreviewed": 8310,
+  "realExampleQueue": {
+    "proposedRows": 2764,
+    "fallbackRows": 1402,
+    "validatedCandidates": 6648
+  },
+  "verbInvariant": {
+    "generatedSuspect": 0,
+    "mechanicalError": 0,
+    "candidateQueue": 0
+  },
+  "lastNeonImportRunId": "c73a002b-7bf0-4fa7-ad84-f28beddee2d5"
+}
+```
+
+### 下一個 agent 應直接做什麼
+
+1. 先讀 `VOCAB_CLEANUP_STATE.json`，不要從 Iteration 001 重建上下文。
+2. 重生 current candidates：
+
+```bash
+.venv/bin/python scripts/select_real_examples.py --top-k 3 \
+  --out scratch/cleanup_pipeline/real_example_candidates.jsonl
+.venv/bin/python scripts/enrich_real_example_candidates.py
+.venv/bin/python scripts/validate_real_example_candidates.py \
+  scratch/cleanup_pipeline/real_example_candidates.enriched.jsonl
+```
+
+3. 準備 **150 rows** 的 `cheap_model_candidate` packet：
+
+```bash
+.venv/bin/python scripts/prepare_real_example_review.py \
+  --risk cheap_model_candidate --limit 150 \
+  --out scratch/cleanup_pipeline/real_example_review_packet_<NNN>.jsonl
+```
+
+4. 用 Agy-first 一次批次 review。Agy 只讀 packet，不掃 repo；輸出嚴格 JSONL。
+   150 rows 實測約可得到 75–100 accepts。不要先由主代理逐筆 review。
+5. 用 `normalize_real_example_review_draft.py` 驗證列數、順序、ID 與不可變日文。
+   Agy 若改 `j`、改 `sentence_id` 或缺欄位，該 row 直接 contract reject，不中止整批。
+6. 主代理只做：
+   - 抽樣 10%（均勻分散，不只看前幾列）
+   - 敏感詞／軍事／成人／犯罪掃描
+   - `apply_real_example_patch.js --dry-run`
+7. accepted rows 累積滿 100 才 apply、build、DB dry-run、單次 Neon write、
+   runtime repository validation。write log 用 `tee` 保存，不要為看 log 重跑。
+
+### Accept rubric
+
+每一筆必須全部符合：
+
+- 日文句子完全等於 candidate allowlist 的 `j`，`sentence_id` 正確。
+- 目標詞是該 token/lemma 的同一詞義與詞性；不可只是：
+  - substring
+  - 同音字
+  - 複合詞中的不同概念
+  - 衍生詞（如 `主体` 對到 `主体性`）
+  - 名詞詞條對到動詞活用，除非詞條本身就是該活用形式。
+- 日語自然、不是新聞標題碎片、古語、meta sentence 或刻意造句。
+- 優先 N4/N5 可理解的短句；N3 詞可保留，但句法不要無必要地升級。
+- 排除成人、性、暴力、軍事、戰爭、犯罪、自殺、綁架、人質與其他不適合一般學習的內容。
+- `r` 完整對應整句且不含漢字。Tatoeba human transcription 仍需 review；
+  已實測會把 `十分` 誤作 `じゅうふん`。
+- `c` 必須是自然台灣繁中，只翻譯日文原句，不增補主詞或語意，不含英文、
+  簡體或 placeholder。
+- review row 必須有：
+  `reading_reviewed=true`、`translation_reviewed=true`、`reviewed=true`。
+
+任何一項不確定就 reject；fallback 比錯誤套用便宜。
+
+### Deterministic gates（不可省）
+
+```bash
+.venv/bin/python scripts/normalize_real_example_review_draft.py \
+  --packet <packet.jsonl> --draft <agy-output.jsonl> \
+  --out <checkpoint.jsonl> --accept-limit <需要數量> \
+  --exclude-ids <人工排除IDs>
+
+node scripts/apply_real_example_patch.js <checkpoint.jsonl> \
+  --candidates scratch/cleanup_pipeline/real_example_candidates.enriched.jsonl \
+  --dry-run
+```
+
+Gate 必須證明：
+
+- `resolvedLowValue == rows`
+- `meaningChanges == 0`
+- `qualityScoreChanges == 0`
+- 沒有 stale original、candidate allowlist、繁簡或 target-match 錯誤。
+
+### Checkpoint 驗證與完成條件
+
+每 100 accepted rows：
+
+```bash
+npm run cleanup:manifest
+node scripts/audit_verb_info.js
+npm run db:import:dry-run
+npm run build
+set -a; source .env.local; set +a
+npm run db:import 2>&1 | tee /tmp/nihongo_db_import_<checkpoint>.log
+npm run validate:runtime-repository
+```
+
+成功條件：
+
+- `low_value_example` 精確下降 100。
+- 動詞 `generatedSuspect=0`、`mechanicalError=0`、candidate queue 0。
+- DB counts 固定為 13 / 13000 / 678 / 25990 / 300。
+- API parity 無 mismatch，build 與 runtime repository 通過。
+- 更新 `VOCAB_CLEANUP_STATE.json`、本段 current state 與 Iteration 紀錄。
+
+### Agy 使用 rubric（省 Codex 額度）
+
+- 小於約 20 筆：主代理直接做，除非需要獨立第二意見。
+- 20–150 筆同質、低風險、唯讀 review：批次交 Agy。
+- 只提供 packet 路徑與必要規則，不叫 Agy 掃 repo。
+- 強制 JSONL schema、列數相同、reason 長度上限；禁止過程敘述。
+- Agy output 是 advisory。主代理用 deterministic gate + 10% 抽樣，不完整重做。
+- 目標是節省 Codex/Claude 額度，不保證跨模型總 token 下降。
+- `AGY_METRICS=1` 只提供 chars/bytes/time proxy；官方 CLI 沒有 exact token usage。
+
+### 絕對不要做
+
+- 不要使用 `public/data/vocab_13000.json` 覆蓋 chunks/Neon。
+- 不要把 full JSON 當 runtime baseline。
+- 不要讓 Agy 或便宜模型直接改檔、寫 DB、碰 secrets 或決定 architecture/security。
+- 不要對 `semantic_review`、`grammar_high_risk`、`katakana_review`、
+  `verb_quarantine` 套一般 cheap flow。
+- 不要現在跑或 apply related embeddings；內容仍有 22k+ issues。
+- 不要重跑歷史 verb medium patch；動詞 queue 已清空。
+
 ## 目前狀況
 
 - `git pull`：已確認 `main` 與 `origin/main` 同步，遠端沒有新提交。
@@ -26,14 +174,14 @@
 ```json
 {
   "entries": 13000,
-  "badEntries": 9598,
-  "issueCount": 22454
+  "badEntries": 9540,
+  "issueCount": 22252
 }
 ```
 
 這次數字上升不是內容倒退，而是 validator 補上 provenance blind spot：舊
 `jmdict gloss zh translation` pipeline 原有 8,809 筆 meaning 尚未經語義審核，
-過去即使翻譯明顯錯誤也可能被算成 clean；目前已透過兩批 checkpoint 降到 8,610。
+過去即使翻譯明顯錯誤也可能被算成 clean；目前已透過 reviewed checkpoints 降到 8,310。
 
 依 tranche 的 bad entry 數：
 
@@ -58,8 +206,8 @@
 
 ```json
 [
-  ["legacy_meaning_unreviewed", 8709],
-  ["low_value_example", 4366],
+  ["legacy_meaning_unreviewed", 8310],
+  ["low_value_example", 4166],
   ["meaning_latin", 2982],
   ["chinese_latin", 2912],
   ["stale_llm_source", 2727],
@@ -1977,6 +2125,91 @@ deterministic 還原非必要欄位變動，省去每批手動還原 Haiku 改�
 - 失誤：曾為看 db:import log 重跑一次 write-mode import；之後一律 `tee` 存檔。
 - 每 100 筆才一次 Neon import/build；related 全量 embedding 繼續延後（仍有 22,554 issues）。
 
+### Iteration 027 — state reconciliation + token-safe real-example candidates
+
+狀態：重新產生 manifest 與 JMdict sidecar，修正 live state 漂移；Tatoeba prototype
+已升級為只產候選、不直接 apply 的安全流程。
+
+- manifest：9,598 bad rows；`legacy_meaning_unreviewed` 8,310。
+- 動詞 invariant：`generatedSuspect=0`、`mechanicalError=0`、candidate queue 0。
+- JMdict 狀態改名為 `jmdict_entry_matched`，明確只代表 gloss 屬於正確詞條，
+  不再暗示 contextual sense 已驗證。
+- 新增 `audit_example_target_tokens.py`：13,000 筆中 1,083 筆舊例句沒有真正的
+  token/lemma target match；其中 782 個 bad rows 轉入 semantic review。已攔下
+  `わか` 誤命中 `わかりやすく` 這類 substring collision。
+- `select_real_examples.py` 現在使用 fugashi exact surface/lemma matching、保守
+  N4/N5 難度 gate、敏感／高階文法排除，並保存 Tatoeba sentence id、URL、license。
+- 全量 4,366-row run：3,070 rows 有候選（70.32%）、1,296 rows 明確 fallback；
+  7,573 candidates 通過 artifact validator。舊 84% substring coverage 正式作廢。
+  讀音仍標為 `machine_generated_requires_review`，不假裝已校正。
+- 新增 example-only apply gate：只接受 candidate allowlist、要求 `reviewed:true`、
+  驗證 stale original，並保證 meaning / `quality_score` 不變；套用時保存 attribution。
+- 尚未做：實際繁中翻譯與讀音人工／模型 review。
+
+### Iteration 028 — Tatoeba translation/transcription layer + first reviewed examples
+
+狀態：Tatoeba 候選接上 direct `cmn` links 與 human transcription，並完成第一個
+19-row reviewed example checkpoint（chunks only，Neon 待累積到下一 checkpoint）。
+
+- 下載可重生的 `links.csv`、`cmn_sentences.tsv`、`transcriptions.csv` 到 gitignored
+  scratch；中文對句一律只當 source draft，不因 `cmn` 語言碼假裝已是繁中。
+- human transcription 覆蓋所有候選，但仍要求 review；本輪實際抓到
+  `十分` 被轉成 `じゅうふん`，人工修為 `じゅうぶん`，證明 gate 不可省。
+- kana matching 再收緊：不再用 reading 配對，surface match 也要求 coarse POS；
+  已擋下 `とう`（問う）誤配副詞 `とうに`。
+- current queue：4,347 rows；2,945 proposed、1,402 fallback；7,141 candidates
+  通過 validator。425 candidates 有 direct 中文對句，所有 candidates 有 human
+  transcription。
+- 19 rows 已經 review 並由 example-only gate apply；`low_value_example`
+  `4366 -> 4347`。meaning / `quality_score` 變動皆為 0。
+- 動詞 invariant 維持 `generatedSuspect=0`、`mechanicalError=0`、candidate queue 0。
+- Neon 暫不為 19 rows 單獨 truncate/reload；累積到下一合理 checkpoint 一次 sync。
+
+### Iteration 029 — first 100 reviewed real examples + Neon checkpoint
+
+狀態：再完成 81 筆低風險 review，與前 19 筆合計 100；已同步 Neon 並通過
+runtime repository / production build。
+
+- `low_value_example`: `4366 -> 4266`
+- meaning changes：0；`quality_score` changes：0
+- 動詞 invariant：`generatedSuspect=0`、`mechanicalError=0`、candidate queue 0
+- Neon import run：`a261c5cf-add0-4d0a-bf3c-d779972d49fd`
+- current candidate queue：4,266 rows；2,864 proposed、1,402 fallback；
+  6,908 candidates validated
+- Antigravity 第二輪 review 只作 advisory；8 個 sentence ID finding 由 deterministic
+  allowlist gate 獨立確認。後續改成 Agy-first 批次草稿、Codex 抽樣＋validator，
+  目標是節省 Codex 額度，不宣稱降低跨模型總 token。
+
+### Iteration 030 — Agy-first review workflow
+
+狀態：用新的省 Codex 額度策略處理 50-row packet；Agy 先完整 review，Codex
+不逐筆重做，只做 schema normalization、deterministic gate、6-row 抽樣與敏感詞掃描。
+
+- Agy：26 accept / 24 reject
+- Codex targeted safety check：再拒絕 1 筆射擊內容，並把 `shooting/marksmanship`
+  加入 semantic routing
+- apply：25 rows；meaning / `quality_score` changes 皆 0
+- `low_value_example`: `4266 -> 4241`
+- 動詞 invariant 維持 0
+- Agy wrapper 新增明文 token 策略與 proxy metrics；官方 CLI 未提供 exact token usage
+- 本批 25 rows 暫存 chunks，累積到下一 100-row checkpoint 再 sync Neon
+
+### Iteration 031 — Agy-first 150-row test + second 100-row Neon checkpoint
+
+狀態：依實測擴成 150-row packet。Agy 產生 101 accept / 48 reject；
+1 row 因擅改日文觸發 contract reject。主代理排除 2 個爭議 rows，取 75 筆，
+與 Iteration 030 的 25 筆合計 100，同步 Neon。
+
+- Agy proxy：prompt 1,179 chars、output 31,688 bytes、119 秒；exact token unavailable。
+- Contract finding：`収容` row 的 Agy output 把日文改成 `部屋 of ...`；
+  normalizer 已改為 row-level reject，不讓單一壞輸出拖垮整批。
+- 主代理抽樣發現 `惚け -> 時差ボケ` sense 判斷跨批不一致、墜落句不適合；
+  兩者排除，不逐筆重做其餘 review。
+- 第二個 Agy-first checkpoint：100 rows（25+75）。
+- `low_value_example`: `4266 -> 4166`
+- Neon import run：`c73a002b-7bf0-4fa7-ad84-f28beddee2d5`
+- build、DB dry-run/API parity、runtime repository、動詞 invariants 全部通過。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
@@ -2128,10 +2361,35 @@ npm run related:candidates:validate
 
 ## 下一步
 
-1. 不要再重做 Vercel/Neon setup；本地 `.env.local` 和 production DB mode 已可用。
-2. 若 DB password 被 rotate，更新 Vercel `DATABASE_URL` 和本地 `.env.local`，再跑 repository validation。
-3. 第一批 cheap model 只取 `cheap_model_candidate + latin`，用 manifest exporter 固定 id/order，apply gate 必須 dry-run 通過且抽樣 review 後才寫 chunks。
-4. `semantic_review`、`katakana_review`、`grammar_high_risk`、verb medium/review 不給 cheap model；用高模型/人工小批次。
-5. 動詞 quarantine queue 已清空；後續只 audit 新資料或修正 65 筆既有 linguistic-review forms，不重放歷史 medium patch。
-6. 每批資料更新後：先 JSON/local validation；checkpoint 才 DB import/parity；milestone 才 build/redeploy。
-7. 清完 meaning/example 後，再跑全量 FastEmbed candidate generation；sample 即使 validator 通過也不能直接 apply。
+執行本文件最上方「接手入口」的 Agy-first real-example workflow。下一個 checkpoint
+仍以 100 accepted rows 為目標。不要依照較早 iteration 的歷史「下一步」重做已完成工作。
+
+優先順序：
+
+1. `cheap_model_candidate` real examples。
+2. 獨立繼續 verified legacy meaning cleanup。
+3. real examples / meaning 大幅穩定後才處理 semantic/grammar/katakana。
+4. related embeddings 最後做。
+
+## Antigravity 低階任務委派
+
+完整 rubric 見最上方「Agy 使用 rubric」與
+`.codex/skills/antigravity-delegate/SKILL.md`。只透過 `scripts/agy-delegate`
+委派 bounded、低風險、read-only 任務：
+
+```bash
+scripts/agy-delegate "檢查指定檔案的 edge cases，回傳附行號的短清單"
+```
+
+Claude Code 也可使用：
+
+```text
+/delegate-antigravity <task>
+```
+
+預設沿用 Antigravity CLI 目前選定的模型。`agy` 1.0.10 在 print mode 加入
+`--model` 或 `--print-timeout` 時可能忽略真正 prompt，因此 wrapper 刻意只使用
+穩定的 `agy -p` 介面；需要切換模型時先在 Antigravity CLI 內選好，再執行委派。
+
+目前實測最佳單位是 150-row homogeneous packet。Agy 輸出一律是 advisory；
+normalizer、apply gate、抽樣與 checkpoint validators 才是套用依據。

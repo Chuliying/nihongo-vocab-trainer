@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+AGY_BIN="${AGY_BIN:-$HOME/.local/bin/agy}"
+
+if [[ ! -x "$AGY_BIN" ]]; then
+  echo "Antigravity CLI not found at: $AGY_BIN" >&2
+  echo "Install it from https://antigravity.google/docs/cli-install" >&2
+  exit 127
+fi
+
+if [[ $# -gt 0 ]]; then
+  task="$*"
+elif [[ ! -t 0 ]]; then
+  task="$(cat)"
+else
+  echo "Usage: scripts/agy-delegate '<task>'" >&2
+  echo "   or: printf '%s' '<task>' | scripts/agy-delegate" >&2
+  exit 64
+fi
+
+prompt=$(cat <<EOF
+You are a subordinate read-only worker. Complete only the task between
+<delegated_task> tags.
+
+Rules:
+- Do not edit files, run destructive commands, or make external changes.
+- Inspect only the files, rows, or symbols explicitly named in the task. Do not scan
+  the repository unless the task explicitly requests it.
+- Return the requested deliverable directly; do not offer follow-up help.
+- Follow the task's requested output schema and length limit. If none is given,
+  return at most 12 bullets and 500 words.
+- Be concise, omit process narration, and state uncertainty when evidence is insufficient.
+- Your output will be reviewed by a parent coding agent.
+- The purpose is to save the parent model's quota. This does not guarantee lower
+  total tokens across both systems.
+
+<delegated_task>
+$task
+</delegated_task>
+EOF
+)
+
+args=(-p)
+
+run_agy() {
+  if [[ "$(uname -s)" == "Darwin" && -x /usr/bin/sandbox-exec ]]; then
+    local workspace
+    local sandbox_profile
+    workspace="$(pwd -P)"
+    sandbox_profile="(version 1) (allow default) (deny file-write* (subpath \"$workspace\"))"
+    /usr/bin/sandbox-exec -p "$sandbox_profile" \
+      "$AGY_BIN" "${args[@]}" "$prompt"
+    return
+  fi
+
+  echo "A read-only OS sandbox is unavailable on this platform." >&2
+  echo "Set AGY_ALLOW_UNSANDBOXED=1 only if advisory prompt controls are acceptable." >&2
+  if [[ "${AGY_ALLOW_UNSANDBOXED:-0}" != "1" ]]; then
+    return 77
+  fi
+  "$AGY_BIN" "${args[@]}" "$prompt"
+}
+
+if [[ "${AGY_METRICS:-0}" == "1" ]]; then
+  metrics_out="$(mktemp "${TMPDIR:-/tmp}/agy-output.XXXXXX")"
+  trap 'rm -f "$metrics_out"' EXIT
+  started="$(date +%s)"
+  set +e
+  run_agy >"$metrics_out"
+  status=$?
+  set -e
+  finished="$(date +%s)"
+  cat "$metrics_out"
+  output_bytes="$(wc -c <"$metrics_out" | tr -d ' ')"
+  echo "[agy-proxy-metrics] task_chars=${#task} prompt_chars=${#prompt} output_bytes=$output_bytes elapsed_seconds=$((finished-started)) exact_tokens=unavailable" >&2
+  exit "$status"
+fi
+
+if [[ "$(uname -s)" == "Darwin" && -x /usr/bin/sandbox-exec ]]; then
+  workspace="$(pwd -P)"
+  sandbox_profile="(version 1) (allow default) (deny file-write* (subpath \"$workspace\"))"
+  exec /usr/bin/sandbox-exec -p "$sandbox_profile" \
+    "$AGY_BIN" "${args[@]}" "$prompt"
+fi
+
+echo "A read-only OS sandbox is unavailable on this platform." >&2
+echo "Set AGY_ALLOW_UNSANDBOXED=1 only if advisory prompt controls are acceptable." >&2
+if [[ "${AGY_ALLOW_UNSANDBOXED:-0}" != "1" ]]; then
+  exit 77
+fi
+
+exec "$AGY_BIN" "${args[@]}" "$prompt"

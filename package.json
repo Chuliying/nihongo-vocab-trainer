@@ -11,7 +11,8 @@
     "split:chunks": "npx tsx scripts/split_vocab_chunks.ts",
     "enrich:export": "node scripts/export_enrichment_batch.js",
     "enrich:apply": "node scripts/apply_enrichment_batch.js",
-    "cleanup:manifest": "node scripts/generate_cleanup_manifest.js",
+    "cleanup:manifest": ".venv/bin/python scripts/audit_example_target_tokens.py && node scripts/generate_cleanup_manifest.js",
+    "cleanup:target-audit": ".venv/bin/python scripts/audit_example_target_tokens.py",
     "cleanup:manifest-routing": "node scripts/validate_cleanup_manifest_routing.js",
     "cleanup:legacy-meaning-gate": "node scripts/validate_legacy_meaning_gate.js",
     "cleanup:verbs": "node scripts/audit_verb_info.js",
@@ -33,7 +34,13 @@
     "related:setup": "python3 -m venv .venv && .venv/bin/python -m pip install -r requirements-related.txt",
     "related:candidates:sample": ".venv/bin/python scripts/generate_related_candidates.py --limit 100 --top-k 5",
     "related:candidates:validate": ".venv/bin/python scripts/validate_related_candidates.py scratch/vocab-db-migration/related_candidates.sample.jsonl",
-    "cleanup:strip-drift": "node scripts/strip_unrequired_drift.js"
+    "cleanup:strip-drift": "node scripts/strip_unrequired_drift.js",
+    "examples:real:candidates": ".venv/bin/python scripts/select_real_examples.py",
+    "examples:real:enrich": ".venv/bin/python scripts/enrich_real_example_candidates.py",
+    "examples:real:prepare-review": ".venv/bin/python scripts/prepare_real_example_review.py",
+    "examples:real:normalize-review": ".venv/bin/python scripts/normalize_real_example_review_draft.py",
+    "examples:real:validate": ".venv/bin/python scripts/validate_real_example_candidates.py",
+    "examples:real:apply": "node scripts/apply_real_example_patch.js"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

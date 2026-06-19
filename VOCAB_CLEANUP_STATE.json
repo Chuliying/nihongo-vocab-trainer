@@ -1,12 +1,12 @@
 {
   "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST instead of re-reading the 1900-line CLAUDE.md tail. Update it at the end of every iteration. Keep it short.",
   "updated": "2026-06-19",
-  "head_commit": "9d6cfcd",
+  "head_commit": "b2b6aa0",
   "pipeline_stage": "content-cleanup",
   "quality": {
     "entries": 13000,
-    "badEntries": 9598,
-    "issueCount": 22454,
+    "badEntries": 9540,
+    "issueCount": 22252,
     "note": "badEntries high because legacy_meaning_unreviewed is a provenance flag (unverified), not known-wrong"
   },
   "verb_invariant": {
@@ -18,15 +18,15 @@
     "must_stay": "generatedSuspect/mechanicalError/candidateQueue all 0 after every batch"
   },
   "buckets": {
-    "cheap_model_candidate": 2807,
-    "semantic_review": 2781,
+    "cheap_model_candidate": 2195,
+    "semantic_review": 3036,
     "katakana_review": 2498,
-    "grammar_high_risk": 1284,
+    "grammar_high_risk": 1283,
     "verb_quarantine": 528
   },
   "top_issues": {
-    "legacy_meaning_unreviewed": 8610,
-    "low_value_example": 4366,
+    "legacy_meaning_unreviewed": 8310,
+    "low_value_example": 4166,
     "meaning_latin": 2982,
     "chinese_latin": 2912,
     "stale_llm_source": 2727,
@@ -40,7 +40,7 @@
     "script": "scripts/audit_gloss_homophone.py -> scratch/cleanup_pipeline/gloss_status.json (sidecar, regenerable, 0 token)",
     "key_correction": "First detector (reading-only) gave 494 false-heavy flags and would have REPLACED correct kanji-word glosses with wrong-homophone ones. Fixed: kanji words are pinned by their kanji form. Lesson: inspect before any deterministic apply.",
     "status_counts": {
-      "jmdict_verified": 11958,
+      "jmdict_entry_matched": 11958,
       "homophone_suspect": 215,
       "gloss_unmatched": 627,
       "own_entry_not_found": 29,
@@ -48,17 +48,17 @@
       "no_gloss": 5
     },
     "do_not": "Do NOT auto-rewrite gloss. The top-priority pick is itself wrong ~half the time for kana homophones (e.g. こと->'koto zither'). There is no free deterministic semantic disambiguation.",
-    "how_used": "Exporter adds gs (reliability) + gj (jmdict candidate senses) per row. gs=jmdict_verified -> model trusts gloss. Otherwise -> model must derive from word+reading+example, confidence low. Active cheap legacy bucket is 95% jmdict_verified.",
-    "active_bucket_impact": "cheap_model_candidate legacy_meaning: 2125/2236 (95%) jmdict_verified, 111 unreliable now flagged."
+    "how_used": "Exporter adds gs (provenance) + gj (JMdict candidate senses). gs=jmdict_entry_matched proves the gloss belongs to the word's JMdict entry, but contextual sense selection is still reviewed. Other statuses must not be trusted blindly.",
+    "active_bucket_impact": "cheap_model_candidate legacy_meaning: 1832/1935 (94.7%) entry-matched, 103 unreliable."
   },
-  "last_neon_import_run_id": "cb785bfd-a2c0-424b-8759-1aae40811c58",
+  "last_neon_import_run_id": "c73a002b-7bf0-4fa7-ad84-f28beddee2d5",
   "deferred_ids": [
     1328
   ],
   "deferred_note": "id 1328 掛け: meaning was garbage (我們); gloss=credit/bill is correct but old example is about phone-not-connecting. Needs combined meaning+example single-row semantic correction outside the meaning-only gate.",
   "next_actions": [
-    "Continue legacy_meaning meaning cleanup (mature pipeline, ~1000 verified rows left).",
-    "Build real-sentence example pipeline for low_value_example bucket (4366) per real-examples.md.",
+    "Continue legacy_meaning meaning cleanup from the refreshed manifest.",
+    "Continue Agy-first reviewed real-example checkpoints in 150-row packets; sync every 100 accepted rows.",
     "Related vectors: defer full embedding until content issues drop."
   ],
   "model_stack": "Opus=one-time planning (not per-batch). Haiku=cheap drafting, 2x50 parallel per 100-row checkpoint. Sonnet=hub orchestrator + reviewer. codex exec is RETIRED.",
@@ -70,11 +70,48 @@
     "Vector cosine is a router/filter, NOT a verifier (measured: ~63% directional, weak)."
   ],
   "real_examples": {
-    "status": "approach validated, prototype built, production pipeline not yet built",
+    "status": "candidate generator, artifact validator and example-only apply gate built; translation/reading review remains",
     "source": "Tatoeba/Tanaka CC-BY (scratch/tatoeba, gitignored); NOT NHK (copyright/register)",
-    "coverage": "84% of 4366 low_value_example words have a usable short real sentence",
-    "tools": "fugashi+unidic-lite (offline readings/tokens), scripts/select_real_examples.py prototype",
-    "next": "token-level matching (substring false-hits ロット in パイロット), reading correction, difficulty tighten, translate+gate+review",
+    "coverage": "current 4166-row queue: 2764 proposed (66.35%), 1402 fallback; 6648 candidates validated. Previous 84% substring estimate is retired",
+    "tools": "selector uses exact surface/lemma plus coarse POS, difficulty gates and attribution; enrichment adds direct cmn links and Tatoeba human transcriptions; validator/apply gate require explicit reading and translation review",
+    "next": "translate selected JA to Traditional Chinese, review machine-generated readings, then use examples:real:apply",
     "ref": ".claude/skills/vocab-cleanup/references/real-examples.md"
+  },
+  "example_target_audit": {
+    "script": "scripts/audit_example_target_tokens.py",
+    "entries": 13000,
+    "token_match": 11585,
+    "missing": 1415,
+    "bad_rows_rerouted_to_semantic_review": 985,
+    "purpose": "Prevents substring, kana-homophone and coarse-POS collisions from entering the cheap queue."
+  },
+  "last_example_checkpoint": {
+    "reviewed_rows": 100,
+    "low_value_example_before": 4366,
+    "low_value_example_after": 4266,
+    "meaning_changes": 0,
+    "quality_score_changes": 0,
+    "neon_import_run_id": "a261c5cf-add0-4d0a-bf3c-d779972d49fd",
+    "runtime_repository": "passed",
+    "build": "passed"
+  },
+  "last_agy_checkpoint": {
+    "packet_rows": 150,
+    "agy_accepts": 101,
+    "agy_rejects": 48,
+    "contract_rejects": 1,
+    "parent_exclusions": 2,
+    "applied_rows": 75,
+    "combined_with_previous_pending": 100,
+    "low_value_example_after": 4166,
+    "neon_import_run_id": "c73a002b-7bf0-4fa7-ad84-f28beddee2d5",
+    "runtime_repository": "passed",
+    "build": "passed",
+    "agy_proxy": {
+      "prompt_chars": 1179,
+      "output_bytes": 31688,
+      "elapsed_seconds": 119,
+      "exact_tokens": "unavailable"
+    }
   }
 }

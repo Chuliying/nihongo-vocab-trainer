@@ -1,114 +1,366 @@
 #!/usr/bin/env python3
-"""Prototype: pick a natural N4/N5 example sentence for a word from the Tatoeba
-Japanese corpus (CC-BY), instead of LLM-generating one.
+"""Select reviewable Tatoeba examples for low-value vocabulary rows.
 
-Difficulty oracle is built from our own corpus: the set of kanji used by N5/N4
-entries = "kanji a learner at this level has seen". A candidate sentence is scored
-by length, out-of-level kanji, clause complexity, and an appropriateness blocklist.
-Reading (furigana) is generated offline with fugashi+unidic-lite.
+This script only creates candidates. It never writes runtime chunks.
 
-This is a SELECTION prototype (no translation/apply yet) to prove sentence quality.
-Run: .venv/bin/python scripts/select_real_examples.py [n_sample]
+Safety properties:
+- matches a fugashi token surface/lemma, never a raw substring;
+- records Tatoeba sentence IDs and CC-BY attribution;
+- rejects sensitive content and common advanced/archaic grammar;
+- uses a hard N4/N5-oriented kanji threshold;
+- emits multiple ranked candidates so translation/review can choose safely.
+
+Run:
+  .venv/bin/python scripts/select_real_examples.py --limit 100 --top-k 3
+  .venv/bin/python scripts/select_real_examples.py --ids 12,34 --out /tmp/examples.jsonl
 """
+import argparse
 import json
 import os
 import re
-import sys
+from collections import defaultdict
+from pathlib import Path
 
 import fugashi
 
-CHUNK_DIR = "public/data/chunks"
-TATOEBA = "scratch/tatoeba/jpn_sentences.tsv"
+CHUNK_DIR = Path("public/data/chunks")
+MANIFEST = Path("scratch/cleanup_pipeline/cleanup_manifest.json")
+TATOEBA = Path("scratch/tatoeba/jpn_sentences.tsv")
+DEFAULT_OUT = Path("scratch/cleanup_pipeline/real_example_candidates.jsonl")
 
-BLOCK = re.compile(
-    r"(コンドーム|性|セックス|排卵|妊娠|殺|死|血|戦争|兵器|裸|愛人|麻薬|犯罪|逮捕|強姦|暴力|睾|膣|射精|乳首)"
+SOURCE_NAME = "Tatoeba Japanese sentences"
+SOURCE_LICENSE = "CC-BY 2.0 FR"
+SOURCE_URL = "https://tatoeba.org"
+
+SENSITIVE = re.compile(
+    r"(コンドーム|セックス|排卵|妊娠|殺人|自殺|流血|戦争|兵器|裸|愛人|麻薬|"
+    r"犯罪|逮捕|強姦|暴力|睾丸|膣|射精|乳首|ポルノ|拷問)"
 )
-KANA = re.compile(r"^[ぁ-ゟァ-ヿー]+$")
+ADVANCED_OR_ARCHAIC = re.compile(
+    r"(ざるを得ない|ずにはいられない|わけにはいかない|に違いない|にほかならない|"
+    r"かねない|かねる|ものの|ながらも|にもかかわらず|べからず|まじき|"
+    r"如何なる|せしめ|たるもの|なりけり|であろう|のである)"
+)
 KANJI = re.compile(r"[一-鿿々]")
+KANA_ONLY = re.compile(r"^[ぁ-ゟァ-ヿー]+$")
+PUNCT_ONLY = re.compile(r"^[\s。、！？!?「」『』（）()…・，,.]+$")
+
+
+def kata_to_hira(text):
+    return "".join(
+        chr(ord(char) - 0x60) if "ァ" <= char <= "ヶ" else char
+        for char in (text or "")
+    )
 
 
 def load_chunks():
     rows = []
-    for f in sorted(os.listdir(CHUNK_DIR)):
-        if re.match(r"^vocab_chunk_\d+\.json$", f):
-            with open(os.path.join(CHUNK_DIR, f), encoding="utf-8") as fh:
-                rows.extend(json.load(fh))
+    for file_path in sorted(
+        CHUNK_DIR.glob("vocab_chunk_*.json"),
+        key=lambda item: int(re.search(r"\d+", item.name).group()),
+    ):
+        with file_path.open(encoding="utf-8") as fh:
+            rows.extend(json.load(fh))
     return rows
 
 
-def level_kanji_set(rows):
-    """Kanji seen in N5/N4 (+ N3 as buffer) vocabulary = in-level kanji."""
-    ok = set()
-    for e in rows:
-        if e.get("jlpt_level") in ("N5", "N4", "N3"):
-            for ch in (e.get("word") or ""):
-                if KANJI.match(ch):
-                    ok.add(ch)
-    return ok
+def level_kanji_sets(rows):
+    n45 = set()
+    n3 = set()
+    for entry in rows:
+        target = n45 if entry.get("jlpt_level") in ("N5", "N4") else n3
+        if entry.get("jlpt_level") not in ("N5", "N4", "N3"):
+            continue
+        for char in entry.get("word") or "":
+            if KANJI.match(char):
+                target.add(char)
+    return n45, n3
 
 
-def load_short_sentences():
-    sents = []
-    with open(TATOEBA, encoding="utf-8") as fh:
-        for line in fh:
-            parts = line.rstrip("\n").split("\t")
-            if len(parts) >= 3 and parts[2]:
-                s = parts[2]
-                if len(s) <= 24:
-                    sents.append(s)
-    return sents
+def load_targets(rows_by_id, ids=None, limit=None):
+    with MANIFEST.open(encoding="utf-8") as fh:
+        manifest = json.load(fh)
+    selected = []
+    wanted = set(ids or [])
+    for row in manifest["rows"]:
+        if "low_value_example" not in row.get("issues", []):
+            continue
+        if wanted and row["id"] not in wanted:
+            continue
+        entry = rows_by_id[row["id"]]
+        selected.append(
+            {
+                "id": entry["id"],
+                "word": entry.get("word") or "",
+                "reading": entry.get("reading") or "",
+                "jlpt_level": entry.get("jlpt_level"),
+                "part_of_speech": entry.get("part_of_speech"),
+                "risk_bucket": row.get("risk_bucket"),
+                "original_example": entry.get("example") or {},
+            }
+        )
+        if limit and len(selected) >= limit:
+            break
+    missing = wanted - {row["id"] for row in selected}
+    if missing:
+        raise ValueError(
+            "IDs are absent from the current low_value_example queue: "
+            + ",".join(str(value) for value in sorted(missing))
+        )
+    return selected
 
 
-def score(sentence, level_kanji):
-    if BLOCK.search(sentence):
-        return None
-    n = len(sentence)
-    out_of_level = sum(1 for ch in sentence if KANJI.match(ch) and ch not in level_kanji)
-    commas = sentence.count("、") + sentence.count("，")
-    if not sentence.endswith("。"):
-        return None
-    # lower is better
-    return n + out_of_level * 6 + commas * 8
+def token_value(token, name):
+    value = getattr(token.feature, name, None)
+    return "" if value in (None, "*") else str(value)
 
 
-def reading_of(tagger, sentence):
-    out = []
-    for w in tagger(sentence):
-        kana = getattr(w.feature, "kana", None)
-        if kana and kana != "*":
-            # convert katakana reading to hiragana
-            out.append("".join(chr(ord(c) - 0x60) if "ァ" <= c <= "ヶ" else c for c in kana))
+def token_reading(token):
+    return kata_to_hira(token_value(token, "kana"))
+
+
+def token_lemma(token):
+    for name in ("lemma", "orthBase", "orth"):
+        value = token_value(token, name)
+        if value:
+            return value
+    return token.surface
+
+
+def token_pos(token):
+    return token_value(token, "pos1")
+
+
+def target_pos_compatible(token, target):
+    target_pos = target.get("part_of_speech") or ""
+    coarse = token_pos(token)
+    if not coarse:
+        return True
+    expected = [
+        label
+        for label in (
+            "動詞",
+            "名詞",
+            "副詞",
+            "形容詞",
+            "助詞",
+            "助動詞",
+            "接続詞",
+            "感動詞",
+            "連体詞",
+            "代名詞",
+        )
+        if label in target_pos
+    ]
+    return not expected or coarse in expected
+
+
+def token_matches_target(token, target):
+    """Exact token/lemma matching, including naturally inflected verbs."""
+    word = target["word"]
+    surface = token.surface
+    lemma = token_lemma(token)
+    if lemma == word:
+        return True
+    if surface == word:
+        return target_pos_compatible(token, target)
+    # Permit only orthographic hiragana/katakana normalization. Token reading is NOT
+    # a matcher: it confuses kana homophones such as 問う「とう」 and とうに.
+    return bool(
+        word
+        and KANA_ONLY.fullmatch(word)
+        and KANA_ONLY.fullmatch(surface)
+        and kata_to_hira(surface) == kata_to_hira(word)
+        and target_pos_compatible(token, target)
+    )
+
+
+def sentence_reading(tokens):
+    output = []
+    unknown = 0
+    for token in tokens:
+        reading = token_reading(token)
+        if reading:
+            output.append(reading)
         else:
-            out.append(w.surface)
-    return "".join(out)
+            output.append(token.surface)
+            if KANJI.search(token.surface):
+                unknown += 1
+    return "".join(output), unknown
+
+
+def candidate_score(sentence, tokens, target, n45_kanji, n3_kanji):
+    if SENSITIVE.search(sentence) or ADVANCED_OR_ARCHAIC.search(sentence):
+        return None
+    if not sentence.endswith(("。", "！", "？")):
+        return None
+    if len(sentence) < 4 or len(sentence) > 28:
+        return None
+    if sentence.count("、") + sentence.count("，") > 1:
+        return None
+
+    target_kanji = {char for char in target["word"] if KANJI.match(char)}
+    sentence_kanji = {char for char in sentence if KANJI.match(char)}
+    outside_n45 = sentence_kanji - n45_kanji - target_kanji
+    outside_n3 = outside_n45 - n3_kanji
+    if len(outside_n45) > 2 or outside_n3:
+        return None
+
+    lexical_tokens = [
+        token for token in tokens if not PUNCT_ONLY.fullmatch(token.surface)
+    ]
+    if len(lexical_tokens) > 14:
+        return None
+
+    clause_penalty = (
+        sentence.count("、") * 8
+        + sum(sentence.count(mark) for mark in ("けれど", "ながら", "ので", "のに")) * 5
+    )
+    return len(sentence) + len(outside_n45) * 8 + clause_penalty
+
+
+def parse_tatoeba_line(line):
+    parts = line.rstrip("\n").split("\t", 2)
+    if len(parts) != 3 or parts[1] != "jpn" or not parts[2]:
+        return None
+    return {"sentence_id": int(parts[0]), "sentence": parts[2]}
+
+
+def generate_candidates(targets, rows, top_k):
+    tagger = fugashi.Tagger()
+    n45_kanji, n3_kanji = level_kanji_sets(rows)
+    by_word = defaultdict(list)
+    by_kana_surface = defaultdict(list)
+    for target in targets:
+        by_word[target["word"]].append(target)
+        if KANA_ONLY.fullmatch(target["word"]):
+            by_kana_surface[kata_to_hira(target["word"])].append(target)
+
+    results = {target["id"]: [] for target in targets}
+    with TATOEBA.open(encoding="utf-8") as fh:
+        for line in fh:
+            parsed = parse_tatoeba_line(line)
+            if not parsed:
+                continue
+            sentence = parsed["sentence"]
+            if len(sentence) > 28 or SENSITIVE.search(sentence):
+                continue
+            tokens = list(tagger(sentence))
+            matched_ids = set()
+            for token in tokens:
+                possible = by_word.get(token.surface, [])
+                lemma = token_lemma(token)
+                if lemma != token.surface:
+                    possible = possible + by_word.get(lemma, [])
+                # Kana entries can match an orthographic variant by exact token reading.
+                reading = token_reading(token)
+                if KANA_ONLY.fullmatch(token.surface):
+                    possible = possible + by_kana_surface.get(kata_to_hira(token.surface), [])
+                for target in possible:
+                    if target["id"] in matched_ids or not token_matches_target(token, target):
+                        continue
+                    score = candidate_score(
+                        sentence, tokens, target, n45_kanji, n3_kanji
+                    )
+                    if score is None:
+                        continue
+                    reading_text, unknown_reading_tokens = sentence_reading(tokens)
+                    if unknown_reading_tokens:
+                        continue
+                    matched_ids.add(target["id"])
+                    results[target["id"]].append(
+                        {
+                            "sentence_id": parsed["sentence_id"],
+                            "japanese": sentence,
+                            "reading": reading_text,
+                            "reading_status": "machine_generated_requires_review",
+                            "score": score,
+                            "matched_surface": token.surface,
+                            "matched_lemma": lemma,
+                            "source": SOURCE_NAME,
+                            "source_url": f"{SOURCE_URL}/en/sentences/show/{parsed['sentence_id']}",
+                            "license": SOURCE_LICENSE,
+                        }
+                    )
+
+    output = []
+    for target in targets:
+        ranked = sorted(
+            results[target["id"]],
+            key=lambda item: (item["score"], len(item["japanese"]), item["sentence_id"]),
+        )
+        deduped = []
+        seen = set()
+        for candidate in ranked:
+            if candidate["japanese"] in seen:
+                continue
+            seen.add(candidate["japanese"])
+            deduped.append(candidate)
+            if len(deduped) >= top_k:
+                break
+        output.append(
+            {
+                **target,
+                "candidate_count": len(ranked),
+                "candidates": deduped,
+                "status": "proposed" if deduped else "fallback_required",
+            }
+        )
+    return output
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--manifest", default=str(MANIFEST))
+    parser.add_argument("--corpus", default=str(TATOEBA))
+    parser.add_argument("--out", default=str(DEFAULT_OUT))
+    parser.add_argument("--limit", type=int)
+    parser.add_argument("--top-k", type=int, default=3)
+    parser.add_argument("--ids", help="comma-separated vocab IDs")
+    return parser.parse_args()
 
 
 def main():
-    n_sample = int(sys.argv[1]) if len(sys.argv) > 1 else 15
+    global MANIFEST, TATOEBA
+    args = parse_args()
+    if args.limit is not None and args.limit <= 0:
+        raise ValueError("--limit must be positive")
+    if args.top_k <= 0:
+        raise ValueError("--top-k must be positive")
+    MANIFEST = Path(args.manifest)
+    TATOEBA = Path(args.corpus)
+    ids = (
+        [int(value.strip()) for value in args.ids.split(",") if value.strip()]
+        if args.ids
+        else None
+    )
+
     rows = load_chunks()
-    level_kanji = level_kanji_set(rows)
-    sents = load_short_sentences()
-    tagger = fugashi.Tagger()
+    rows_by_id = {row["id"]: row for row in rows}
+    targets = load_targets(rows_by_id, ids=ids, limit=args.limit)
+    candidates = generate_candidates(targets, rows, args.top_k)
 
-    words = json.load(open("/tmp/lve_words.json", encoding="utf-8"))
-    # spread the sample across the list
-    step = max(1, len(words) // n_sample)
-    sample = words[::step][:n_sample]
+    out_path = Path(args.out)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with out_path.open("w", encoding="utf-8") as fh:
+        for row in candidates:
+            fh.write(json.dumps(row, ensure_ascii=False) + "\n")
 
-    for it in sample:
-        w = it["w"]
-        cands = [s for s in sents if w in s]
-        scored = [(score(s, level_kanji), s) for s in cands]
-        scored = [(sc, s) for sc, s in scored if sc is not None]
-        scored.sort(key=lambda x: x[0])
-        if scored:
-            best = scored[0][1]
-            print(f"{w}({it['r']})  [{len(cands)} cands, best={scored[0][0]}]")
-            print(f"   ja: {best}")
-            print(f"   yomi: {reading_of(tagger, best)}")
-        else:
-            print(f"{w}({it['r']})  [{len(cands)} raw cands -> 0 passed filter] FALLBACK to LLM")
-        print()
+    proposed = sum(row["status"] == "proposed" for row in candidates)
+    print(
+        json.dumps(
+            {
+                "out": str(out_path),
+                "targets": len(candidates),
+                "proposed": proposed,
+                "fallback_required": len(candidates) - proposed,
+                "coverage": round(proposed / len(candidates), 4) if candidates else 0,
+                "applied": 0,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":

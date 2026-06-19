@@ -20,37 +20,41 @@ Download: `https://downloads.tatoeba.org/exports/per_language/jpn/jpn_sentences.
 
 ## Measured feasibility (decision-grade)
 
-- Coverage: **84%** of low_value_example words have ≥1 short (≤28 char) Tatoeba
-  sentence containing the surface. The other ~16% fall back to reviewed LLM generation.
+- The earlier **84%** figure used substring retrieval and is retired. After the first
+  reviewed checkpoint, the current exact-token/POS queue has candidates for
+  **2,945 / 4,347 rows (67.75%)**, explicit fallback for 1,402, and 7,141 validated
+  candidates.
 - Raw quality is mixed: some perfect (父親にそっくりだ。), some too hard
   (敬虔なる…礼節重き = N1/archaic), some inappropriate (adult/violent), some proverbs.
   **The work is filtering + ranking, not retrieval.**
 
-## Pipeline (selection prototype: scripts/select_real_examples.py)
+## Pipeline (`scripts/select_real_examples.py`)
 
 1. Build a difficulty oracle from our own corpus: the set of kanji used by N5/N4/N3
    entries = "in-level kanji". Penalize out-of-level kanji.
 2. Tokenize with **fugashi + unidic-lite** (offline) for:
-   - **token-level word matching** — REQUIRED. Substring match falsely hits
-     ロット⊂パイロット, ピカ⊂ピカソ. Must match a token whose lemma/surface is the word.
+   - exact token surface/lemma plus coarse-POS matching, including natural inflections;
+     substring matches such as ロット⊂パイロット are rejected.
    - reading (furigana) generation — but NOTE fugashi readings have errors
      (最高峰→さいこうぽう should be ほう; 私→わたくし should be わたし); correct common cases.
    - difficulty scoring (POS, vocab level).
 3. Appropriateness blocklist (sex/violence/death/etc.); reject and fall back.
-4. Score by length + out-of-level kanji + clause count; require ending 。; pick best.
+4. Score by length + out-of-level kanji + clause count, reject common advanced or
+   archaic grammar, and keep multiple ranked candidates for review.
 5. Translate the chosen JA sentence to Traditional Chinese — this is TRANSLATION of a
    real natural sentence (reliable, easy for Haiku with the EN pair + verified gloss
    as bridge), not generation. Far lower error than generating from scratch.
 6. Gate: target word present (token), reading matches sentence, no Latin/Simplified,
    passes appropriateness; then Sonnet spot-review.
 
-## Remaining engineering before production
+## Remaining content work before apply
 
-- Replace substring with fugashi token matching (fixes false positives).
-- Reading correction pass (fugashi rendaku/lemma-reading errors).
-- Tighten difficulty threshold (reject N2 grammar like せざるを得ない).
-- Translation + gate + review wiring; attribution field on applied rows.
+- Reading correction/review pass (fugashi rendaku and contextual-reading errors).
+- Traditional Chinese translation and review.
+- Use `scripts/apply_real_example_patch.js`; it preserves sentence ID, URL and
+  CC-BY attribution and cannot change meaning or `quality_score`.
 
-Status: approach validated (84% + working selection prototype), production pipeline
-not yet built. This is the recommended next major workstream for examples; meanwhile
-the meaning (legacy_meaning) cleanup continues independently.
+Status: candidate generation, artifact validation and the example-only apply gate
+are built. Tatoeba direct Chinese links and human transcriptions are enrichment hints,
+never automatic approval. The first 19 reviewed examples are applied to chunks;
+meaning cleanup continues independently.
