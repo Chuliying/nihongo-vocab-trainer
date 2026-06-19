@@ -1,0 +1,62 @@
+{
+  "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST instead of re-reading the 1900-line CLAUDE.md tail. Update it at the end of every iteration. Keep it short.",
+  "updated": "2026-06-19",
+  "head_commit": "20cb14e",
+  "pipeline_stage": "content-cleanup",
+  "quality": {
+    "entries": 13000,
+    "badEntries": 9898,
+    "issueCount": 22754,
+    "note": "badEntries high because legacy_meaning_unreviewed is a provenance flag (unverified), not known-wrong"
+  },
+  "verb_invariant": {
+    "generatedSuspect": 0,
+    "mechanicalError": 0,
+    "candidateQueue": 0,
+    "withVerbInfo": 678,
+    "suppressedVerbInfo": 57,
+    "must_stay": "generatedSuspect/mechanicalError/candidateQueue all 0 after every batch"
+  },
+  "buckets": {
+    "cheap_model_candidate": 2807,
+    "semantic_review": 2781,
+    "katakana_review": 2498,
+    "grammar_high_risk": 1284,
+    "verb_quarantine": 528
+  },
+  "top_issues": {
+    "legacy_meaning_unreviewed": 8610,
+    "low_value_example": 4366,
+    "meaning_latin": 2982,
+    "chinese_latin": 2912,
+    "stale_llm_source": 2727,
+    "meaning_placeholder": 613,
+    "chinese_placeholder": 541,
+    "missing_target_word": 3
+  },
+  "jmdict_l1_audit": {
+    "tool": "jamdict (.venv), MIT lib + EDRDG/CC data",
+    "checked": 12995,
+    "gloss_from_top_priority_homophone": 11683,
+    "gloss_from_LOWER_priority_homophone_FLAG": 494,
+    "gloss_unmatched_to_jmdict": 652,
+    "reading_not_in_jmdict": 166,
+    "meaning": "494 entries have gloss pulled from the WRONG homophone (e.g. ちょうど->furniture). Most are common kana grammar words already routed away from cheap model. Suppress/correct these glosses (0 token) before any model trusts gloss."
+  },
+  "last_neon_import_run_id": "71b50d9a-aced-478b-949c-58222a880b1b",
+  "deferred_ids": [1328],
+  "deferred_note": "id 1328 掛け: meaning was garbage (我們); gloss=credit/bill is correct but old example is about phone-not-connecting. Needs combined meaning+example single-row semantic correction outside the meaning-only gate.",
+  "next_actions": [
+    "Decide: build L1' jamdict gloss-correction foundation (494 flagged) before more content batches, or continue cheap_model_candidate cleanup with current flow.",
+    "Continue cheap_model_candidate legacy_meaning batches via Haiku(draft 2x50)->Sonnet(review) escalation pipeline.",
+    "Related vectors: still only 100x1000 sample; defer full embedding until content issues drop substantially."
+  ],
+  "model_stack": "Opus=one-time planning (not per-batch). Haiku=cheap drafting, 2x50 parallel per 100-row checkpoint. Sonnet=hub orchestrator + reviewer. codex exec is RETIRED.",
+  "hard_constraints": [
+    "Never commit .env*, DATABASE_URL, secrets, output.jsonl, or scratch batch artifacts.",
+    "Cheap model (Haiku) must NOT touch: verbs, grammar words, katakana_review, semantic_review, proper nouns, place names, scientific names, low-freq short kana, non-Japanese symbols.",
+    "Do not treat public/data/vocab_13000.json as runtime source (mismatch vs chunks).",
+    "Never apply nearest-vector related links without run id, score, reason, review, rollback artifact.",
+    "Vector cosine is a router/filter, NOT a verifier (measured: ~63% directional, weak)."
+  ]
+}
