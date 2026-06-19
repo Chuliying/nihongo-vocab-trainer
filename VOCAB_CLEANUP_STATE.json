@@ -57,9 +57,9 @@
   ],
   "deferred_note": "id 1328 掛け: meaning was garbage (我們); gloss=credit/bill is correct but old example is about phone-not-connecting. Needs combined meaning+example single-row semantic correction outside the meaning-only gate.",
   "next_actions": [
-    "Decide: build L1' jamdict gloss-correction foundation (494 flagged) before more content batches, or continue cheap_model_candidate cleanup with current flow.",
-    "Continue cheap_model_candidate legacy_meaning batches via Haiku(draft 2x50)->Sonnet(review) escalation pipeline.",
-    "Related vectors: still only 100x1000 sample; defer full embedding until content issues drop substantially."
+    "Continue legacy_meaning meaning cleanup (mature pipeline, ~1000 verified rows left).",
+    "Build real-sentence example pipeline for low_value_example bucket (4366) per real-examples.md.",
+    "Related vectors: defer full embedding until content issues drop."
   ],
   "model_stack": "Opus=one-time planning (not per-batch). Haiku=cheap drafting, 2x50 parallel per 100-row checkpoint. Sonnet=hub orchestrator + reviewer. codex exec is RETIRED.",
   "hard_constraints": [
@@ -68,5 +68,13 @@
     "Do not treat public/data/vocab_13000.json as runtime source (mismatch vs chunks).",
     "Never apply nearest-vector related links without run id, score, reason, review, rollback artifact.",
     "Vector cosine is a router/filter, NOT a verifier (measured: ~63% directional, weak)."
-  ]
+  ],
+  "real_examples": {
+    "status": "approach validated, prototype built, production pipeline not yet built",
+    "source": "Tatoeba/Tanaka CC-BY (scratch/tatoeba, gitignored); NOT NHK (copyright/register)",
+    "coverage": "84% of 4366 low_value_example words have a usable short real sentence",
+    "tools": "fugashi+unidic-lite (offline readings/tokens), scripts/select_real_examples.py prototype",
+    "next": "token-level matching (substring false-hits ロット in パイロット), reading correction, difficulty tighten, translate+gate+review",
+    "ref": ".claude/skills/vocab-cleanup/references/real-examples.md"
+  }
 }

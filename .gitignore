@@ -16,3 +16,6 @@ scratch/chunk_*_part*.txt
 .env*
 .venv/
 __pycache__/
+
+# Tatoeba corpus (CC-BY, regenerable via download)
+scratch/tatoeba/
