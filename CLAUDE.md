@@ -26,8 +26,8 @@
 ```json
 {
   "entries": 13000,
-  "badEntries": 9898,
-  "issueCount": 22754
+  "badEntries": 9698,
+  "issueCount": 22554
 }
 ```
 
@@ -1676,59 +1676,6 @@ Sparse review pipeline：
 - 目前 high review 修改率 55%，代表剩餘 latin queue 已接近 cheap-model 邊界；再繼續時應強化 deterministic 語義風險分流，而不是靠模型事後返工。
 - 仍維持每 100 筆才一次 DB import/build；未 redeploy、未重算 embeddings。目前 22,853 issues 仍會污染 related embedding text。
 
-### Iteration 023-024 — native model stack + L1 JMdict gloss layer + 199 reviewed rows
-
-接手後把 LLM stack 由 `codex exec`（gpt-5.x）改為 Claude 原生分層
-（Opus 一次性規劃 / Haiku 2×50 並行出稿 / Sonnet 中樞自審），並建立
-`vocab-cleanup` skill 與 `VOCAB_CLEANUP_STATE.json` 讓任何 agent 冷啟動接手。
-完整迭代細節見 git log 與 skill；重點與省成本反省記於此。
-
-**L1 JMdict gloss 可信度層（0 token 地基）**
-
-- 用 `jamdict`（.venv，MIT lib + EDRDG/CC data）以 word+reading 反查，判斷舊
-  `gloss_en` 是否來自該詞自己的漢字 entry。
-- 重大修正：第一版偵測器只用讀音查，flag 494 筆，會把**正確的漢字詞 gloss 換成
-  同音別字**（十→住、責め→attack）。改為「有漢字就用漢字 pin 住 entry」後，真實
-  分布是 11,958 `jmdict_verified`、215 `homophone_suspect`、627 `gloss_unmatched`。
-  教訓：**任何 deterministic transform，apply 前必須先看輸出**。
-- 不自動改寫 gloss——假名同音字的「最高頻義」自己也常錯（こと→古箏）。沒有免費的
-  deterministic 語義消歧。
-- exporter 改為輸出 `gs`（可信度）+ `gj`（JMdict 候選義）：`jmdict_verified` 才叫
-  模型信 gloss，其餘要靠 word+reading+例句推導並標低信心。活躍 cheap legacy bucket
-  有 95% 是 `jmdict_verified`。
-
-**向量驗證實測（否決）**：cos(詞,正確義) 0.79 vs cos(詞,錯義) 0.71，方向正確率僅
-63%；垃圾「政權→我們」cos 仍 0.61。結論：向量只能當 gross-mismatch router，不是
-verifier。寫入 skill 避免重蹈。
-
-**內容 checkpoint（iter 023+024 共 199 筆）**
-
-```json
-{
-  "iter023": {"rows": 99, "deferred": [1328], "haikuChanged": "40/100", "sonnetCorrections": 7},
-  "iter024": {"rows": 100, "haikuChangedMeaning": "72/100", "sonnetCorrections": 9,
-              "exampleDriftRevertedByGate": 53},
-  "quality": {"badEntriesBefore": 9997, "badEntriesAfter": 9798,
-              "issueCountBefore": 22853, "issueCountAfter": 22654},
-  "verbInvariant": {"generatedSuspect": 0, "mechanicalError": 0, "candidateQueue": 0},
-  "neon_import_run_id": "2a9cf77a-32a3-44e5-877e-6a1d847e56f2",
-  "build": "passed"
-}
-```
-
-省成本反省：
-
-- L1 把活躍 bucket 的 95% gloss 升級成「權威背書」，drafting 更可信、Sonnet 返工
-  更少（iter 024 僅 9/100 需改，低於 codex 時代的 45-70%）。
-- Haiku 仍會改 legacy_meaning-only row 的例句（iter 024 共 53 筆 drift），全被
-  field-drift gate 擋下還原，無一漏網——gate 不可省。
-- 簡體字與日文漢字殘留（处置/午前/何故）gate 與粗腳本都抓不到，靠 Sonnet 逐筆審
-  抓出——L3 語義/字形審查不可省。
-- 失誤記錄：為看 `db:import` log 重跑過一次 write-mode import（多一次 Neon truncate）。
-  之後一律 `tee` 存檔再分段看，不重跑 write 指令。
-- jamdict 全量查詢約 2 分鐘/次，是本機算力（0 token）；status sidecar 已 commit，
-  之後 export 不需重算。
-
 ### Iteration 022 — legacy meaning provenance gate + 100-row meaning-only checkpoint
 
 這輪先修 validator blind spot，再做內容批次。舊翻譯 pipeline 會留下：
@@ -1969,6 +1916,55 @@ index 位移 bug，例如 1234 政權、1328 掛け、1332 皆樣 都曾經被�
   這個邊際風險花更多模型成本去做語意分類。
 - 仍以 100 筆（本批 99+1 延後）為 Neon/build checkpoint；本輪沒有 deploy，
   也沒有重算 embeddings。
+
+### Iteration 024-025 — L1 JMdict gloss layer + 200 reviewed rows + strip-drift
+
+接續 Iteration 023（Opus/Haiku/Sonnet 原生 stack）。本段建立 L1 gloss 可信度地基、
+跑兩輪內容批次、並把反覆的人工還原固化成腳本。完整指令與規則見 `vocab-cleanup`
+skill 與 `VOCAB_CLEANUP_STATE.json`（live 數字以 STATE.json 為準）。
+
+**L1 JMdict gloss 可信度層（0 token 地基）**
+
+- `scripts/audit_gloss_homophone.py`（jamdict，.venv）以 word+reading 反查，判斷舊
+  `gloss_en` 是否來自該詞自己的 entry，輸出 `scratch/cleanup_pipeline/gloss_status.json`
+  sidecar（可重生）。
+- 重大修正：第一版偵測器只用讀音查，flag 494 筆，會把正確的漢字詞 gloss 換成同音
+  別字（十→住、責め→attack）。改為「有漢字就用漢字 pin 住 entry」後真實分布為
+  11,958 `jmdict_verified`、215 `homophone_suspect`、627 `gloss_unmatched`。
+  教訓：任何 deterministic transform，apply 前必先看輸出。
+- 不自動改寫 gloss——假名同音字的「最高頻義」自己也常錯（こと→古箏）。沒有免費的
+  deterministic 語義消歧。
+- exporter 輸出 `gs`（可信度）+ `gj`（JMdict 候選義）：`jmdict_verified` 才叫模型信
+  gloss，其餘靠 word+reading+例句推導並標低信心。活躍 cheap legacy bucket 95% verified。
+
+**向量驗證實測（否決）**：cos(詞,正確義) 0.79 vs cos(詞,錯義) 0.71，方向正確率僅 63%；
+垃圾「政權→我們」cos 仍 0.61。向量只能當 gross-mismatch router，不是 verifier。
+
+**內容（iter 024+025 共 200 筆）**
+
+```json
+{
+  "iter024": {"rows": 100, "haikuChangedMeaning": "72/100", "sonnetCorrections": 9, "exampleDriftRevertedByGate": 53},
+  "iter025": {"rows": 100, "scope": "jmdict_verified only", "sonnetCorrections": 6},
+  "quality": {"badEntriesBefore": 9898, "badEntriesAfter": 9698, "issueCountBefore": 22854, "issueCountAfter": 22554},
+  "verbInvariant": {"generatedSuspect": 0, "mechanicalError": 0, "candidateQueue": 0},
+  "neon_import_run_ids": ["2a9cf77a-32a3-44e5-877e-6a1d847e56f2", "b46a3600-131a-4bda-8e9f-dfa662b6fda6"],
+  "build": "passed"
+}
+```
+
+**新增工具**：`scripts/strip_unrequired_drift.js`（`npm run cleanup:strip-drift`）在 gate 前
+deterministic 還原非必要欄位變動，省去每批手動還原 Haiku 改的例句。已寫進 skill 迴圈。
+
+省成本反省：
+
+- L1 把活躍 bucket 95% gloss 升級成權威背書，Sonnet 返工降到 9/100、6/100（codex 時代 45-70%）。
+- Sonnet 審查抓出 gate 看不到的 15 筆錯（簡體 浏览/抚养/複杂、日文漢字 処理/午前、方言
+  日頭、語義 發火/山根）——L3 字形/語義審查不可省。
+- Haiku 仍會改 meaning-only row 的例句（兩輪共 83 筆 drift），全被 field-drift gate 擋下；
+  已用 strip-drift 把還原自動化。
+- 失誤：曾為看 db:import log 重跑一次 write-mode import；之後一律 `tee` 存檔。
+- 每 100 筆才一次 Neon import/build；related 全量 embedding 繼續延後（仍有 22,554 issues）。
 
 ## 最低成本 Flow
 
