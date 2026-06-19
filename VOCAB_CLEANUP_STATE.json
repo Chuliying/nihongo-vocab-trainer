@@ -1,12 +1,12 @@
 {
   "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST instead of re-reading the 1900-line CLAUDE.md tail. Update it at the end of every iteration. Keep it short.",
   "updated": "2026-06-19",
-  "head_commit": "20cb14e",
+  "head_commit": "9d6cfcd",
   "pipeline_stage": "content-cleanup",
   "quality": {
     "entries": 13000,
-    "badEntries": 9898,
-    "issueCount": 22754,
+    "badEntries": 9798,
+    "issueCount": 22654,
     "note": "badEntries high because legacy_meaning_unreviewed is a provenance flag (unverified), not known-wrong"
   },
   "verb_invariant": {
@@ -51,7 +51,7 @@
     "how_used": "Exporter adds gs (reliability) + gj (jmdict candidate senses) per row. gs=jmdict_verified -> model trusts gloss. Otherwise -> model must derive from word+reading+example, confidence low. Active cheap legacy bucket is 95% jmdict_verified.",
     "active_bucket_impact": "cheap_model_candidate legacy_meaning: 2125/2236 (95%) jmdict_verified, 111 unreliable now flagged."
   },
-  "last_neon_import_run_id": "71b50d9a-aced-478b-949c-58222a880b1b",
+  "last_neon_import_run_id": "2a9cf77a-32a3-44e5-877e-6a1d847e56f2",
   "deferred_ids": [1328],
   "deferred_note": "id 1328 掛け: meaning was garbage (我們); gloss=credit/bill is correct but old example is about phone-not-connecting. Needs combined meaning+example single-row semantic correction outside the meaning-only gate.",
   "next_actions": [
