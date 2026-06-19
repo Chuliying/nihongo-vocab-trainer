@@ -1108,6 +1108,91 @@ Neon / build：
 - 仍採同一 session 兩遍處理，沒有額外模型呼叫成本；但獨立審核性不足，正式擴到 200–300 筆前應恢復 cheap candidate 與高模型 review 分離。
 - 每 100 筆只做一次 DB import/build，未 redeploy；related 全量 embedding 繼續等內容污染顯著下降後再跑。
 
+### Iteration 016 — sixth reviewed content checkpoint
+
+狀態：完成第六批 100 筆 reviewed content，已串行套用、同步 Neon、驗證 DB repository 並完成 build。
+
+選批：
+
+- current manifest：`cheap_model_candidate + latin`
+- 固定 100 個 ID；`semantic_review_flags` 全為空
+- 優先交通、飲食、健康、家庭、購物、教育與一般抽象詞
+- 排除地名、專名、軍事、宗教、法律冷僻義與敏感高歧義詞
+
+流程：
+
+1. 第一版 gate 直接通過：290 issues → 0。
+2. 第二遍語言 review 修正 5 筆：
+   - `腹筋を三十回する` → `腹筋運動を三十回する`
+   - `車の排気` → 常見搭配 `排気ガス`
+   - `図書館には多くの図書` → 自然的借閱語境
+   - `本業は料理人` → 類別一致的職業對比句
+   - 修正 `荒野` reading 的漢字殘留
+3. reviewed artifact 驗證：
+   - 100 unique IDs
+   - 全 high confidence
+   - 繁中無 Latin
+   - reading 無漢字殘留
+   - dry-run 290 issues → 0
+4. 單一程序串行 apply，逐 ID payload mismatch 為 0。
+
+品質結果：
+
+```json
+{
+  "before": {
+    "badEntries": 7144,
+    "issueCount": 15595
+  },
+  "after": {
+    "badEntries": 7044,
+    "issueCount": 15305
+  },
+  "batch": {
+    "rows": 100,
+    "changedMeaning": 100,
+    "changedExample": 97,
+    "issuesBefore": 290,
+    "issuesAfter": 0,
+    "artifactMismatches": []
+  }
+}
+```
+
+動詞：
+
+```json
+{
+  "withVerbInfo": 678,
+  "suppressedVerbInfo": 57,
+  "candidateQueue": 0,
+  "generatedSuspect": 0,
+  "mechanicalError": 0
+}
+```
+
+Neon / build：
+
+```json
+{
+  "import_run_id": "10af1a38-0c95-4481-8987-79ec5326c1c2",
+  "vocab_entries": 13000,
+  "verb_info": 678,
+  "related_words": 25990,
+  "popular_verbs": 300,
+  "api_parity": true,
+  "runtime_repository_ok": true,
+  "build": "passed"
+}
+```
+
+省成本反省：
+
+- 這批用更窄的生活領域選詞，第一版 deterministic gate 即通過，第二遍只需修 5 筆搭配／reading，低於前兩批的修正量。
+- apply gate 新增 `e.r contains kanji` 檢查，將本輪人工發現的 reading 漢字殘留改成後續批次的 deterministic blocker。
+- 3 筆 meaning-only rows 保留原本自然例句，避免無效 token 與 review 成本。
+- 維持每 100 筆一次 DB import/build；未 redeploy、未重算 embeddings，避免在仍有 15,305 issues 時產生高重算成本。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。

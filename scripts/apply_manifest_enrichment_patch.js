@@ -81,6 +81,10 @@ function sameExample(a, b) {
   return a.j === b.j && a.r === b.r && a.c === b.c;
 }
 
+function containsKanji(text) {
+  return /[一-龯々〆ヵヶ]/.test(String(text || ""));
+}
+
 function currentCompact(entry) {
   const example = entry.example || {};
   return {
@@ -151,6 +155,7 @@ function validatePatch(output, expected, current) {
   if (containsBadLatin(outputExample.c)) errors.push("e.c contains English/Latin text");
   if (hasPlaceholder(outputExample.c)) errors.push("e.c contains placeholder text");
   if (isLowValueJapanese(outputExample.j)) errors.push("e.j is a low-value/meta sentence");
+  if (containsKanji(outputExample.r)) errors.push("e.r contains kanji");
 
   const candidate = clone(current);
   candidate.meaning = outputMeaning;
