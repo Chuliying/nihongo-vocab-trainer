@@ -1193,6 +1193,97 @@ Neon / build：
 - 3 筆 meaning-only rows 保留原本自然例句，避免無效 token 與 review 成本。
 - 維持每 100 筆一次 DB import/build；未 redeploy、未重算 embeddings，避免在仍有 15,305 issues 時產生高重算成本。
 
+### Iteration 017 — seventh reviewed content checkpoint
+
+狀態：完成第七批 100 筆 reviewed content，已同步 Neon 並通過 repository/build 驗證。
+
+選批：
+
+- current manifest：`cheap_model_candidate + latin`
+- 固定 100 個 ID；`semantic_review_flags` 全為空
+- 範圍延伸到 N1，但只選可用短日常句說明的普通詞
+- 排除專名、機關名、軍事、宗教、敏感詞與高歧義語義
+
+流程：
+
+1. 第一版 deterministic gate 阻擋：
+   - id `7813 意味合い`：繁中仍像 placeholder
+   - id `7943 歌唱`：reading 混入漢字
+2. 第二遍語言 review 共修正 9 筆：
+   - `所有者を登記` → `所有権を登記`
+   - `真空の袋` → `真空パック`
+   - 修正 `車線` 的繁中詞義範圍
+   - `青葉が増える` → `青葉が茂る`
+   - `元祖` 的繁中改為自然的「發源店」
+   - `意味合い` 避免模板式翻譯並精確對應 `言葉`
+   - `天空` 改為較自然的景象搭配
+   - `歌唱` 修正 reading 並改為自然練習語境
+   - `専業にする` → `専業とする`
+3. reviewed artifact：
+   - 100 unique IDs
+   - 全 high confidence
+   - 繁中無 Latin
+   - reading 無漢字
+   - 283 issues → 0
+4. 串行 apply；逐 ID payload mismatch 為 0。
+
+品質結果：
+
+```json
+{
+  "before": {
+    "badEntries": 7044,
+    "issueCount": 15305
+  },
+  "after": {
+    "badEntries": 6944,
+    "issueCount": 15022
+  },
+  "batch": {
+    "rows": 100,
+    "changedMeaning": 100,
+    "changedExample": 93,
+    "issuesBefore": 283,
+    "issuesAfter": 0,
+    "artifactMismatches": []
+  }
+}
+```
+
+動詞：
+
+```json
+{
+  "withVerbInfo": 678,
+  "suppressedVerbInfo": 57,
+  "candidateQueue": 0,
+  "generatedSuspect": 0,
+  "mechanicalError": 0
+}
+```
+
+Neon / build：
+
+```json
+{
+  "import_run_id": "c7ab8401-d392-4952-9b42-2e29a389798d",
+  "vocab_entries": 13000,
+  "verb_info": 678,
+  "related_words": 25990,
+  "popular_verbs": 300,
+  "api_parity": true,
+  "runtime_repository_ok": true,
+  "build": "passed"
+}
+```
+
+省成本反省：
+
+- reading 漢字 gate 在加入後的第一批就實際抓到錯誤，將人工抽查轉成低成本 deterministic QA。
+- 7 筆 meaning-only rows 保留原例句，降低無效改寫與 review token。
+- 第二遍修正主要是固定搭配與詞義範圍；後續選批可繼續優先單義具體詞，減少高模型語義分支。
+- 每 100 筆才同步 DB/build；未 redeploy、未跑全量 embeddings。目前仍有 15,022 issues，重算 related 候選仍不划算。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
