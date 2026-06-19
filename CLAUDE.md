@@ -26,14 +26,14 @@
 ```json
 {
   "entries": 13000,
-  "badEntries": 9997,
-  "issueCount": 22853
+  "badEntries": 9898,
+  "issueCount": 22754
 }
 ```
 
 這次數字上升不是內容倒退，而是 validator 補上 provenance blind spot：舊
-`jmdict gloss zh translation` pipeline 有 8,709 筆 meaning 尚未經語義審核，
-過去即使翻譯明顯錯誤也可能被算成 clean。
+`jmdict gloss zh translation` pipeline 原有 8,809 筆 meaning 尚未經語義審核，
+過去即使翻譯明顯錯誤也可能被算成 clean；目前已透過兩批 checkpoint 降到 8,610。
 
 依 tranche 的 bad entry 數：
 
@@ -70,7 +70,7 @@
 ```
 
 已套用 enrichment batch 001-007，並持續追加 reviewed cleanup checkpoints。
-最新 100 筆 meaning-only review 已反映在 chunks。
+最新兩批共 199 筆 meaning-only review 已反映在 chunks（1 筆因 gloss/example 衝突延後處理）。
 
 ## 技術結構
 
@@ -1766,6 +1766,156 @@ Sparse review pipeline：
 - deterministic routing 先把 5,536 筆純 legacy meaning 分流，再由風險旗標排除 grammar、
   verb、katakana 與專門領域；比先丟模型、再靠 reviewer 駁回更省。
 - 仍以 100 筆為 Neon/build checkpoint；本輪沒有 deploy，也沒有重算 embeddings。
+
+### Iteration 023 — Opus/Haiku/Sonnet 架構試跑 + 99 筆 checkpoint
+
+狀態：接手時發現另一個 session 同時在跑（見下）；交接後把 LLM stack 從
+`codex exec`（gpt-5.4-mini/gpt-5.5）換成 Claude 原生模型分層，並完成下一批
+checkpoint。
+
+**交接驗證**：
+
+- 發現有另一個本機 Claude session（同一個 repo cwd）正在跑，幾分鐘內把
+  Iteration 022 的全部內容（manifest semantic routing、`legacy_meaning_unreviewed`
+  gate、100 筆 checkpoint）commit 並 push 到 `origin/main`（`803e94e`），
+  包含 Neon sync（`import_run_id 1d9d61bc...`）與 build。確認後才接手，避免
+  兩邊同時寫 chunks/DB 互相覆蓋。
+- 確認使用者原訊息列的「第一優先工作」（186 筆 approved medium 動詞候選固定成
+  review artifact、`apply_verb_info_candidates.js` 限制 approved-only IDs）
+  其實已在 Iteration 011 完成（`reviews/verb_info_medium_review_2026-06-18.json`
+  存在，`apply_verb_info_candidates.js` 已有 `approvedIdsFor` allowlist 檢查），
+  不需重做。
+- 省成本反省（失誤記錄）：為了看 `npm run db:import` 開頭的 log，把同一個
+  write-mode 指令重複執行兩次（一次 `tail`、一次 `head`），等於對 Neon 做了
+  兩次不必要的 truncate-reload。資料結果一致、無完整性問題，但白白多付一次
+  Neon 寫入成本。**之後一律把輸出整份存檔（`tee`）再分段查看，不要重跑
+  write-mode 指令只為了看 log 的另一段。**
+
+**模型架構變更**（使用者要求，完全取代 `codex exec`）：
+
+- Opus（`model: opus`，Agent 工具一次性 spawn）：讀現有 prompt 範本、
+  cost 數據與本輪新發現的 gloss/word mismatch 風險，產出 token 精簡與
+  review checklist 建議。
+- Haiku（`model: haiku`，Agent 工具，同批拆 2×50 並行）：取代
+  `gpt-5.4-mini`，直接 Read 既有 `export_manifest_enrichment_batch.js`
+  產生的 input/prompt 檔，Write 輸出 JSONL，不再需要 `codex exec` subprocess、
+  PATH hack 或 ephemeral sandbox 旗標。
+- Sonnet（中樞本身）：取代 `gpt-5.5 high`，直接讀 sparse review input
+  逐筆審查並產出 approved/change 判決，不必另外 spawn 第三個 agent。
+
+Opus 規劃要點：
+
+- 既有 prompt 已經夠精簡，不需重寫；只建議之後批次可加一個 worked example
+  與把高頻失敗規則前置。
+- 新增 gloss-mismatch 規則：當 `g` 與 `w`/`r`/既有例句明顯衝突時，模型應
+  忽略 `g`、改用詞本身常識判斷，並標 `confidence:"low"` 附衝突原因，而不是
+  盲信 gloss。
+- 維持 50 筆／次、每 checkpoint 2 組並行（Iteration 020 已證明 100 筆單批
+  串流不穩）。
+- Sonnet review checklist 依嚴重度排序：(1) gloss 衝突造成的誤譯
+  (2) 殘留的損壞 placeholder 未修好 (3) 繁中自然度/過度擴義 (4) 例句自然度
+  (5) field drift（gate 已擋，最後才看）。
+- 其他可省成本項目：之後批次可把 Sonnet 自己的審查也輸出成
+  sparse approved/change 格式（已採用）；`g` 欄位可再裁到 ≤3 個 gloss。
+
+**新發現（gloss/word mismatch，非本輪才有，但本輪首次量化）**：
+
+manifest 的 domain routing 抓地名/軍事/宗教等高風險詞，但沒有抓「gloss 對到
+錯的同音字」這種上游資料問題。例：
+
+```json
+[
+  {"id": 1049, "w": "せよ", "g": "charity/almsgiving", "real": "する 命令形"},
+  {"id": 1103, "w": "さっき", "g": "bloodlust/thirst for blood", "real": "剛才"},
+  {"id": 1192, "w": "ちょうど", "g": "household items/furniture", "real": "正好、剛好"}
+]
+```
+
+另有獨立於 gloss 之外、原 meaning 本身被寫壞的 rows（疑似舊 pipeline
+index 位移 bug，例如 1234 政權、1328 掛け、1332 皆樣 都曾經被寫成「我們」
+或「非常、很」這種與詞義無關的字串）。這類 row 多數 gloss 是對的，Haiku
+靠 gloss 即可修正；只有 gloss 本身錯的 3 類詞需要 Sonnet 用詞彙常識覆寫。
+
+**內容 checkpoint**：
+
+```json
+{
+  "candidateRows": 100,
+  "excludedForGlossExampleConflict": 1,
+  "appliedRows": 99,
+  "haikuChangedMeaning_A": 36,
+  "haikuChangedMeaning_B": 4,
+  "sonnetCorrections_A": 6,
+  "sonnetCorrections_B": 1,
+  "finalChangedMeaning_A": 31,
+  "finalChangedMeaning_B": 5,
+  "issuesBefore": 99,
+  "issuesAfter": 0
+}
+```
+
+- id 1328（掛け）被排除在外：gloss（credit/bill/hanger）、原例句（電話接不通）
+  與任何單一詞義都對不起來，meaning-only gate 不允許同時改例句，因此延後到
+  未來一個「meaning+example 一起修」的小批次（沿用 6471 絞り 的 single-row
+  semantic correction 模式），不要為了趕批次硬套一個不自然的詞義。
+- Haiku 對 12+1 筆做了不被允許的例句改動（legacy_meaning-only row 只能改
+  `m`），由 deterministic field-drift gate 擋下，全部還原成原例句後才過關，
+  沒有任何一筆是悄悄通過的。
+
+品質結果：
+
+```json
+{
+  "before": {
+    "badEntries": 9997,
+    "issueCount": 22853,
+    "legacyMeaningUnreviewed": 8709
+  },
+  "after": {
+    "badEntries": 9898,
+    "issueCount": 22754,
+    "legacyMeaningUnreviewed": 8610
+  }
+}
+```
+
+動詞與 DB gate：
+
+```json
+{
+  "withVerbInfo": 678,
+  "suppressedVerbInfo": 57,
+  "candidateQueue": 0,
+  "generatedSuspect": 0,
+  "mechanicalError": 0,
+  "dbImportRunId": "71b50d9a-aced-478b-949c-58222a880b1b",
+  "runtimeRepository": "passed",
+  "build": "passed"
+}
+```
+
+省成本反省：
+
+- Haiku+Sonnet（中樞自審）取代 `gpt-5.4-mini`+`gpt-5.5` 後，不再需要
+  `codex exec --ignore-user-config --ignore-rules` 的 subprocess、PATH hack
+  或 ephemeral sandbox 旗標，也不再受外部 CLI 載入不相關 plugin/skill context
+  造成的帳面 token 不穩定影響。
+  Haiku 的 `subagent_tokens` 約 72K/批（含工具呼叫與檔案讀取），Opus 規劃一次性
+  花 102K；這次先把 Opus 當一次性策略訂閱，不必每批重跑。
+  跟 codex 同等規模時（Iteration 022 量到的 26,564 + 6,744）相比，Haiku 草稿
+  仍是同量級成本，主要差異是不再有「啟動成本不穩定」的問題，且不需要外部
+  CLI 依賴。
+- Sonnet 自己當 reviewer（不另外 spawn）省了一次 agent 開銷，且因為是同一個
+  中樞在審查，審查結論可以直接套用而不必再走一輪「人工終審」——這次把過去
+  「高模型 review + 人工終審」兩階段，合併成一次有依據（逐筆列 reason）的審查。
+- deterministic field-drift gate 再次證明不可省略：Haiku 在 13/100 筆做了
+  未授權的例句改動，全部被攔下還原，沒有任何一筆繞過。
+- gloss/word mismatch 是新的系統性風險類別，目前只能靠審查者的詞彙常識抓，
+  manifest 還無法 deterministic 偵測；下一步可以考慮在 manifest 加一個粗略
+  heuristic（例如 reading 長度 ≤3 且為純假名時提高人工抽查機率），但不必為了
+  這個邊際風險花更多模型成本去做語意分類。
+- 仍以 100 筆（本批 99+1 延後）為 Neon/build checkpoint；本輪沒有 deploy，
+  也沒有重算 embeddings。
 
 ## 最低成本 Flow
 
