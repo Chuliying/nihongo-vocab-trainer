@@ -26,8 +26,8 @@
 ```json
 {
   "entries": 13000,
-  "badEntries": 7344,
-  "issueCount": 16190
+  "badEntries": 6744,
+  "issueCount": 14440
 }
 ```
 
@@ -35,18 +35,18 @@
 
 ```json
 {
-  "2": 69,
-  "3": 88,
-  "4": 474,
-  "5": 915,
-  "6": 916,
-  "7": 887,
-  "8": 841,
-  "9": 876,
-  "10": 864,
-  "11": 559,
-  "12": 542,
-  "13": 577
+  "2": 57,
+  "3": 72,
+  "4": 456,
+  "5": 762,
+  "6": 741,
+  "7": 722,
+  "8": 686,
+  "9": 748,
+  "10": 860,
+  "11": 549,
+  "12": 529,
+  "13": 562
 }
 ```
 
@@ -54,10 +54,10 @@
 
 ```json
 [
-  ["low_value_example", 5132],
-  ["meaning_latin", 3822],
-  ["chinese_latin", 3722],
-  ["stale_llm_source", 2759],
+  ["low_value_example", 4463],
+  ["meaning_latin", 3082],
+  ["chinese_latin", 3010],
+  ["stale_llm_source", 2728],
   ["meaning_placeholder", 613],
   ["chinese_placeholder", 541],
   ["missing_target_word", 3]
@@ -1368,6 +1368,191 @@ Neon / build：
 - 4 筆 meaning-only rows 保留原例句，避免無效改寫。
 - reading 漢字檢查持續維持 deterministic gate；本批無 reading 漏網。
 - 每 100 筆才同步一次 DB/build，未 redeploy、未跑 embeddings。目前 14,733 issues 仍會明顯污染向量文本。
+
+### Iteration 019 — handoff reconciliation + non-destructive verification
+
+狀態：確認使用者提供的交接點 `f191329` 已是歷史提交；目前 `main` / `origin/main` 都在 `f181ed5`，而且後續已完成動詞 review artifact、approved-only gate、矩陣 related prototype 與八個 reviewed content checkpoints。本輪不重放歷史 patch、不寫 Neon、不覆蓋使用者 scratch。
+
+Repository / 程序：
+
+- `git status` 原有一個 modified tracked sample、`output.jsonl` 與多組未追蹤 scratch；全部保留。
+- 沒有本專案中斷中的 cleanup / import / embedding 程序。
+- shell 預設 `/usr/local/bin/node` 是 Node 8.17.0，但 `npm` 位於 Node 20.19.4 的 nvm 目錄；驗證命令需暫時把 Node 20 路徑放在 `PATH` 前面，否則 npm 會因不支援 `node:path` 失敗。
+
+動詞驗證（artifacts 寫入 `/tmp`）：
+
+```json
+{
+  "verbLike": 735,
+  "withVerbInfo": 678,
+  "missingVerbInfo": 0,
+  "suppressedVerbInfo": 57,
+  "reviewedVerbInfo": 613,
+  "candidateQueue": 0,
+  "generatedSuspect": 0,
+  "mechanicalError": 0
+}
+```
+
+- tracked review artifact 仍是 186 approved / 16 rejected。
+- current queue 為 0，medium dry-run 因此是 0 candidates；這不是重放歷史 186 筆的訊號。
+
+Runtime / import：
+
+```json
+{
+  "runtime_repository": {
+    "ok": true,
+    "source": "db",
+    "tranches": 13,
+    "vocab_entries": 13000,
+    "popular_entries": 300
+  },
+  "db_import_dry_run": {
+    "vocab_entries": 13000,
+    "verb_info": 678,
+    "related_words": 25990,
+    "popular_verbs": 300,
+    "api_parity": true
+  }
+}
+```
+
+目前內容品質：
+
+```json
+{
+  "entries": 13000,
+  "badEntries": 6844,
+  "issueCount": 14733,
+  "topIssues": {
+    "low_value_example": 4554,
+    "meaning_latin": 3182,
+    "chinese_latin": 3107,
+    "stale_llm_source": 2733,
+    "meaning_placeholder": 613,
+    "chinese_placeholder": 541,
+    "missing_target_word": 3
+  }
+}
+```
+
+Related sample：
+
+```json
+{
+  "source_count": 20,
+  "candidate_pool_count": 100,
+  "candidate_count": 86,
+  "validator": "passed",
+  "artifact": "/tmp/nihongo-related-candidates-handoff.jsonl"
+}
+```
+
+- `.venv` 內為 FastEmbed 0.8.0 / NumPy 2.2.6。
+- 既有 tracked `scratch/vocab-db-migration/related_candidates.sample.jsonl` 保持使用者修改，不覆寫。
+- pooling 行為警告仍存在；不同 FastEmbed runtime 的分數不可混用。
+
+省成本反省：
+
+- 先對照提交歷史與 `CLAUDE.md`，避免依過期交接摘要重做 186 筆動詞 apply、schema 修正與矩陣化工作。
+- 所有可重建 audit/sample 都寫到 `/tmp`，省去備份、merge 與清理使用者 scratch 的成本。
+- DB 只做 read validation 與 import dry-run；內容未新增 100–300 筆前不做 write/build/deploy。
+- related 只跑 20×100 smoke sample；目前仍有 14,733 個內容 issues，全量 embedding 會造成必然重算，繼續延後。
+
+### Iteration 020 — ninth reviewed content checkpoint
+
+狀態：完成下一批 100 筆 reviewed content，已串行 apply、同步 Neon，並通過 runtime repository 與 production build 驗證。
+
+選批：
+
+- current manifest：`cheap_model_candidate + latin`
+- 固定 100 個 ID，拆成 50 + 50 產候選與 review，但套用仍串行
+- `semantic_review_flags` 全為空
+- 排除動詞、文法詞、純片假名、專名、軍事、宗教、科學名、敏感詞與冷僻專業義
+- 原始依 frequency 排序後再人工剔除 manifest 未攔住的語義風險
+
+流程：
+
+1. 原本嘗試單次 100-row `gpt-5.4-mini high`，遇到串流斷線與長時間 retry，主動中止。
+2. 改為兩個 50-row mini candidate calls；兩批均保留固定 ID 與順序。
+3. 第一輪 gate：
+   - A：151 issues → 0
+   - B：抓到 `派生` 的 placeholder 翻譯，以及 `主権`、`施策` 兩個不允許的 example drift；最小修正後 142 issues → 0
+4. `gpt-5.5 high` 分兩個 50-row 批次逐筆 review；相較 mini candidate 共修改 50 / 100 筆。
+5. review 後 gate 再抓到：
+   - `派生` 的中文 meta placeholder
+   - `配備` 的非必要 example drift
+6. 人工終審另修正 validator 不會抓到的自然度／擴義問題，例如：
+   - `辨識出臉了` → `系統辨識出了人臉`
+   - `偏向理科的傾向很強` → `很偏好理科`
+   - `このうまさは極みだ` → `ぜいたくの極み`
+   - `連盟`、`彼方` 不再用日文漢字原樣充當繁中第二義
+   - `大根` 只保留常用「白蘿蔔」，避免不必要的冷僻引申義
+7. 最終 reviewed artifacts 再 dry-run，100 筆全部通過後依 A → B 串行 apply。
+
+品質結果：
+
+```json
+{
+  "before": {
+    "badEntries": 6844,
+    "issueCount": 14733
+  },
+  "after": {
+    "badEntries": 6744,
+    "issueCount": 14440,
+    "cheapModelCandidate": 1753
+  },
+  "batch": {
+    "rows": 100,
+    "uniqueIds": 100,
+    "changedMeaning": 100,
+    "changedExample": 97,
+    "issuesBefore": 293,
+    "issuesAfter": 0,
+    "artifactMismatches": []
+  },
+  "review": {
+    "highModelChangedRows": 50
+  }
+}
+```
+
+動詞：
+
+```json
+{
+  "withVerbInfo": 678,
+  "suppressedVerbInfo": 57,
+  "candidateQueue": 0,
+  "generatedSuspect": 0,
+  "mechanicalError": 0
+}
+```
+
+Neon / build：
+
+```json
+{
+  "import_run_id": "561ce417-2a76-4dbf-a738-566bcdf69997",
+  "vocab_entries": 13000,
+  "verb_info": 678,
+  "related_words": 25990,
+  "popular_verbs": 300,
+  "api_parity": true,
+  "runtime_repository_ok": true,
+  "build": "passed"
+}
+```
+
+省成本反省：
+
+- 單次 100-row 生成的長輸出在串流失敗後重試成本很高；50-row 是目前較穩定的 candidate/review 單位，仍可累積 100 筆後才 DB sync/build。
+- mini candidate 與 high review 可各自平行跑 50 + 50；chunk apply 必須串行。
+- high review 修改率 50%，表示這段剩餘 latin queue 已比前幾批更抽象；不能移除 high review，且下一批應繼續人工先剔除 manifest 漏判的專業／多義詞。
+- gate 能抓 field drift 與 placeholder，但抓不到不自然搭配、過度擴義與台灣繁中語感；保留人工終審能避免「validator 綠燈但內容仍差」。
+- 只在累積 100 筆後做一次 Neon import/build，未 redeploy、未跑 embeddings。目前仍有 14,440 issues，related 全量重算繼續延後。
 
 ## 最低成本 Flow
 
