@@ -26,8 +26,8 @@
 ```json
 {
   "entries": 13000,
-  "badEntries": 6744,
-  "issueCount": 14440
+  "badEntries": 6644,
+  "issueCount": 14144
 }
 ```
 
@@ -38,11 +38,11 @@
   "2": 57,
   "3": 72,
   "4": 456,
-  "5": 762,
-  "6": 741,
-  "7": 722,
-  "8": 686,
-  "9": 748,
+  "5": 759,
+  "6": 736,
+  "7": 709,
+  "8": 678,
+  "9": 677,
   "10": 860,
   "11": 549,
   "12": 529,
@@ -54,10 +54,10 @@
 
 ```json
 [
-  ["low_value_example", 4463],
-  ["meaning_latin", 3082],
-  ["chinese_latin", 3010],
-  ["stale_llm_source", 2728],
+  ["low_value_example", 4366],
+  ["meaning_latin", 2982],
+  ["chinese_latin", 2912],
+  ["stale_llm_source", 2727],
   ["meaning_placeholder", 613],
   ["chinese_placeholder", 541],
   ["missing_target_word", 3]
@@ -1553,6 +1553,122 @@ Neon / build：
 - high review 修改率 50%，表示這段剩餘 latin queue 已比前幾批更抽象；不能移除 high review，且下一批應繼續人工先剔除 manifest 漏判的專業／多義詞。
 - gate 能抓 field drift 與 placeholder，但抓不到不自然搭配、過度擴義與台灣繁中語感；保留人工終審能避免「validator 綠燈但內容仍差」。
 - 只在累積 100 筆後做一次 Neon import/build，未 redeploy、未跑 embeddings。目前仍有 14,440 issues，related 全量重算繼續延後。
+
+### Iteration 021 — tenth reviewed content checkpoint + sparse review pipeline
+
+狀態：完成第十批 100 筆 reviewed content、1 筆獨立 semantic correction、Neon sync、runtime/build 驗證；另將 high-model sparse review 做成 deterministic scripts。
+
+內容流程：
+
+1. current manifest：`cheap_model_candidate + latin`
+2. 固定 100 個 ID，維持 50 + 50 mini candidate / high review。
+3. 選批排除動詞、文法詞、片假名、專名、地名、品牌、軍事、宗教、學名與明確敏感詞。
+4. mini candidate gate：
+   - A：146 issues → 0
+   - B：150 issues → 0
+   - gate 阻止 `絞り` 不允許的 example drift。
+5. `gpt-5.5 high` 逐筆 review，修改 55 / 100 筆。
+6. 人工終審再修正 validator 無法判斷的自然度：
+   - `子彈命中了` 補足命中目標
+   - `この量を目安に入れて` 移除缺少受詞的 `入れて`
+   - `友だちの家に泊まりだ` 補足時間主題
+   - `肛門會痛` 改為自然繁中狀態句
+   - `すりに遭う` 正確翻成遭到扒竊
+7. `6471 絞り` 的 meaning 是「絞染」，但舊例句是「擠檸檬」；不繞過 field gate，另建 1-row semantic correction artifact，dry-run 後套用絞染例句。
+
+品質結果：
+
+```json
+{
+  "before": {
+    "badEntries": 6744,
+    "issueCount": 14440
+  },
+  "after": {
+    "badEntries": 6644,
+    "issueCount": 14144,
+    "cheapModelCandidate": 1653
+  },
+  "batch": {
+    "rows": 100,
+    "uniqueIds": 100,
+    "changedMeaning": 100,
+    "changedExample": 98,
+    "semanticCorrections": 1,
+    "issuesBefore": 296,
+    "issuesAfter": 0,
+    "finalPayloadMismatches": []
+  },
+  "review": {
+    "highModelChangedRows": 55
+  }
+}
+```
+
+動詞：
+
+```json
+{
+  "withVerbInfo": 678,
+  "suppressedVerbInfo": 57,
+  "candidateQueue": 0,
+  "generatedSuspect": 0,
+  "mechanicalError": 0
+}
+```
+
+Neon / build：
+
+```json
+{
+  "import_run_id": "0c00c761-9c4f-4150-bf35-1f6e7f31f7a3",
+  "vocab_entries": 13000,
+  "verb_info": 678,
+  "related_words": 25990,
+  "popular_verbs": 300,
+  "api_parity": true,
+  "runtime_repository_ok": true,
+  "build": "passed"
+}
+```
+
+Sparse review pipeline：
+
+- 新增 `scripts/prepare_sparse_content_review.js`
+  - high review input 只保留 `id/word/reading/POS/JLPT/gloss/required/candidate`
+  - 不再重送壞的舊 meaning/example、manifest metadata 與兩份完整 payload
+- 新增 `scripts/merge_sparse_content_review.js`
+  - approved row 只需 `{"id":123,"status":"approved"}`
+  - 只有修改 row 才回傳 `m/e/reason`
+  - 必須完整覆蓋 candidate IDs 且順序一致，再 deterministic merge 成原 gate 可驗證的完整 JSONL
+- 新增 npm commands：
+  - `cleanup:review-prepare`
+  - `cleanup:review-merge`
+- synthetic approved/change merge test 通過。
+
+實測成本：
+
+```json
+{
+  "reviewInput": {
+    "oldBytes": 34309,
+    "sparseBytes": 15009,
+    "savedPercent": 56.3
+  },
+  "reviewOutputAt55PercentChange": {
+    "oldBytes": 24927,
+    "sparseBytes": 15298,
+    "savedPercent": 38.6
+  }
+}
+```
+
+省成本反省：
+
+- 沒有獨立 `OPENAI_API_KEY`，目前不能改用 Responses API；後續 Codex CLI 應加 `--ignore-user-config --ignore-rules`，避免載入不相關 plugin/skill context。
+- sparse review 已把最昂貴的 high-review input 減半以上；output 節省會隨 approved 比例提高。
+- 目前 high review 修改率 55%，代表剩餘 latin queue 已接近 cheap-model 邊界；再繼續時應強化 deterministic 語義風險分流，而不是靠模型事後返工。
+- 仍維持每 100 筆才一次 DB import/build；未 redeploy、未重算 embeddings。目前 14,144 issues 仍會污染 related embedding text。
 
 ## 最低成本 Flow
 

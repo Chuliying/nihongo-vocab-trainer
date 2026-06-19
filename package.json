@@ -19,6 +19,8 @@
     "cleanup:metadata": "node scripts/apply_metadata_only_cleanup.js",
     "cleanup:export": "node scripts/export_manifest_enrichment_batch.js",
     "cleanup:apply": "node scripts/apply_manifest_enrichment_patch.js",
+    "cleanup:review-prepare": "node scripts/prepare_sparse_content_review.js",
+    "cleanup:review-merge": "node scripts/merge_sparse_content_review.js",
     "validate:chunks": "node scripts/validate_chunks_strict.js",
     "validate:data": "python3 scripts/validate_vocab.py public/data/vocab_13000.json public/data/tranches.json && node scripts/validate_chunks_strict.js",
     "validate:agent-manifest": "node scripts/validate_agent_manifest.js",
