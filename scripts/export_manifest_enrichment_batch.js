@@ -49,10 +49,28 @@ function readChunksById() {
   return byId;
 }
 
+const GLOSS_STATUS_PATH = path.join(
+  process.cwd(),
+  "scratch",
+  "cleanup_pipeline",
+  "gloss_status.json"
+);
+
+function loadGlossStatus() {
+  try {
+    return readJson(GLOSS_STATUS_PATH).status || {};
+  } catch (error) {
+    return {};
+  }
+}
+
+const GLOSS_STATUS = loadGlossStatus();
+
 function compactRow(manifestRow, entry) {
   const quality = entry._quality || {};
   const example = entry.example || {};
-  return {
+  const status = GLOSS_STATUS[String(entry.id)] || {};
+  const row = {
     id: entry.id,
     w: entry.word,
     r: entry.reading,
@@ -60,6 +78,10 @@ function compactRow(manifestRow, entry) {
     l: entry.jlpt_level,
     f: entry.frequency_rank,
     g: Array.isArray(quality.gloss_en) ? quality.gloss_en : [],
+    // gs: JMdict-derived gloss reliability. "jmdict_verified" means g matches the
+    // word's own kanji-disambiguated JMdict entry; any other value means g may be
+    // from the wrong same-reading homophone and must NOT be trusted blindly.
+    gs: status.status || "unknown",
     i: manifestRow.issues,
     ib: manifestRow.issue_bucket,
     rb: manifestRow.risk_bucket,
@@ -71,6 +93,13 @@ function compactRow(manifestRow, entry) {
       c: example.chinese || "",
     },
   };
+  // gj: JMdict candidate senses when the gloss is unreliable — a reference only (for
+  // kana words it may itself be the wrong homophone; the example sentence is the
+  // better disambiguator).
+  if (status.status && status.status !== "jmdict_verified" && Array.isArray(status.jmdict_senses)) {
+    row.gj = status.jmdict_senses;
+  }
+  return row;
 }
 
 function requiredPatchFieldsFor(row) {
@@ -191,6 +220,8 @@ function main() {
       "- w/r/p/l: word, reading, part of speech, JLPT",
       "- f: frequency rank",
       "- g: English gloss hints; use for sense, never copy English into output",
+      "- gs: gloss reliability. 'jmdict_verified' = g matches the word's own JMdict entry, trust it. Any other value = g may be the WRONG same-reading homophone; do NOT trust g.",
+      "- gj: when present, JMdict candidate senses for an unreliable gloss (reference only; may also be a wrong homophone — the example sentence is the better cue)",
       "- i/ib/rb/sf: validator issues, risk buckets, and semantic review flags",
       "- m: current Traditional Chinese meaning",
       "- e: current example {j,r,c}",
@@ -205,7 +236,8 @@ function main() {
       "- Only change fields needed by issues.",
       "- If only low_value_example is present, keep m unchanged unless it is clearly wrong.",
       "- Do not output English, Simplified Chinese, placeholders, or meta examples.",
-      "- Translate the exact gloss sense; do not add broader near-synonyms (e.g. 原理 is not automatically 原則).",
+      "- If gs is 'jmdict_verified', translate the exact gloss sense; do not add broader near-synonyms (e.g. 原理 is not automatically 原則).",
+      "- If gs is NOT 'jmdict_verified', do NOT trust g: derive the meaning from the word, reading, the example sentence, and common usage; set confidence low and explain in reason.",
       "- Prefer one clear everyday Traditional Chinese sense; add a second sense only when it is common and materially distinct.",
       "- Meanings must explain the term in natural Traditional Chinese; do not merely repeat the Japanese spelling when explanation is needed.",
       "- Japanese example must naturally include w or a natural inflection/stem.",

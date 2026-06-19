@@ -34,14 +34,22 @@
     "chinese_placeholder": 541,
     "missing_target_word": 3
   },
-  "jmdict_l1_audit": {
+  "jmdict_l1": {
+    "status": "BUILT and wired into exporter",
     "tool": "jamdict (.venv), MIT lib + EDRDG/CC data",
-    "checked": 12995,
-    "gloss_from_top_priority_homophone": 11683,
-    "gloss_from_LOWER_priority_homophone_FLAG": 494,
-    "gloss_unmatched_to_jmdict": 652,
-    "reading_not_in_jmdict": 166,
-    "meaning": "494 entries have gloss pulled from the WRONG homophone (e.g. ちょうど->furniture). Most are common kana grammar words already routed away from cheap model. Suppress/correct these glosses (0 token) before any model trusts gloss."
+    "script": "scripts/audit_gloss_homophone.py -> scratch/cleanup_pipeline/gloss_status.json (sidecar, regenerable, 0 token)",
+    "key_correction": "First detector (reading-only) gave 494 false-heavy flags and would have REPLACED correct kanji-word glosses with wrong-homophone ones. Fixed: kanji words are pinned by their kanji form. Lesson: inspect before any deterministic apply.",
+    "status_counts": {
+      "jmdict_verified": 11958,
+      "homophone_suspect": 215,
+      "gloss_unmatched": 627,
+      "own_entry_not_found": 29,
+      "no_jmdict": 166,
+      "no_gloss": 5
+    },
+    "do_not": "Do NOT auto-rewrite gloss. The top-priority pick is itself wrong ~half the time for kana homophones (e.g. こと->'koto zither'). There is no free deterministic semantic disambiguation.",
+    "how_used": "Exporter adds gs (reliability) + gj (jmdict candidate senses) per row. gs=jmdict_verified -> model trusts gloss. Otherwise -> model must derive from word+reading+example, confidence low. Active cheap legacy bucket is 95% jmdict_verified.",
+    "active_bucket_impact": "cheap_model_candidate legacy_meaning: 2125/2236 (95%) jmdict_verified, 111 unreliable now flagged."
   },
   "last_neon_import_run_id": "71b50d9a-aced-478b-949c-58222a880b1b",
   "deferred_ids": [1328],

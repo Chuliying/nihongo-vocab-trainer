@@ -67,13 +67,29 @@ that reading. If the gloss came from a lower-priority homophone while a higher o
 exists → flag. Most flags are common kana grammar words already routed away from
 the cheap model.
 
-Use jamdict in `.venv`:
+Run the audit (writes the `gloss_status.json` sidecar, ~2 min, 0 token):
 ```
-.venv/bin/python -c "from jamdict import Jamdict; j=Jamdict(); r=j.lookup('ちょうど'); \
-print([( [k.text for k in e.kanji_forms], [s.pos for s in e.senses][:1]) for e in r.entries])"
+.venv/bin/python scripts/audit_gloss_homophone.py scratch/cleanup_pipeline/gloss_homophone_audit.json
 ```
-Foundation action (L1'): for flagged entries, suppress or replace the corrupt gloss
-with the top-priority sense BEFORE drafting, so no model inherits the wrong sense.
+
+**Implemented design (and a hard lesson):**
+- A word WITH kanji is disambiguated by its kanji (十 vs 住 both read じゅう). Match
+  the JMdict entry by the kanji form, not the reading. A first reading-only detector
+  flagged 494 entries and would have REPLACED correct kanji-word glosses with the
+  wrong homophone's — caught only by inspecting before applying. **Always inspect a
+  deterministic transform's output before writing it.**
+- Result: 11,958 `jmdict_verified` (gloss matches the word's own entry — trustworthy),
+  215 `homophone_suspect`, 627 `gloss_unmatched`, plus a few `no_jmdict`/`no_gloss`.
+- **Do NOT auto-rewrite gloss.** For kana homophones the top-priority pick is itself
+  wrong ~half the time (こと→"koto zither"). There is no free deterministic semantic
+  disambiguation — the example sentence is the best cue.
+
+Foundation action (L1', implemented): the exporter reads `gloss_status.json` and adds
+`gs` (reliability) and `gj` (jmdict candidate senses) per row. `gs=jmdict_verified`
+→ the model trusts the gloss. Otherwise → the model must derive meaning from
+word+reading+example with low confidence. The active cheap legacy bucket is 95%
+`jmdict_verified`, so most drafts now stand on authority-confirmed gloss while the
+~5% poison rows are flagged.
 
 ## L2 / L3 — model judgment (probabilistic, NOT proof)
 
