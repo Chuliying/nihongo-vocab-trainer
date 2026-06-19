@@ -1284,6 +1284,91 @@ Neon / build：
 - 第二遍修正主要是固定搭配與詞義範圍；後續選批可繼續優先單義具體詞，減少高模型語義分支。
 - 每 100 筆才同步 DB/build；未 redeploy、未跑全量 embeddings。目前仍有 15,022 issues，重算 related 候選仍不划算。
 
+### Iteration 018 — eighth reviewed content checkpoint
+
+狀態：完成第八批 100 筆 reviewed content，Neon、repository 與 build 均驗證通過。
+
+選批：
+
+- current manifest：`cheap_model_candidate + latin`
+- 固定 100 個 ID；`semantic_review_flags` 全為空
+- 集中購物、家庭、健康、設備、自然、工作與一般抽象詞
+- 排除專名、軍事、宗教、犯罪敏感、學名與高歧義詞
+
+流程：
+
+1. 第一版 deterministic gate 直接通過：289 issues → 0。
+2. 第二遍語言 review 修正 5 筆：
+   - `義父` 例句明示「妻の父」，避免岳父／公公／養父歧義
+   - `半分に半減` 改為不重複的 `去年から半減`
+   - `同棲` 明示未婚伴侶 `恋人`
+   - 動物毛皮改為自然的 `毛皮に覆われる`
+   - 飛機通常使用 `着陸`，`着地` 改用選手落地語境
+3. reviewed artifact：
+   - 100 unique IDs
+   - 全 high confidence
+   - 繁中無 Latin
+   - reading 無漢字
+   - 289 issues → 0
+4. 串行 apply；逐 ID payload mismatch 為 0。
+
+品質結果：
+
+```json
+{
+  "before": {
+    "badEntries": 6944,
+    "issueCount": 15022
+  },
+  "after": {
+    "badEntries": 6844,
+    "issueCount": 14733
+  },
+  "batch": {
+    "rows": 100,
+    "changedMeaning": 100,
+    "changedExample": 96,
+    "issuesBefore": 289,
+    "issuesAfter": 0,
+    "artifactMismatches": []
+  }
+}
+```
+
+動詞：
+
+```json
+{
+  "withVerbInfo": 678,
+  "suppressedVerbInfo": 57,
+  "candidateQueue": 0,
+  "generatedSuspect": 0,
+  "mechanicalError": 0
+}
+```
+
+Neon / build：
+
+```json
+{
+  "import_run_id": "451279a3-a38d-4f48-8a33-a3d25fdef8de",
+  "vocab_entries": 13000,
+  "verb_info": 678,
+  "related_words": 25990,
+  "popular_verbs": 300,
+  "api_parity": true,
+  "runtime_repository_ok": true,
+  "build": "passed"
+}
+```
+
+省成本反省：
+
+- 第一版 gate 零結構錯誤，第二遍只修 5 筆語義／搭配；以低歧義領域選詞持續降低 review 成本。
+- 4 筆 meaning-only rows 保留原例句，避免無效改寫。
+- reading 漢字檢查持續維持 deterministic gate；本批無 reading 漏網。
+- 每 100 筆才同步一次 DB/build，未 redeploy、未跑 embeddings。目前 14,733 issues 仍會明顯污染向量文本。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
