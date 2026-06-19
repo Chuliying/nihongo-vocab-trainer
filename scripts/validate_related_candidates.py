@@ -53,6 +53,13 @@ def main() -> None:
 
         row_type = row.get("type")
         if row_type == "candidate_run":
+            runtime_versions = row.get("runtime_versions")
+            if row.get("artifact_schema_version", 1) >= 2 and not isinstance(runtime_versions, dict):
+                fail(f"line {line_number} candidate_run missing runtime_versions")
+            if isinstance(runtime_versions, dict) and (
+                not runtime_versions.get("fastembed") or not runtime_versions.get("numpy")
+            ):
+                fail(f"line {line_number} candidate_run has incomplete runtime_versions")
             run_ids.add(row.get("run_id"))
             continue
         if row_type != "related_word_candidate":

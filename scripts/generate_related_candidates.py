@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.metadata
 import json
 import sys
 import uuid
@@ -22,6 +23,13 @@ ROOT = Path(__file__).resolve().parents[1]
 CHUNKS_DIR = ROOT / "public" / "data" / "chunks"
 DEFAULT_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 DEFAULT_OUT = ROOT / "scratch" / "vocab-db-migration" / "related_candidates.sample.jsonl"
+
+
+def display_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
 
 
 def parse_args() -> argparse.Namespace:
@@ -146,11 +154,16 @@ def main() -> int:
     with out_path.open("w", encoding="utf-8") as handle:
         header = {
             "type": "candidate_run",
+            "artifact_schema_version": 2,
             "run_id": run_id,
             "source": args.source,
             "method": "fastembed-cosine",
             "provider": "fastembed",
             "model": args.model,
+            "runtime_versions": {
+                "fastembed": importlib.metadata.version("fastembed"),
+                "numpy": np.__version__,
+            },
             "dimensions": dimensions,
             "embedding_text_hash": text_hash,
             "embedding_text_version": "word-reading-meaning-pos-jlpt-example-v1",
@@ -222,7 +235,7 @@ def main() -> int:
         json.dumps(
             {
                 "run_id": run_id,
-                "out": str(out_path.relative_to(ROOT)),
+                "out": display_path(out_path),
                 "source_count": len(sources),
                 "candidate_pool_count": len(candidate_pool),
                 "corpus_count": len(vocab),

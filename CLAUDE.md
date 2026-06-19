@@ -884,6 +884,55 @@ Neon sync：
 - Candidate generation 與 review 可以並行，但 chunk apply 不可並行：兩個 apply process 會各自讀取完整 chunk 後覆寫同一檔案。本輪曾因此覆蓋 40 筆，經統計 delta 發現後已串行重套並驗證 100 筆全數生效。
 - 累積到 100 筆才一次 DB sync/build；相較每 20 筆同步，少做 4 次 import/build。
 
+### Iteration 013 — current-state verification + isolated related sample
+
+狀態：重新以 current worktree 驗證動詞、Neon repository、DB import 與 related sample；沒有寫入 DB，也沒有覆蓋既有 scratch sample。
+
+驗證結果：
+
+```json
+{
+  "verb_candidates_current_queue": 0,
+  "verb_audit": {
+    "withVerbInfo": 678,
+    "suppressedVerbInfo": 57,
+    "generatedSuspect": 0,
+    "mechanicalError": 0
+  },
+  "runtime_repository": {
+    "ok": true,
+    "source": "db",
+    "vocab_entries": 13000
+  },
+  "db_import_dry_run": {
+    "verb_info": 678,
+    "related_words": 25990,
+    "api_parity": true
+  },
+  "related_sample": {
+    "sources": 100,
+    "candidate_pool": 1000,
+    "top_k": 5,
+    "candidates": 500,
+    "validator": "passed"
+  }
+}
+```
+
+Related generator 修正：
+
+- workspace 外的 `--out /absolute/path` 原本會在完成 embeddings 後，因摘要使用 `relative_to(ROOT)` 而拋出 `ValueError`。
+- 改為 workspace 內顯示相對路徑、workspace 外顯示絕對路徑。
+- sample 寫到 `/tmp/nihongo-related-candidates.jsonl`，保留使用者已修改的 `scratch/vocab-db-migration/related_candidates.sample.jsonl`。
+- run header 新增 `runtime_versions.fastembed` 與 `runtime_versions.numpy`。
+- FastEmbed 0.8.0 對目前 multilingual MiniLM model 顯示 pooling 行為變更警告；依賴雖已 pin，舊 run score 仍不應與不同 runtime version 的新 run 混用。
+
+省成本反省：
+
+- 動詞 current queue 已是 0，因此只在 `/tmp` 重跑 candidate generator 與 dry-run，不重放歷史 186 筆 patch、不做 DB write。
+- related sample 使用 100×1000 而非全量 13,000×13,000；先驗證 pipeline、filter 與 artifact schema，再考慮昂貴全量 embedding。
+- 目前 corpus 仍有大量 meaning/example issues，向量候選只保留 proposed 狀態；先改善內容可避免之後重算 embeddings 與重做人工 review。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
