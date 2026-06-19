@@ -26,27 +26,31 @@
 ```json
 {
   "entries": 13000,
-  "badEntries": 6644,
-  "issueCount": 14144
+  "badEntries": 9997,
+  "issueCount": 22853
 }
 ```
+
+這次數字上升不是內容倒退，而是 validator 補上 provenance blind spot：舊
+`jmdict gloss zh translation` pipeline 有 8,709 筆 meaning 尚未經語義審核，
+過去即使翻譯明顯錯誤也可能被算成 clean。
 
 依 tranche 的 bad entry 數：
 
 ```json
 {
-  "2": 57,
-  "3": 72,
-  "4": 456,
-  "5": 759,
-  "6": 736,
-  "7": 709,
-  "8": 678,
-  "9": 677,
-  "10": 860,
-  "11": 549,
-  "12": 529,
-  "13": 562
+  "2": 619,
+  "3": 801,
+  "4": 837,
+  "5": 830,
+  "6": 808,
+  "7": 811,
+  "8": 817,
+  "9": 785,
+  "10": 976,
+  "11": 898,
+  "12": 918,
+  "13": 897
 }
 ```
 
@@ -54,6 +58,7 @@
 
 ```json
 [
+  ["legacy_meaning_unreviewed", 8709],
   ["low_value_example", 4366],
   ["meaning_latin", 2982],
   ["chinese_latin", 2912],
@@ -64,7 +69,8 @@
 ]
 ```
 
-已套用 enrichment batch：001-007，共 700 筆。最新 batch 007 已反映在 chunks，因此舊文件中的 `badEntries: 7708` 已過期。
+已套用 enrichment batch 001-007，並持續追加 reviewed cleanup checkpoints。
+最新 100 筆 meaning-only review 已反映在 chunks。
 
 ## 技術結構
 
@@ -1668,7 +1674,98 @@ Sparse review pipeline：
 - 沒有獨立 `OPENAI_API_KEY`，目前不能改用 Responses API；後續 Codex CLI 應加 `--ignore-user-config --ignore-rules`，避免載入不相關 plugin/skill context。
 - sparse review 已把最昂貴的 high-review input 減半以上；output 節省會隨 approved 比例提高。
 - 目前 high review 修改率 55%，代表剩餘 latin queue 已接近 cheap-model 邊界；再繼續時應強化 deterministic 語義風險分流，而不是靠模型事後返工。
-- 仍維持每 100 筆才一次 DB import/build；未 redeploy、未重算 embeddings。目前 14,144 issues 仍會污染 related embedding text。
+- 仍維持每 100 筆才一次 DB import/build；未 redeploy、未重算 embeddings。目前 22,853 issues 仍會污染 related embedding text。
+
+### Iteration 022 — legacy meaning provenance gate + 100-row meaning-only checkpoint
+
+這輪先修 validator blind spot，再做內容批次。舊翻譯 pipeline 會留下：
+
+```json
+{
+  "_quality.meaning_source": "jmdict gloss zh translation",
+  "_quality.meaning_previous": "..."
+}
+```
+
+但過去只看 Latin / placeholder，因此 `休暇 → 時間`、`店長 → 年齡、男人、男性`
+這類明顯錯譯也可能被算成 clean。新增 `legacy_meaning_unreviewed` 後，誠實基線為：
+
+```json
+{
+  "entries": 13000,
+  "badEntries": 10097,
+  "issueCount": 22953,
+  "legacyMeaningUnreviewed": 8809
+}
+```
+
+本輪完成：
+
+- `scripts/vocab_quality.js`
+  - provenance 符合舊 JMdict 翻譯且尚未 `manifest_enriched` 時，標記
+    `legacy_meaning_unreviewed`
+- `scripts/generate_cleanup_manifest.js`
+  - 新增 `legacy_meaning` issue bucket
+  - 擴充專名／地理、軍事、政府法律、宗教、敏感內容、歷史文化與技術科學分流
+  - `high_polysemy` 僅在 6+ gloss 且帶 domain/括號線索時觸發，避免把一般多義詞過度送高模型
+- 新增 deterministic regression：
+  - `npm run cleanup:manifest-routing`
+  - `npm run cleanup:legacy-meaning-gate`
+- `scripts/apply_manifest_enrichment_patch.js`
+  - `--candidate` 只允許 dry-run
+  - legacy meaning 候選可維持原義；正式 apply 若未改字，仍必須有 `reviewed: true`
+- `scripts/merge_sparse_content_review.js`
+  - high review merge 固定加入 `reviewed: true`
+
+內容 checkpoint：
+
+```json
+{
+  "rows": 100,
+  "miniChangedMeaning": 77,
+  "highReviewChanged": 15,
+  "manualReviewCorrections": 5,
+  "appliedMeaningChanges": 75,
+  "confirmedUnchanged": 25
+}
+```
+
+套用後：
+
+```json
+{
+  "badEntries": 9997,
+  "issueCount": 22853,
+  "legacyMeaningUnreviewed": 8709,
+  "cheapModelCandidate": 2906
+}
+```
+
+動詞與 DB gate：
+
+```json
+{
+  "withVerbInfo": 678,
+  "suppressedVerbInfo": 57,
+  "candidateQueue": 0,
+  "generatedSuspect": 0,
+  "mechanicalError": 0,
+  "dbImportRunId": "1d9d61bc-fbff-4376-a9ae-31260d9f3799",
+  "runtimeRepository": "passed",
+  "build": "passed"
+}
+```
+
+省成本反省：
+
+- 這 100 筆只有 meaning 問題，export / review / apply 全程只要求 `m`，沒有重寫本來正常的例句。
+- 兩個 high-review sparse input 合計 17,662 bytes；review output 合計 4,035 bytes。
+- `codex exec --ignore-user-config --ignore-rules` 仍載入部分 plugin/skill context；帳面 token
+  分別為 26,564 與 6,744，顯示第一批啟動成本不穩定。下一輪應在單一 high-review
+  session 連續審多個小批次，或取得 API key 後改用 schema-constrained API，避免每 50 筆重付啟動成本。
+- deterministic routing 先把 5,536 筆純 legacy meaning 分流，再由風險旗標排除 grammar、
+  verb、katakana 與專門領域；比先丟模型、再靠 reviewer 駁回更省。
+- 仍以 100 筆為 Neon/build checkpoint；本輪沒有 deploy，也沒有重算 embeddings。
 
 ## 最低成本 Flow
 

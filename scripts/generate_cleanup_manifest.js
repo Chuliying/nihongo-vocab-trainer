@@ -109,6 +109,13 @@ function semanticReviewFlags(entry) {
   ) {
     flags.push("proper_name_or_brand");
   }
+  if (
+    /\b(TV series|television network|publisher|conglomerate|agency|Mount\b|Mt\.|era\b|region\b|language\b|North America|South America|Middle East|Southeast Asia|East Asia|South Africa)\b/i.test(
+      gloss
+    )
+  ) {
+    flags.push("named_entity_or_geography");
+  }
   if (/^[ぁ-ゟ]{1,3}$/.test(String(entry.word || "")) && frequencyRank >= 3000) {
     flags.push("short_kana_low_frequency");
   }
@@ -117,6 +124,54 @@ function semanticReviewFlags(entry) {
   }
   if (/\b(abbreviation|Internet slang|slang|vulgar|derogatory|colloquialism)\b/i.test(gloss)) {
     flags.push("register_review");
+  }
+  if (
+    /\b(admiral|commodore|army|military|armed forces|troops?|soldier|marine|air force|aircraft carrier|ammunition|torpedo|sniping|reconnaissance|mercenary|lieutenant|sergeant|fortification|stronghold|prisoner of war|assault|invasion|deployment|battle formation|war front|cold war)\b/i.test(
+      gloss
+    )
+  ) {
+    flags.push("military_or_security");
+  }
+  if (
+    /\b(statute|ordinance|judiciary|judge|court|police|ministry|government secretariat|governor|cabinet minister|testimony|deposition|affidavit|imprisonment|penal servitude|convict|acquittal|legal|law\b)\b/i.test(
+      gloss
+    )
+  ) {
+    flags.push("government_or_legal");
+  }
+  if (
+    /\b(religious|religion|believer|adherent|temple|church|sanctuary|worship|prayer|supplication|monastery|convent|cloister|abbey|priest|monk|deacon|spirit of the deceased|demon|devil|evil spirit|samadhi)\b/i.test(
+      gloss
+    )
+  ) {
+    flags.push("religion_or_occult");
+  }
+  if (
+    /\b(sperm|semen|anus|rape|sexual assault|prostitution|cannabis|marijuana|narcotic|suicide|murder|mental illness|psychosis|erection|sexual excitement|estrus|oestrus)\b/i.test(
+      gloss
+    )
+  ) {
+    flags.push("medical_sexual_or_sensitive");
+  }
+  if (
+    /\b(feudal|samurai|ritsuryō|Edo period|ancient burial mound|barrow|tumulus|coiffure|heraldry|court official|count\b|earl\b|baron\b|crown prince|royal family)\b/i.test(
+      gloss
+    )
+  ) {
+    flags.push("historical_or_cultural");
+  }
+  if (
+    /\b(oxidation|molecule|numerator|electromagnetic|spinal cord|irradiation|radiation|antibiosis|glycosuria|glucosuria|parasitism|mutation|crude oil|carbonic acid)\b/i.test(
+      gloss
+    )
+  ) {
+    flags.push("technical_or_scientific");
+  }
+  if (
+    glosses.length >= 6 &&
+    glosses.some((item) => /\([^)]{3,}\)|\b(figurative|slang|law|computing|biology|chemistry|sports?)\b/i.test(item))
+  ) {
+    flags.push("high_polysemy");
   }
 
   return Array.from(new Set(flags));
@@ -136,6 +191,7 @@ function issueBucket(issues) {
   ) {
     return "latin";
   }
+  if (issues.includes(QUALITY_REASONS.LEGACY_MEANING_UNREVIEWED)) return "legacy_meaning";
   if (issues.includes(QUALITY_REASONS.LOW_VALUE_EXAMPLE)) return "low_value_example";
   if (issues.includes(QUALITY_REASONS.MEANING_DISPLAY_PREFIX)) return "display_prefix";
   if (issues.includes(QUALITY_REASONS.STALE_LLM_SOURCE)) return "metadata_only";
@@ -216,4 +272,8 @@ function main() {
   console.log(JSON.stringify({ out: path.relative(process.cwd(), outPath), summary: payload.summary }, null, 2));
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = {
+  semanticReviewFlags,
+};

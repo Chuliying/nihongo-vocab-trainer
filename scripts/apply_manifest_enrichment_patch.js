@@ -115,7 +115,7 @@ function validateOrder(expectedRows, outputRows) {
   return errors;
 }
 
-function validatePatch(output, expected, current) {
+function validatePatch(output, expected, current, options = {}) {
   const errors = [];
   const required = new Set(expected.required_patch_fields || []);
   const original = currentCompact(current);
@@ -135,7 +135,12 @@ function validatePatch(output, expected, current) {
 
   if (required.has("m")) {
     if (!hasM) errors.push("missing required m");
-    if (outputMeaning === original.m) errors.push("required m is unchanged");
+    if (outputMeaning === original.m) {
+      const isLegacyVerification = (expected.issues || []).includes("legacy_meaning_unreviewed");
+      if (!isLegacyVerification || (!options.candidateMode && output.reviewed !== true)) {
+        errors.push("required m is unchanged without legacy review approval");
+      }
+    }
   } else if (hasM && outputMeaning !== original.m) {
     errors.push("m changed but was not required");
   }
@@ -199,6 +204,10 @@ function main() {
   const outputPath = path.resolve(args[0]);
   const expectedPath = path.resolve(argValue(args, "--expected"));
   const dryRun = args.includes("--dry-run");
+  const candidateMode = args.includes("--candidate");
+  if (candidateMode && !dryRun) {
+    throw new Error("--candidate is only allowed with --dry-run");
+  }
 
   const outputRows = readJsonl(outputPath);
   const expectedPayload = readJson(expectedPath);
@@ -226,7 +235,7 @@ function main() {
     }
 
     const beforeIssues = qualityIssuesForEntry(location.entry).length;
-    const result = validatePatch(output, expected, location.entry);
+    const result = validatePatch(output, expected, location.entry, { candidateMode });
     if (result.errors.length) {
       console.error(`id ${expected.id}: ${result.errors.join("; ")}`);
       issueCount += result.errors.length;
@@ -265,6 +274,7 @@ function main() {
     JSON.stringify(
       {
         mode: dryRun ? "dry-run" : "apply",
+        candidateMode,
         rows: outputRows.length,
         changedMeaning,
         changedExample,

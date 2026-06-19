@@ -56,7 +56,12 @@ function main() {
     }
     if (review.status === "approved") {
       approved += 1;
-      return { ...candidate, confidence: "high", reason: review.reason || "approved by high review" };
+      return {
+        ...candidate,
+        reviewed: true,
+        confidence: "high",
+        reason: review.reason || "approved by high review",
+      };
     }
     if (review.status !== "change") {
       throw new Error(`id ${candidate.id}: status must be approved or change`);
@@ -67,6 +72,7 @@ function main() {
     changed += 1;
     return {
       ...candidate,
+      reviewed: true,
       ...(Object.prototype.hasOwnProperty.call(review, "m") ? { m: review.m } : {}),
       ...(Object.prototype.hasOwnProperty.call(review, "e") ? { e: review.e } : {}),
       confidence: "high",

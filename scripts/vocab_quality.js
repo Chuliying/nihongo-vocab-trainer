@@ -4,6 +4,7 @@ const QUALITY_REASONS = {
   MEANING_PLACEHOLDER: "meaning_placeholder",
   CHINESE_PLACEHOLDER: "chinese_placeholder",
   MEANING_DISPLAY_PREFIX: "meaning_display_prefix",
+  LEGACY_MEANING_UNREVIEWED: "legacy_meaning_unreviewed",
   LOW_VALUE_EXAMPLE: "low_value_example",
   MISSING_TARGET_WORD: "missing_target_word",
   STALE_LLM_SOURCE: "stale_llm_source",
@@ -58,6 +59,15 @@ function qualityIssuesForEntry(entry) {
   if (hasPlaceholder(entry && entry.meaning)) issues.push(QUALITY_REASONS.MEANING_PLACEHOLDER);
   if (hasPlaceholder(example.chinese)) issues.push(QUALITY_REASONS.CHINESE_PLACEHOLDER);
   if (hasDisplayPrefix(entry && entry.meaning)) issues.push(QUALITY_REASONS.MEANING_DISPLAY_PREFIX);
+  if (
+    entry &&
+    entry.quality_score !== "manifest_enriched" &&
+    entry._quality &&
+    entry._quality.meaning_source === "jmdict gloss zh translation" &&
+    Object.prototype.hasOwnProperty.call(entry._quality, "meaning_previous")
+  ) {
+    issues.push(QUALITY_REASONS.LEGACY_MEANING_UNREVIEWED);
+  }
   if (isLowValueJapanese(example.japanese)) issues.push(QUALITY_REASONS.LOW_VALUE_EXAMPLE);
   if (entry && !exampleContainsTarget(entry)) issues.push(QUALITY_REASONS.MISSING_TARGET_WORD);
   if (
@@ -79,6 +89,8 @@ function qualityIssueMessage(reason, entry) {
   messages[QUALITY_REASONS.MEANING_PLACEHOLDER] = "meaning contains placeholder text: " + (entry && entry.meaning);
   messages[QUALITY_REASONS.CHINESE_PLACEHOLDER] = "example.chinese contains placeholder text";
   messages[QUALITY_REASONS.MEANING_DISPLAY_PREFIX] = "meaning exposes display prefix: " + (entry && entry.meaning);
+  messages[QUALITY_REASONS.LEGACY_MEANING_UNREVIEWED] =
+    "meaning comes from the unreviewed legacy JMdict gloss translation pipeline";
   messages[QUALITY_REASONS.LOW_VALUE_EXAMPLE] = "example.japanese is low-value/meta: " + example.japanese;
   messages[QUALITY_REASONS.MISSING_TARGET_WORD] = "example.japanese does not contain target word";
   messages[QUALITY_REASONS.STALE_LLM_SOURCE] = "llm_enriched entry still has source.example=" + (entry && entry.source && entry.source.example);

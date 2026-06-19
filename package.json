@@ -12,6 +12,8 @@
     "enrich:export": "node scripts/export_enrichment_batch.js",
     "enrich:apply": "node scripts/apply_enrichment_batch.js",
     "cleanup:manifest": "node scripts/generate_cleanup_manifest.js",
+    "cleanup:manifest-routing": "node scripts/validate_cleanup_manifest_routing.js",
+    "cleanup:legacy-meaning-gate": "node scripts/validate_legacy_meaning_gate.js",
     "cleanup:verbs": "node scripts/audit_verb_info.js",
     "cleanup:verb-quarantine": "node scripts/quarantine_bad_verb_info.js",
     "cleanup:verb-candidates": "node scripts/generate_verb_info_candidates.js",

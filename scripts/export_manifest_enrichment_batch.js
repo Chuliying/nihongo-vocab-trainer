@@ -79,7 +79,8 @@ function requiredPatchFieldsFor(row) {
   if (
     issues.has("meaning_latin") ||
     issues.has("meaning_placeholder") ||
-    issues.has("meaning_display_prefix")
+    issues.has("meaning_display_prefix") ||
+    issues.has("legacy_meaning_unreviewed")
   ) {
     fields.push("m");
   }
