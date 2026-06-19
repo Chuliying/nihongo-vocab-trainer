@@ -59,9 +59,11 @@ Rules:
 3. **Draft (Haiku ×2)**: each group → candidate JSONL. Tell Haiku the gloss may be
    attached to the wrong homophone (see §3 / L1); flag with `confidence:"low"`
    rather than blindly trusting gloss.
-4. **Candidate gate**: `cleanup:apply -- <output> --expected <exp> --dry-run --candidate`.
-   This catches field drift (e.g. meaning-only rows whose example was changed).
-   Revert disallowed drift, re-run until clean.
+4. **Strip drift + candidate gate**: cheap drafters routinely rewrite the example on
+   meaning-only rows. Run `cleanup:strip-drift -- <output> --expected <exp>` first to
+   deterministically revert any non-required field, then
+   `cleanup:apply -- <output> --expected <exp> --dry-run --candidate`. The gate is the
+   safety backstop; strip-drift just saves the manual revert.
 5. **Review (Sonnet)**: build sparse review input (`cleanup:review-prepare`), judge
    each row, emit `{"id","status":"approved"}` or `{...,"status":"change","m":...,"reason":...}`.
    Merge with `cleanup:review-merge` (stamps `reviewed:true`).
