@@ -5,8 +5,8 @@
   "pipeline_stage": "content-cleanup",
   "quality": {
     "entries": 13000,
-    "badEntries": 9698,
-    "issueCount": 22554,
+    "badEntries": 9598,
+    "issueCount": 22454,
     "note": "badEntries high because legacy_meaning_unreviewed is a provenance flag (unverified), not known-wrong"
   },
   "verb_invariant": {
@@ -51,7 +51,7 @@
     "how_used": "Exporter adds gs (reliability) + gj (jmdict candidate senses) per row. gs=jmdict_verified -> model trusts gloss. Otherwise -> model must derive from word+reading+example, confidence low. Active cheap legacy bucket is 95% jmdict_verified.",
     "active_bucket_impact": "cheap_model_candidate legacy_meaning: 2125/2236 (95%) jmdict_verified, 111 unreliable now flagged."
   },
-  "last_neon_import_run_id": "b46a3600-131a-4bda-8e9f-dfa662b6fda6",
+  "last_neon_import_run_id": "cb785bfd-a2c0-424b-8759-1aae40811c58",
   "deferred_ids": [
     1328
   ],

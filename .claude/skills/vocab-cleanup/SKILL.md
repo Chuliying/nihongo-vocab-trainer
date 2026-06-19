@@ -51,9 +51,15 @@ Rules:
 
 ## 2. The iteration loop (one checkpoint ≈ 100 rows)
 
+This loop is for MEANING cleanup (legacy_meaning / latin / placeholder buckets).
+For the `low_value_example` bucket (~4,366), do NOT LLM-generate examples — source
+real sentences from Tatoeba instead (84% coverage, far more natural). See
+`references/real-examples.md` for that separate, partially-built pipeline.
+
 1. **Select batch** from the current manifest. Fix a deterministic ID allowlist
    (`--ids`), never a moving offset. Exclude everything the cheap model must not
-   touch (see state `hard_constraints`).
+   touch (see state `hard_constraints`). Prefer `gloss_status == jmdict_verified`
+   rows — drafts on verified gloss need far less review (iter 026: 1/100 corrections).
 2. **Export**: `cleanup:export` → produces `input.jsonl` + `expected.json` +
    `prompt.md` per 50-row group.
 3. **Draft (Haiku ×2)**: each group → candidate JSONL. Tell Haiku the gloss may be

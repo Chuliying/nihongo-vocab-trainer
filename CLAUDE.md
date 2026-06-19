@@ -26,8 +26,8 @@
 ```json
 {
   "entries": 13000,
-  "badEntries": 9698,
-  "issueCount": 22554
+  "badEntries": 9598,
+  "issueCount": 22454
 }
 ```
 
@@ -1917,7 +1917,7 @@ index 位移 bug，例如 1234 政權、1328 掛け、1332 皆樣 都曾經被�
 - 仍以 100 筆（本批 99+1 延後）為 Neon/build checkpoint；本輪沒有 deploy，
   也沒有重算 embeddings。
 
-### Iteration 024-025 — L1 JMdict gloss layer + 200 reviewed rows + strip-drift
+### Iteration 024-026 — L1 JMdict gloss layer + 300 reviewed rows + Tatoeba example plan
 
 接續 Iteration 023（Opus/Haiku/Sonnet 原生 stack）。本段建立 L1 gloss 可信度地基、
 跑兩輪內容批次、並把反覆的人工還原固化成腳本。完整指令與規則見 `vocab-cleanup`
@@ -1940,21 +1940,32 @@ skill 與 `VOCAB_CLEANUP_STATE.json`（live 數字以 STATE.json 為準）。
 **向量驗證實測（否決）**：cos(詞,正確義) 0.79 vs cos(詞,錯義) 0.71，方向正確率僅 63%；
 垃圾「政權→我們」cos 仍 0.61。向量只能當 gross-mismatch router，不是 verifier。
 
-**內容（iter 024+025 共 200 筆）**
+**內容（iter 024+025+026 共 300 筆）**
 
 ```json
 {
   "iter024": {"rows": 100, "haikuChangedMeaning": "72/100", "sonnetCorrections": 9, "exampleDriftRevertedByGate": 53},
   "iter025": {"rows": 100, "scope": "jmdict_verified only", "sonnetCorrections": 6},
-  "quality": {"badEntriesBefore": 9898, "badEntriesAfter": 9698, "issueCountBefore": 22854, "issueCountAfter": 22554},
+  "iter026": {"rows": 100, "scope": "jmdict_verified only", "sonnetCorrections": 1, "simplifiedHits": 0},
+  "quality": {"badEntriesBefore": 9898, "badEntriesAfter": 9598, "issueCountBefore": 22854, "issueCountAfter": 22454},
   "verbInvariant": {"generatedSuspect": 0, "mechanicalError": 0, "candidateQueue": 0},
-  "neon_import_run_ids": ["2a9cf77a-32a3-44e5-877e-6a1d847e56f2", "b46a3600-131a-4bda-8e9f-dfa662b6fda6"],
+  "neon_import_run_ids": ["2a9cf77a", "b46a3600", "cb785bfd"],
   "build": "passed"
 }
 ```
 
+iter 026 用更強的繁中/簡體 prompt + verified-gloss bucket，Sonnet 返工降到 1/100、
+簡體 0——驗證了「L1 verified + 明確語言規則」能把 cheap draft 推到接近可直接套用。
+
 **新增工具**：`scripts/strip_unrequired_drift.js`（`npm run cleanup:strip-drift`）在 gate 前
 deterministic 還原非必要欄位變動，省去每批手動還原 Haiku 改的例句。已寫進 skill 迴圈。
+
+**例句來源轉向（已驗證，pipeline 待建）**：生成式例句有「Xについて、クラスで…」模板通病。
+針對 4,366 個 `low_value_example`，改用真實語料 **Tatoeba/Tanaka（CC-BY、離線、0 API）**，
+不用 NHK（著作權＋新聞語體）。實測短句覆蓋率 **84%**，prototype（`scripts/select_real_examples.py`
+＋ fugashi/unidic-lite 離線讀音 + 自家 N4/N5 漢字難度 oracle + 適切性 blocklist）能挑出
+自然 N4/N5 句。待建工程：token 級比對（避免 ロット⊂パイロット 誤配）、讀音校正、難度收緊、
+翻譯+gate+review。詳見 skill `references/real-examples.md`。
 
 省成本反省：
 
