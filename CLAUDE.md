@@ -2477,6 +2477,73 @@ packet_011：
   hard-constraint 禁區，得不償失。誠實做完尾段、留清楚 pivot 註記給下一輪更省。
 - 每批一次 Neon import/build，`tee` 存 log；related embedding 繼續延後（21,862 issues）。
 
+### Iteration 036 — PIVOT 到 meaning cleanup（cheap legacy 第一批）
+
+狀態：cheap+proposed real-example 耗盡後，依使用者指示轉到 meaning cleanup。完成第一個
+cheap_model_candidate legacy_meaning verified 批次（99 筆）。
+
+選批：
+
+- `risk=cheap_model_candidate` ∧ `issue_bucket=legacy_meaning` ∧
+  `gloss_status=jmdict_entry_matched`，依 frequency_rank 取 top 100。
+- 排除 deferred id 1328（掛け，需 meaning+example 合修）。
+
+流程（meaning loop，skill section 2）：
+
+1. `cleanup:export --issue legacy_meaning --ids <100>`，拆 2×50。
+2. Haiku ×2 並行起草（各 ~97K subagent tokens），只改 `m`。
+3. 合併驗證：100 ids、order/coverage match、0 bad JSON、**89 changed_m**。
+   高改動率是正確的——legacy meaning 是舊 index 位移 bug 的壞資料
+   （給料→「年齡」、週末→「結束、結尾、我們」、回し→「男人」），Haiku 依
+   verified gloss 修成自然繁中，不是無謂改寫。
+4. `cleanup:strip-drift`（revert example 100）+ candidate gate（issueDelta 100→0）。
+5. Sonnet（中樞）逐筆審 dump：
+   - 2174 やる気「幹勁、幹勁」、2189 出現「出現、出現」去重
+   - 2316 苦労「苦勞」→「辛勞、辛苦」
+   - 2317 請求「索賠」→「請求、要求」（索賠太窄）
+   - 2338 先日「前日」→「前幾天、日前」（Haiku 把原本正確的改錯：先日≠前日）
+   - 2250 巨乳（成人詞）排除
+6. 建 review.jsonl（94 approved + 5 change）→ `cleanup:review-merge`（蓋 reviewed:true）。
+7. 排除 2250 後 gate 報「expected 100 got 99」；用存活的 99 ids 重新 export expected，
+   full gate 通過（issueDelta 99→0、changedExample 0）。
+8. apply 99 筆。
+
+品質結果：
+
+```json
+{
+  "before": { "badEntries": 9429, "issueCount": 21862, "legacy_meaning_unreviewed": 8310 },
+  "after":  { "badEntries": 9330, "issueCount": 21763, "legacy_meaning_unreviewed": 8211 }
+}
+```
+
+動詞與 DB gate：
+
+```json
+{
+  "withVerbInfo": 678,
+  "candidateQueue": 0,
+  "generatedSuspect": 0,
+  "mechanicalError": 0,
+  "lowValueExampleUnchanged": 3780,
+  "dbImportRunId": "550735ce-811c-4c15-9952-c8cb948b40e3",
+  "runtimeRepository": "passed",
+  "build": "passed"
+}
+```
+
+省成本反省：
+
+- verified-gloss legacy 批次的 Haiku 改動率高（89%）但幾乎全對，因為原資料是壞的；
+  Sonnet 只需修 5 筆（其中 1 筆是 Haiku 把對的改錯——先日/前日，證明審查不可省）。
+- meaning-only batch 用 strip-drift 把 Haiku 順手改的 example 全 revert（100 筆），
+  確保只動 `m`、不碰 low_value_example queue。
+- 排除單一 row（2250 成人詞）會破壞 gate 的 expected coverage；正解是用存活 id set
+  重新 export expected，而不是硬改 expected.json。已寫進 state 的 loop_note。
+- Haiku 2×50 並行起草 + Sonnet 自審（不另 spawn reviewer），比 codex 時代的
+  cheap+high 雙模型省一次 agent；每 100 筆一次 Neon/build，`tee` 存 log。
+- 還有 ~1663 筆 verified legacy 可同流程續做；related embedding 繼續延後（21,763 issues）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。

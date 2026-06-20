@@ -1,12 +1,12 @@
 {
   "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST instead of re-reading the 1900-line CLAUDE.md tail. Update it at the end of every iteration. Keep it short.",
   "updated": "2026-06-20",
-  "head_commit": "f82dd3b",
-  "pipeline_stage": "content-cleanup",
+  "head_commit": "dba3dd0",
+  "pipeline_stage": "content-cleanup (pivoted to meaning cleanup at iter036)",
   "quality": {
     "entries": 13000,
-    "badEntries": 9429,
-    "issueCount": 21862,
+    "badEntries": 9330,
+    "issueCount": 21763,
     "note": "badEntries high because legacy_meaning_unreviewed is a provenance flag (unverified), not known-wrong"
   },
   "verb_invariant": {
@@ -18,14 +18,14 @@
     "must_stay": "generatedSuspect/mechanicalError/candidateQueue all 0 after every batch"
   },
   "buckets": {
-    "cheap_model_candidate": 2084,
+    "cheap_model_candidate": 1985,
     "semantic_review": 3036,
     "katakana_review": 2498,
     "grammar_high_risk": 1283,
     "verb_quarantine": 528
   },
   "top_issues": {
-    "legacy_meaning_unreviewed": 8310,
+    "legacy_meaning_unreviewed": 8211,
     "low_value_example": 3780,
     "meaning_latin": 2982,
     "chinese_latin": 2912,
@@ -51,15 +51,29 @@
     "how_used": "Exporter adds gs (provenance) + gj (JMdict candidate senses). gs=jmdict_entry_matched proves the gloss belongs to the word's JMdict entry, but contextual sense selection is still reviewed. Other statuses must not be trusted blindly.",
     "active_bucket_impact": "cheap_model_candidate legacy_meaning: 1832/1935 (94.7%) entry-matched, 103 unreliable."
   },
-  "last_neon_import_run_id": "03e6b463-1c2f-46ff-a720-5ab66db61d40",
+  "last_neon_import_run_id": "550735ce-811c-4c15-9952-c8cb948b40e3",
+  "last_meaning_checkpoint": {
+    "iteration": 36,
+    "track": "cheap_model_candidate + legacy_meaning + jmdict_entry_matched, top-100 by frequency_rank",
+    "applied_rows": 99,
+    "haiku_changed_meaning": 89,
+    "note": "legacy meanings were genuinely broken (old index-shift bug: 給料->年齡, 週末->我們). Haiku high change rate is CORRECT, gloss-grounded, not paraphrasing.",
+    "sonnet_corrections": "2174/2189 dedup, 2316 苦勞->辛勞、辛苦, 2317 索賠->請求、要求, 2338 前日->前幾天、日前(Haiku worsened a correct original)",
+    "parent_exclusions": "2250 巨乳 (adult term) - re-exported expected with the 99 ids to keep gate coverage",
+    "legacy_meaning_unreviewed_after": 8211,
+    "neon_import_run_id": "550735ce-811c-4c15-9952-c8cb948b40e3",
+    "runtime_repository": "passed",
+    "build": "passed",
+    "loop_note": "select verified ids -> cleanup:export --ids -> split 2x50 -> Haiku draft -> cat -> strip-drift -> candidate gate -> Sonnet review (dump+judge) -> build review.jsonl (approved/change) -> review-merge (stamps reviewed:true) -> re-export expected for the surviving id set -> full gate -> apply"
+  },
   "deferred_ids": [
     1328
   ],
   "deferred_note": "id 1328 掛け: meaning was garbage (我們); gloss=credit/bill is correct but old example is about phone-not-connecting. Needs combined meaning+example single-row semantic correction outside the meaning-only gate.",
   "next_actions": [
-    "PIVOT: cheap+proposed real-example track is EXHAUSTED at iter035 (low_value_example 4166->3780 over iters 028-035). See real_examples.next_strategy_choice. Recommended next: meaning cleanup on the cheap_model_candidate bucket (2084 rows: meaning_latin/legacy_meaning/placeholder) via the Haiku-draft + Sonnet-review meaning loop (skill section 2).",
-    "Alt: tackle low_value_example fallback rows (1402, no Tatoeba exact match) with a looser sourcing strategy, or widen real-example candidates to other low-risk buckets.",
-    "Related vectors: still defer full embedding (21,862 issues remain)."
+    "CONTINUE meaning cleanup (iter036 pivot proven). Next batch: cheap_model_candidate + legacy_meaning + jmdict_entry_matched, next 100 by frequency_rank (exclude already-applied ids 2110-2346 range and deferred 1328). ~1663 verified legacy rows remain. Use the iter036 loop (see last_meaning_checkpoint.loop_note).",
+    "Then: cheap_model_candidate latin (44 verified) + placeholder (134 verified) - small, clearly-broken, high value.",
+    "low_value_example fallback (1402) and related vectors still deferred (21,763 issues)."
   ],
   "model_stack": "Opus=one-time planning (not per-batch). Haiku=cheap drafting, 2x50 parallel per 100-row checkpoint. Sonnet=hub orchestrator + reviewer. codex exec is RETIRED.",
   "hard_constraints": [
