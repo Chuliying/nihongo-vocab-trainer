@@ -2581,6 +2581,30 @@ low_value_example 維持 3780、runtime/build 通過。
   track 完全解耦。
 - 每 100 筆一次 Neon/build；related embedding 繼續延後（21,663 issues）。
 
+### Iteration 038 — 第三批 cheap legacy meaning（100 筆）
+
+狀態：續做 verified legacy meaning 第三批（ids 2603-2812）。流程同 iter036-037。
+
+- Haiku 2×50 起草，96 changed（更深入 legacy bucket，幾乎全是壞資料：給料型
+  「年齡」、「我們」、「動作、行為」等），0 dup / 0 latin / 0 simplified。
+- Sonnet 審查只改 2 筆（品質已高）：2637 倒れ「倒塌、崩潰」→「倒下、倒塌」、
+  2641 工作 去掉牽強的「工業製品」。無排除（浮気/下着/美女/魔女 皆字典義，保留）。
+- 注意 2740 前日「前一天」正確，與 iter037 的 先日「前幾天」明確區分，無混淆。
+- full gate issueDelta 100→0、changedExample 0，apply 100 筆。
+
+品質：badEntries 9230→9130、issueCount 21663→21563、
+legacy_meaning_unreviewed 8111→8011、low_value_example 維持 3780。
+DB：`15f10668-81fa-4569-8a89-313b9a9a2547`、verb 0/0、queue 0、runtime/build 通過。
+
+省成本反省：
+
+- 把 iter037 的兩個 Sonnet 修正（不可重複詞、不可直接照搬日文漢字、熱い vs 暑い）
+  回饋進 Haiku prompt 後，本批 dup=0、Sonnet 返工從 6→2，驗證「prompt 累積前批教訓」
+  能持續降低返工。
+- 三批共 299 筆 verified legacy，Sonnet 累計只改 13 筆——verified gloss + 明確規則
+  讓 cheap draft 接近可直接套用，但每批仍有 1-2 筆 Haiku 把對的改錯或加贅詞，審查不可省。
+- 還有 ~1363 verified legacy 可續做；related embedding 繼續延後（21,563 issues）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。

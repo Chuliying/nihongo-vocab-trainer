@@ -1,12 +1,12 @@
 {
   "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST instead of re-reading the 1900-line CLAUDE.md tail. Update it at the end of every iteration. Keep it short.",
   "updated": "2026-06-20",
-  "head_commit": "bc1a882",
+  "head_commit": "0a09b63",
   "pipeline_stage": "content-cleanup (meaning cleanup track, since iter036)",
   "quality": {
     "entries": 13000,
-    "badEntries": 9230,
-    "issueCount": 21663,
+    "badEntries": 9130,
+    "issueCount": 21563,
     "note": "badEntries high because legacy_meaning_unreviewed is a provenance flag (unverified), not known-wrong"
   },
   "verb_invariant": {
@@ -18,14 +18,14 @@
     "must_stay": "generatedSuspect/mechanicalError/candidateQueue all 0 after every batch"
   },
   "buckets": {
-    "cheap_model_candidate": 1885,
+    "cheap_model_candidate": 1785,
     "semantic_review": 3036,
     "katakana_review": 2498,
     "grammar_high_risk": 1283,
     "verb_quarantine": 528
   },
   "top_issues": {
-    "legacy_meaning_unreviewed": 8111,
+    "legacy_meaning_unreviewed": 8011,
     "low_value_example": 3780,
     "meaning_latin": 2982,
     "chinese_latin": 2912,
@@ -51,10 +51,17 @@
     "how_used": "Exporter adds gs (provenance) + gj (JMdict candidate senses). gs=jmdict_entry_matched proves the gloss belongs to the word's JMdict entry, but contextual sense selection is still reviewed. Other statuses must not be trusted blindly.",
     "active_bucket_impact": "cheap_model_candidate legacy_meaning: 1832/1935 (94.7%) entry-matched, 103 unreliable."
   },
-  "last_neon_import_run_id": "fb8f1a86-9264-4ae4-bf5f-9f1971f8202f",
+  "last_neon_import_run_id": "15f10668-81fa-4569-8a89-313b9a9a2547",
   "last_meaning_checkpoint": {
-    "iteration": 37,
-    "applied_ids_range": "iter036: 2110-2346 (99); iter037: 2349-2602 (100). Next batch excludes both ranges + 1328 + 2250.",
+    "iteration": 38,
+    "applied_ids_range": "iter036: 2110-2346 (99); iter037: 2349-2602 (100); iter038: 2603-2812 (100). Next batch excludes all three ranges + 1328 + 2250.",
+    "iter038": {
+      "applied_rows": 100,
+      "haiku_changed_meaning": 96,
+      "sonnet_corrections": "2637 倒れ 倒塌->倒下、倒塌, 2641 工作 drop 工業製品; 0 dup/latin/simplified",
+      "legacy_meaning_unreviewed_after": 8011,
+      "neon_import_run_id": "15f10668-81fa-4569-8a89-313b9a9a2547"
+    },
     "iter037": {
       "applied_rows": 100,
       "haiku_changed_meaning": 82,
@@ -80,7 +87,7 @@
   ],
   "deferred_note": "id 1328 掛け: meaning was garbage (我們); gloss=credit/bill is correct but old example is about phone-not-connecting. Needs combined meaning+example single-row semantic correction outside the meaning-only gate.",
   "next_actions": [
-    "CONTINUE meaning cleanup (iters 036-037 done, 199 rows). Next batch: cheap_model_candidate + legacy_meaning + jmdict_entry_matched, next 100 by frequency_rank, EXCLUDING already-applied ids (iter036 2110-2346, iter037 2349-2602) + deferred 1328 + 2250. ~1463 verified legacy rows remain. Use the loop in last_meaning_checkpoint.loop_note.",
+    "CONTINUE meaning cleanup (iters 036-038 done, 299 rows). Next batch: cheap_model_candidate + legacy_meaning + jmdict_entry_matched, next 100 by frequency_rank, EXCLUDING applied ids (036: 2110-2346, 037: 2349-2602, 038: 2603-2812) + 1328 + 2250. ~1363 verified legacy rows remain. Use the loop in last_meaning_checkpoint.loop_note.",
     "Then: cheap_model_candidate latin (44 verified) + placeholder (134 verified) - small, clearly-broken, high value.",
     "low_value_example fallback (1402) and related vectors still deferred (21,763 issues)."
   ],
