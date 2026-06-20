@@ -1,12 +1,12 @@
 {
   "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST instead of re-reading the 1900-line CLAUDE.md tail. Update it at the end of every iteration. Keep it short.",
   "updated": "2026-06-20",
-  "head_commit": "e8b781f",
+  "head_commit": "9b4d9c6",
   "pipeline_stage": "content-cleanup (meaning cleanup track, since iter036)",
   "quality": {
     "entries": 13000,
-    "badEntries": 8931,
-    "issueCount": 21364,
+    "badEntries": 8832,
+    "issueCount": 21265,
     "note": "badEntries high because legacy_meaning_unreviewed is a provenance flag (unverified), not known-wrong"
   },
   "verb_invariant": {
@@ -18,14 +18,14 @@
     "must_stay": "generatedSuspect/mechanicalError/candidateQueue all 0 after every batch"
   },
   "buckets": {
-    "cheap_model_candidate": 1586,
+    "cheap_model_candidate": 1487,
     "semantic_review": 3036,
     "katakana_review": 2498,
     "grammar_high_risk": 1283,
     "verb_quarantine": 528
   },
   "top_issues": {
-    "legacy_meaning_unreviewed": 7812,
+    "legacy_meaning_unreviewed": 7713,
     "low_value_example": 3780,
     "meaning_latin": 2982,
     "chinese_latin": 2912,
@@ -51,10 +51,18 @@
     "how_used": "Exporter adds gs (provenance) + gj (JMdict candidate senses). gs=jmdict_entry_matched proves the gloss belongs to the word's JMdict entry, but contextual sense selection is still reviewed. Other statuses must not be trusted blindly.",
     "active_bucket_impact": "cheap_model_candidate legacy_meaning: 1832/1935 (94.7%) entry-matched, 103 unreliable."
   },
-  "last_neon_import_run_id": "b37ec08e-5c88-4ad9-bdc7-dfa64ddd2e26",
+  "last_neon_import_run_id": "19a44967-bd84-430c-b14d-e0d266e10ae5",
   "last_meaning_checkpoint": {
-    "iteration": 40,
-    "applied_ids_range": "iter036:2110-2346; 037:2349-2602; 038:2603-2812; 039:2813-3066; 040:3068-3461. Next excludes all + 1328 + 2250 + 3034.",
+    "iteration": 41,
+    "applied_ids_range": "036:2110-2346; 037:2349-2602; 038:2603-2812; 039:2813-3066; 040:3068-3461; 041:3462-3956. Excludes also 1328+2250+3034+3780.",
+    "iter041": {
+      "applied_rows": 99,
+      "haiku_changed_meaning": 99,
+      "sonnet_corrections": "3807 紳士 strip English 'gentlemen', 3675 遠慮->顧慮、客氣、克制, 3898 配達->投遞、配送",
+      "parent_exclusions": "3780 処女 (virginity term; consistency with 童貞)",
+      "legacy_meaning_unreviewed_after": 7713,
+      "neon_import_run_id": "19a44967-bd84-430c-b14d-e0d266e10ae5"
+    },
     "iter040": {
       "applied_rows": 100,
       "haiku_changed_meaning": 98,
@@ -103,7 +111,7 @@
   ],
   "deferred_note": "id 1328 掛け: meaning was garbage (我們); gloss=credit/bill is correct but old example is about phone-not-connecting. Needs combined meaning+example single-row semantic correction outside the meaning-only gate.",
   "next_actions": [
-    "CONTINUE meaning cleanup (iters 036-040 done, 498 rows). Next: cheap_model_candidate + legacy_meaning + jmdict_entry_matched, next 100 by frequency_rank, EXCLUDING applied (036-040: ids 2110-3461 as packeted) + 1328 + 2250 + 3034. ~1164 verified legacy rows remain. Watch for adult terms (巨乳/童貞 excluded so far). Tell Haiku to USE THE WRITE TOOL (iter040 it echoed to chat instead). Use the loop in last_meaning_checkpoint.loop_note.",
+    "CONTINUE meaning cleanup (iters 036-041 done, 597 rows). Next: cheap_model_candidate + legacy_meaning + jmdict_entry_matched, next 100 by frequency_rank, EXCLUDING applied ids (036-041 packeted, see applied_ids_range) + 1328 + 2250 + 3034 + 3780. ~1065 verified legacy rows remain. Watch adult terms (巨乳/童貞/処女 excluded). Tell Haiku to USE THE WRITE TOOL. Use the loop in last_meaning_checkpoint.loop_note.",
     "Then: cheap_model_candidate latin (44 verified) + placeholder (134 verified) - small, clearly-broken, high value.",
     "low_value_example fallback (1402) and related vectors still deferred (21,763 issues)."
   ],

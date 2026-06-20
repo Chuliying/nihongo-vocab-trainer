@@ -2650,6 +2650,25 @@ DB：`b37ec08e-5c88-4ad9-bdc7-dfa64ddd2e26`、verb 0/0、queue 0、runtime/build
 - 五批共 498 筆，Sonnet 累計改 20 筆（約 4%）；品質穩定。
 - 還有 ~1164 verified legacy；related embedding 繼續延後（21,364 issues）。
 
+### Iteration 041 — 第六批 cheap legacy meaning（99 筆）
+
+狀態：verified legacy meaning 第六批（ids 3462-3956）。Haiku prompt 加「USE WRITE TOOL」後本批正常寫檔（各 3 tool calls）。
+
+- Haiku 2×50，99 changed，0 dup/simplified；1 筆 latin（3807 紳士 多了英文「gentlemen」）。
+- Sonnet 改 3 筆：3807→「紳士」（去英文）、3675 遠慮→「顧慮、客氣、克制」、
+  3898 配達→「投遞、配送」（配達/遠慮 非自然繁中）；排除 1 筆 3780 処女（處女詞，比照 童貞）。
+- full gate issueDelta 99→0、changedExample 0，apply 99 筆。
+
+品質：badEntries 8931→8832、issueCount 21364→21265、
+legacy_meaning_unreviewed 7812→7713、low_value_example 維持 3780。
+DB：`19a44967-bd84-430c-b14d-e0d266e10ae5`、verb 0/0、queue 0、runtime/build 通過。
+
+省成本反省：
+
+- prompt 補「USE WRITE TOOL」後 echo-not-write 問題解決。
+- candidate gate 仍抓到 1 筆英文殘留（3807），證明 deterministic latin gate 不可省。
+- 六批共 597 筆，Sonnet 累計改 23 筆、排除 4 筆成人/性詞；related 繼續延後（21,265 issues）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
