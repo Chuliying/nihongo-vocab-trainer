@@ -2544,6 +2544,43 @@ cheap_model_candidate legacy_meaning verified 批次（99 筆）。
   cheap+high 雙模型省一次 agent；每 100 筆一次 Neon/build，`tee` 存 log。
 - 還有 ~1663 筆 verified legacy 可同流程續做；related embedding 繼續延後（21,763 issues）。
 
+### Iteration 037 — 第二批 cheap legacy meaning（100 筆）
+
+狀態：續做 verified legacy meaning，第二批 100 筆（ids 2349-2602）。流程同 iter036。
+
+- Haiku 2×50 起草，82 changed（同樣是修壞資料，非無謂改寫）；本批 0 dup-word
+  （prompt 已加「never duplicate the same word twice」，Haiku 有遵守）。
+- Sonnet 審查改 6 筆：
+  - 2349 熱い「炎熱」→「熱、燙」（炎熱是天氣熱，熱い是觸感熱）
+  - 2478 直前「直前」→「緊接之前」（Haiku 直接重複日文漢字，原本繁中是對的）
+  - 2483 通販「郵購」→「網購、郵購」（現代用法）
+  - 2505 微妙 去掉誤加的「困難」
+  - 2517 衛星「衛星；月球」→「衛星、人造衛星」（月球過窄）
+  - 2522 連合 去掉不貼切的「聯誼」→「聯合、聯盟」
+- 無排除（爆弾 2350 的 meaning「炸彈」是字典義，例句未動，保留）。
+- full gate issueDelta 100→0、changedExample 0，apply 100 筆。
+
+品質結果：
+
+```json
+{
+  "before": { "badEntries": 9330, "issueCount": 21763, "legacy_meaning_unreviewed": 8211 },
+  "after":  { "badEntries": 9230, "issueCount": 21663, "legacy_meaning_unreviewed": 8111 }
+}
+```
+
+DB gate：`dbImportRunId fb8f1a86-9264-4ae4-bf5f-9f1971f8202f`、verb 0/0/0、queue 0、
+low_value_example 維持 3780、runtime/build 通過。
+
+省成本反省：
+
+- Haiku prompt 加「不可重複同詞」後本批 0 重複（iter036 有 2 筆），證明把上批的
+  Sonnet 修正回饋進 prompt 能降低下批返工。
+- 再次出現「直前」這種 Haiku 直接重複日文漢字、把對的改錯的個案；Sonnet 審查仍不可省。
+- meaning-only batch 全程不碰 example，low_value_example queue 不受影響，與 real-example
+  track 完全解耦。
+- 每 100 筆一次 Neon/build；related embedding 繼續延後（21,663 issues）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
