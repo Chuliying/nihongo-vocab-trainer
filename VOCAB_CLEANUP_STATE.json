@@ -1,12 +1,12 @@
 {
   "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST instead of re-reading the 1900-line CLAUDE.md tail. Update it at the end of every iteration. Keep it short.",
   "updated": "2026-06-20",
-  "head_commit": "ebf28d5",
+  "head_commit": "090444e",
   "pipeline_stage": "content-cleanup",
   "quality": {
     "entries": 13000,
-    "badEntries": 9480,
-    "issueCount": 22049,
+    "badEntries": 9457,
+    "issueCount": 21948,
     "note": "badEntries high because legacy_meaning_unreviewed is a provenance flag (unverified), not known-wrong"
   },
   "verb_invariant": {
@@ -18,7 +18,7 @@
     "must_stay": "generatedSuspect/mechanicalError/candidateQueue all 0 after every batch"
   },
   "buckets": {
-    "cheap_model_candidate": 2135,
+    "cheap_model_candidate": 2112,
     "semantic_review": 3036,
     "katakana_review": 2498,
     "grammar_high_risk": 1283,
@@ -26,7 +26,7 @@
   },
   "top_issues": {
     "legacy_meaning_unreviewed": 8310,
-    "low_value_example": 3966,
+    "low_value_example": 3866,
     "meaning_latin": 2982,
     "chinese_latin": 2912,
     "stale_llm_source": 2727,
@@ -51,7 +51,7 @@
     "how_used": "Exporter adds gs (provenance) + gj (JMdict candidate senses). gs=jmdict_entry_matched proves the gloss belongs to the word's JMdict entry, but contextual sense selection is still reviewed. Other statuses must not be trusted blindly.",
     "active_bucket_impact": "cheap_model_candidate legacy_meaning: 1832/1935 (94.7%) entry-matched, 103 unreliable."
   },
-  "last_neon_import_run_id": "0679d5f2-b914-450c-9db8-f5e93711f55a",
+  "last_neon_import_run_id": "804b039e-39d8-4b68-aeb4-ca00ceef21e2",
   "deferred_ids": [
     1328
   ],
@@ -72,9 +72,9 @@
   "real_examples": {
     "status": "candidate generator, artifact validator and example-only apply gate built; translation/reading review remains",
     "source": "Tatoeba/Tanaka CC-BY (scratch/tatoeba, gitignored); NOT NHK (copyright/register)",
-    "coverage": "queue now 3966 after iter033. ALWAYS regenerate select->enrich->validate at the start of each iteration so applied rows drop out, THEN filter out previously-packeted ids (the rejects stay in the queue and would be re-reviewed). iter033 used real_example_candidates.enriched.filtered.jsonl built by excluding packet_005+006 ids.",
+    "coverage": "queue now 3866 after iter034. ALWAYS regenerate select->enrich->validate at the start of each iteration so applied rows drop out, THEN filter out previously-packeted ids (the rejects stay in the queue and would be re-reviewed). filtered file = real_example_candidates.enriched.filtered.jsonl. Packets used so far: 005-010 (exclude all of these next).",
     "tools": "selector uses exact surface/lemma plus coarse POS, difficulty gates and attribution; enrichment adds direct cmn links and Tatoeba human transcriptions; validator/apply gate require explicit reading and translation review",
-    "next": "regenerate candidates, filter out all previously-packeted ids (005-008), prepare next packet, Agy review, normalize, gate, scan(non-kana-in-r + sensitive + morbid), accumulate 100 accepts",
+    "next": "regenerate candidates, filter out all previously-packeted ids (packets 005-010), prepare next packet, Agy review, normalize, gate, scan(non-kana-in-r + sensitive + morbid + untranslated-English-in-c), accumulate 100 accepts",
     "ref": ".claude/skills/vocab-cleanup/references/real-examples.md"
   },
   "example_target_audit": {
@@ -86,30 +86,31 @@
     "purpose": "Prevents substring, kana-homophone and coarse-POS collisions from entering the cheap queue."
   },
   "last_example_checkpoint": {
-    "iteration": 33,
+    "iteration": 34,
     "reviewed_rows": 100,
-    "low_value_example_before": 4066,
-    "low_value_example_after": 3966,
+    "low_value_example_before": 3966,
+    "low_value_example_after": 3866,
     "meaning_changes": 0,
     "quality_score_changes": 0,
-    "neon_import_run_id": "0679d5f2-b914-450c-9db8-f5e93711f55a",
+    "neon_import_run_id": "804b039e-39d8-4b68-aeb4-ca00ceef21e2",
     "runtime_repository": "passed",
     "build": "passed"
   },
   "last_agy_checkpoint": {
-    "iteration": 33,
-    "note": "candidates regenerated + filtered (drop 140 prev-packeted); two fresh packets combined to 100: ckpt_007 (packet_007, 150 rows) 66 + ckpt_008 (packet_008, 90 rows) 34",
-    "ckpt007_agy_accepts": 67,
-    "ckpt007_agy_rejects": 83,
-    "ckpt007_parent_exclusions": "6434 (gate false-positive: '的語氣' placeholder pattern matched a natural sentence)",
-    "ckpt008_agy_accepts": 63,
-    "ckpt008_agy_rejects": 27,
-    "ckpt008_parent_exclusions": "7065 (morbid proverb 死人に口なし) + trimmed to 34",
+    "iteration": 34,
+    "note": "regenerate+filter (drop 280 prev-packeted 005-008); two packets combined to 100: ckpt_009 (packet_009, 150 rows) 81 + ckpt_010 (packet_010, 50 rows) 19",
+    "ckpt009_agy_accepts": 83,
+    "ckpt009_agy_rejects": 67,
+    "ckpt009_malformed_lines": 1,
+    "ckpt009_parent_exclusions": "7818 (Agy emitted malformed 'x if False else y' for r -> forced reject), 7266 (untranslated English 'his' in c)",
+    "ckpt010_agy_accepts": 41,
+    "ckpt010_agy_rejects": 9,
+    "ckpt010_parent_exclusions": "8068 (morbid: 死因はガン / death by cancer) + trimmed to 19",
     "applied_rows": 100,
-    "low_value_example_after": 3966,
-    "neon_import_run_id": "0679d5f2-b914-450c-9db8-f5e93711f55a",
+    "low_value_example_after": 3866,
+    "neon_import_run_id": "804b039e-39d8-4b68-aeb4-ca00ceef21e2",
     "runtime_repository": "passed",
     "build": "passed",
-    "gate_note": "placeholder gate pattern (的語氣/的動作/...) can false-positive on natural sentences; non-kana-in-r is still not a deterministic gate (parent scan catches Cyrillic/Latin in reading) — candidate to harden later"
+    "gate_note": "Agy occasionally emits a malformed JSON line (Python-ish 'a if False else b'); parent must scan-and-reject that row, not crash the batch. Parent scans cover: non-kana-in-r (Cyrillic/Latin), sensitive/morbid (incl. 死因/ガン), untranslated English in c. Benign metaphor compounds (必死/苦戦/殺到) are NOT sensitive — keep them."
   }
 }

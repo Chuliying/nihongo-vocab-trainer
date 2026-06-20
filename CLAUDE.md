@@ -2351,6 +2351,67 @@ drop out）、過濾掉先前 packet 已 review 過的 IDs、跑兩個 fresh pac
   比硬湊單一 240-row 串流穩定。每 100 筆才一次 Neon import/build，`tee` 存 log。
 - related 全量 embedding 繼續延後（仍有 22,049 issues）。
 
+### Iteration 034 — fifth 100-row Neon checkpoint + Agy malformed-row handling
+
+狀態：沿用 iter033 的 regenerate→filter→packet 流程，再完成一個 100-row checkpoint。
+本輪首次遇到 Agy 產出 malformed JSON line，固化處理方式。
+
+候選重生與過濾：
+
+- `select_real_examples.py`：queue 3966，proposed 2564，coverage 64.7%。
+- enrich + validate：6136 candidates。
+- 過濾掉 packet_005..008 的 480 個 ID（kept 3686 / dropped 280；200 已套用 row 已被
+  regenerate 移除，280 是先前 reject）。
+
+兩個 packet：
+
+- packet_009（offset 0, limit 150）：Agy 213s，draft 有 **1 筆 malformed line**——
+  id 7818 Agy 寫成 `"r": "...にまいにch..." if False else "...にまいにち..."` 的
+  Python 式條件，非合法字串。主代理把該 row 改寫成 reject（保留 ID coverage、不中止整批），
+  再 normalize。83 accept / 67 reject → normalize 1 contract reject。apply gate 另抓
+  id 7266（繁中夾未翻譯英文 `his`）。排除後 81 accept。
+  - 兩個 sensitive 掃描命中為 false-positive：必死（拼命）、苦戦（苦撐）皆為比喻複合詞，保留。
+- packet_010（offset 150, limit 50）：Agy 56s，41 accept / 9 reject、0 malformed。
+  morbid 掃描抓 id 8068「彼の死因はガンだった」（死因＋癌），排除後 `--accept-limit 19`。
+
+合計 ckpt_009(81) + ckpt_010(19) = 100，零重疊。串行 apply，逐 ID
+`meaningChanges=0`、`qualityScoreChanges=0`。
+
+品質結果：
+
+```json
+{
+  "before": { "badEntries": 9480, "issueCount": 22049, "low_value_example": 3966 },
+  "after":  { "badEntries": 9457, "issueCount": 21948, "low_value_example": 3866 }
+}
+```
+
+動詞與 DB gate：
+
+```json
+{
+  "withVerbInfo": 678,
+  "candidateQueue": 0,
+  "generatedSuspect": 0,
+  "mechanicalError": 0,
+  "dbImportRunId": "804b039e-39d8-4b68-aeb4-ca00ceef21e2",
+  "runtimeRepository": "passed",
+  "build": "passed"
+}
+```
+
+省成本反省：
+
+- **Agy malformed-row 處理固化**：Agy 偶爾輸出 `a if False else b` 這種非法 JSON line。
+  正確做法是主代理掃出該 line、單獨改成 reject（保留 ID coverage），不重跑整個 packet，
+  也不讓 normalize crash。本輪只損失 1 row，不需重付一次 150-row Agy。
+- sensitive 掃描要分辨「比喻複合詞」（必死／苦戦／殺到）與真正不適內容（死因／ガン）；
+  前者保留、後者排除。盲目以單字 `死/戦` reject 會過度刪掉自然好句。
+- apply gate 抓繁中夾英文（`his`）；主代理掃描補抓 reading 非假名與 morbid。三道掃描
+  （non-kana-in-r、sensitive/morbid、untranslated-English-in-c）建議下一輪做成可重用 script。
+- 小 top-up packet（50 rows / 56s）補最後 19 筆，比再跑一個 150-row packet 省。
+- 每 100 筆一次 Neon import/build，`tee` 存 log；related 全量 embedding 繼續延後（21,948 issues）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
