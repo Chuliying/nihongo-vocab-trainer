@@ -1,12 +1,12 @@
 {
   "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST instead of re-reading the 1900-line CLAUDE.md tail. Update it at the end of every iteration. Keep it short.",
-  "updated": "2026-06-19",
-  "head_commit": "b2b6aa0",
+  "updated": "2026-06-20",
+  "head_commit": "8174059",
   "pipeline_stage": "content-cleanup",
   "quality": {
     "entries": 13000,
-    "badEntries": 9540,
-    "issueCount": 22252,
+    "badEntries": 9514,
+    "issueCount": 22150,
     "note": "badEntries high because legacy_meaning_unreviewed is a provenance flag (unverified), not known-wrong"
   },
   "verb_invariant": {
@@ -18,7 +18,7 @@
     "must_stay": "generatedSuspect/mechanicalError/candidateQueue all 0 after every batch"
   },
   "buckets": {
-    "cheap_model_candidate": 2195,
+    "cheap_model_candidate": 2169,
     "semantic_review": 3036,
     "katakana_review": 2498,
     "grammar_high_risk": 1283,
@@ -26,7 +26,7 @@
   },
   "top_issues": {
     "legacy_meaning_unreviewed": 8310,
-    "low_value_example": 4166,
+    "low_value_example": 4066,
     "meaning_latin": 2982,
     "chinese_latin": 2912,
     "stale_llm_source": 2727,
@@ -51,7 +51,7 @@
     "how_used": "Exporter adds gs (provenance) + gj (JMdict candidate senses). gs=jmdict_entry_matched proves the gloss belongs to the word's JMdict entry, but contextual sense selection is still reviewed. Other statuses must not be trusted blindly.",
     "active_bucket_impact": "cheap_model_candidate legacy_meaning: 1832/1935 (94.7%) entry-matched, 103 unreliable."
   },
-  "last_neon_import_run_id": "c73a002b-7bf0-4fa7-ad84-f28beddee2d5",
+  "last_neon_import_run_id": "683e4feb-95f8-49e1-a320-cd00068ea6b9",
   "deferred_ids": [
     1328
   ],
@@ -72,9 +72,9 @@
   "real_examples": {
     "status": "candidate generator, artifact validator and example-only apply gate built; translation/reading review remains",
     "source": "Tatoeba/Tanaka CC-BY (scratch/tatoeba, gitignored); NOT NHK (copyright/register)",
-    "coverage": "current 4166-row queue: 2764 proposed (66.35%), 1402 fallback; 6648 candidates validated. Previous 84% substring estimate is retired",
+    "coverage": "queue now 4066 after iter032. NOTE: real_example_candidates.enriched.jsonl is STALE (still lists the 100 applied rows); regenerate select->enrich->validate before the next packet so applied rows drop out",
     "tools": "selector uses exact surface/lemma plus coarse POS, difficulty gates and attribution; enrichment adds direct cmn links and Tatoeba human transcriptions; validator/apply gate require explicit reading and translation review",
-    "next": "translate selected JA to Traditional Chinese, review machine-generated readings, then use examples:real:apply",
+    "next": "regenerate candidates, then prepare packet_007 (offset 0 on fresh candidates), Agy review, normalize, gate, sample, accumulate 100 accepts",
     "ref": ".claude/skills/vocab-cleanup/references/real-examples.md"
   },
   "example_target_audit": {
@@ -86,31 +86,35 @@
     "purpose": "Prevents substring, kana-homophone and coarse-POS collisions from entering the cheap queue."
   },
   "last_example_checkpoint": {
+    "iteration": 32,
     "reviewed_rows": 100,
-    "low_value_example_before": 4366,
-    "low_value_example_after": 4266,
+    "low_value_example_before": 4166,
+    "low_value_example_after": 4066,
     "meaning_changes": 0,
     "quality_score_changes": 0,
-    "neon_import_run_id": "a261c5cf-add0-4d0a-bf3c-d779972d49fd",
+    "neon_import_run_id": "683e4feb-95f8-49e1-a320-cd00068ea6b9",
     "runtime_repository": "passed",
     "build": "passed"
   },
   "last_agy_checkpoint": {
-    "packet_rows": 150,
-    "agy_accepts": 101,
-    "agy_rejects": 48,
-    "contract_rejects": 1,
-    "parent_exclusions": 2,
-    "applied_rows": 75,
-    "combined_with_previous_pending": 100,
-    "low_value_example_after": 4166,
-    "neon_import_run_id": "c73a002b-7bf0-4fa7-ad84-f28beddee2d5",
+    "iteration": 32,
+    "note": "two checkpoints combined to 100: ckpt_005 (resumed prior draft) 66 + ckpt_006 (fresh packet_006, 90 rows) 34",
+    "ckpt005_accepts": 66,
+    "ckpt005_parent_exclusions": "5277 (English 'Bug' in zh), 5291 (Cyrillic mojibake in reading)",
+    "ckpt006_agy_accepts": 57,
+    "ckpt006_agy_rejects": 33,
+    "ckpt006_contract_rejects": 1,
+    "ckpt006_parent_exclusions": "5517, 5823 (sensitive: bleeding / bereavement) + trimmed to 34",
+    "applied_rows": 100,
+    "low_value_example_after": 4066,
+    "neon_import_run_id": "683e4feb-95f8-49e1-a320-cd00068ea6b9",
     "runtime_repository": "passed",
     "build": "passed",
-    "agy_proxy": {
-      "prompt_chars": 1179,
-      "output_bytes": 31688,
-      "elapsed_seconds": 119,
+    "agy_proxy_packet006": {
+      "task_chars": 2253,
+      "prompt_chars": 3068,
+      "output_bytes": 18588,
+      "elapsed_seconds": 82,
       "exact_tokens": "unavailable"
     }
   }

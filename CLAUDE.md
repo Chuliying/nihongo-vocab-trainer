@@ -2210,6 +2210,80 @@ runtime repository / production build。
 - Neon import run：`c73a002b-7bf0-4fa7-ad84-f28beddee2d5`
 - build、DB dry-run/API parity、runtime repository、動詞 invariants 全部通過。
 
+### Iteration 032 — resume stale draft + fresh packet → third 100-row Neon checkpoint
+
+狀態：接手時發現上一個 session 已留下 `packet_005` + `draft_005`（Agy 已 review，
+70 accept / 80 reject）但沒有 normalize/apply（無 checkpoint_005）。本輪先把這份
+進行到一半的 draft 收尾，再補一個 fresh packet 湊滿 100，完成 Neon checkpoint。
+
+交接驗證：
+
+- `main` / `origin/main` 同步於 `8174059`（state 的 `head_commit b2b6aa0` 只是沒更新，
+  內容計數已涵蓋到 iter 031）。無 in-flight cleanup 程序，無 clobber 風險。
+- runtime repository、verb invariant（generatedSuspect=0、mechanicalError=0、
+  candidate queue=0）皆為基線值。
+
+checkpoint_005（resume draft_005）：
+
+- normalize：70 Agy accept 中 2 筆 contract reject（日文被改）→ 68。
+- 主代理 apply-gate + 非假名掃描另抓 2 筆，全部 reject（fallback 比硬修便宜）：
+  - id 5277：繁中夾英文 `Bug`（`このバグを改修してます` → `正在修復這個 Bug`），
+    apply gate 以 `chinese_latin` 擋下。
+  - id 5291：`r` 開頭是西里爾字母 `де`（電話的でん mojibake），來自 Tatoeba
+    transcription；現有 gate 只查 `r` 含漢字，查不到 Cyrillic/Latin，靠主代理掃描抓到。
+- 結果 66 accept，gate clean，0 sensitive hit。
+
+packet_006（fresh，補足到 100）：
+
+- `prepare_real_example_review.py --risk cheap_model_candidate --offset 150 --limit 90`，
+  與 packet_005 零重疊；90 rows。
+- Agy review（read-only，82s，output 18,588 bytes，proxy metrics only）：57 accept / 33 reject。
+- normalize：1 筆 contract reject → 56；非假名掃描 0；apply gate clean。
+- 主代理抽樣 7 筆品質佳（讀音／繁中自然、無簡體）；sensitive 掃描抓 2 筆
+  （5517 出血醫療問句、5823 妻が死んだ 喪親），因為有 56 但只需 34，直接排除兩筆。
+- `--accept-limit 34` 取前 34 筆 clean accept。
+
+合計 ckpt_005(66) + ckpt_006(34) = 100，零重疊。串行 apply（先 005 後 006），
+逐 ID `meaningChanges=0`、`qualityScoreChanges=0`。
+
+品質結果：
+
+```json
+{
+  "before": { "badEntries": 9540, "issueCount": 22252, "low_value_example": 4166 },
+  "after":  { "badEntries": 9514, "issueCount": 22150, "low_value_example": 4066 }
+}
+```
+
+動詞與 DB gate：
+
+```json
+{
+  "withVerbInfo": 678,
+  "suppressedVerbInfo": 57,
+  "candidateQueue": 0,
+  "generatedSuspect": 0,
+  "mechanicalError": 0,
+  "dbImportRunId": "683e4feb-95f8-49e1-a320-cd00068ea6b9",
+  "runtimeRepository": "passed",
+  "build": "passed"
+}
+```
+
+省成本反省：
+
+- 先收尾上一 session 的 `draft_005` 再補新 packet，避免把 Agy 已 review 的 150 rows
+  丟掉重跑——直接省一次 Agy 呼叫。
+- 只需 34 筆時用 90-row packet（非 150），Agy 82s 即完成；多出來的 22 筆 clean accept
+  本可保留，但本輪為對齊 100 threshold 先排除，下一輪改用 fresh candidates 不沿用。
+- **新發現的 gate blind spot**：`r` 欄位只查漢字，查不到 Cyrillic/Latin mojibake
+  （id 5291 `де`）。本輪靠主代理掃描補抓；下一輪應把「`r` 必須純假名＋日文標點」
+  做成 deterministic apply gate，把這類 transcription 噪音轉成低成本自動攔截。
+- `real_example_candidates.enriched.jsonl` 已 stale（仍含本輪 100 筆已套用 row）；
+  下一輪必須先 regenerate select→enrich→validate，否則會重推已修好的 row。
+- Neon 只在湊滿 100 後寫一次，`tee` 存 log，沒有為看 log 重跑 write-mode import。
+- related 全量 embedding 繼續延後（仍有 22,150 issues）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
