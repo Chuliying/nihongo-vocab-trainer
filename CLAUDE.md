@@ -2284,6 +2284,73 @@ packet_006（fresh，補足到 100）：
 - Neon 只在湊滿 100 後寫一次，`tee` 存 log，沒有為看 log 重跑 write-mode import。
 - related 全量 embedding 繼續延後（仍有 22,150 issues）。
 
+### Iteration 033 — regenerated+filtered candidates → fourth 100-row Neon checkpoint
+
+狀態：本輪是完整的 fresh cycle：重生 candidate queue（讓 iter032 已套用的 100 筆
+drop out）、過濾掉先前 packet 已 review 過的 IDs、跑兩個 fresh packet 湊 100、
+完成 Neon checkpoint。
+
+候選重生與過濾：
+
+- `select_real_examples.py --top-k 3`：queue 4066，proposed 2664，fallback 1402，
+  coverage 65.5%；100 筆已套用 row 已自動移除。
+- enrich + validate：6383 candidates，human reading 覆蓋 100%，validator ok。
+- **新增省成本步驟**：先前 packet_005/006 的 reject rows 仍留在 queue（reject ≠ apply），
+  若 fresh packet 從 offset 0 取，會把那 140 筆 reject 重新 review，浪費 Agy。
+  因此先把 packet_005∪006 的 240 個 ID 從 enriched 過濾掉
+  （`real_example_candidates.enriched.filtered.jsonl`，kept 3926 / dropped 140），
+  再從 filtered 檔備 packet。
+
+兩個 fresh packet：
+
+- packet_007（offset 0, limit 150）：Agy 146s，67 accept / 83 reject。
+  normalize 0 contract reject。主代理排除 1 筆 id 6434：apply gate 把繁中 placeholder
+  pattern `的語氣` 誤判到自然句「他的語氣有點奇怪」（gate false-positive），有 slack 故直接排除。
+  → 66 accept，gate clean。
+- packet_008（offset 150, limit 90）：Agy 104s，63 accept / 27 reject，0 contract reject，
+  非假名掃描 0、sensitive 0。主代理擴大 morbid 掃描抓 1 筆 id 7065
+  「死人に口なし」（死亡＋諺語語體），排除後 `--accept-limit 34` → 34 accept。
+
+合計 ckpt_007(66) + ckpt_008(34) = 100，零重疊。串行 apply，逐 ID
+`meaningChanges=0`、`qualityScoreChanges=0`。
+
+品質結果：
+
+```json
+{
+  "before": { "badEntries": 9514, "issueCount": 22150, "low_value_example": 4066 },
+  "after":  { "badEntries": 9480, "issueCount": 22049, "low_value_example": 3966 }
+}
+```
+
+動詞與 DB gate：
+
+```json
+{
+  "withVerbInfo": 678,
+  "candidateQueue": 0,
+  "generatedSuspect": 0,
+  "mechanicalError": 0,
+  "dbImportRunId": "0679d5f2-b914-450c-9db8-f5e93711f55a",
+  "runtimeRepository": "passed",
+  "build": "passed"
+}
+```
+
+省成本反省：
+
+- 每輪開頭先 regenerate candidates、再過濾先前 packet IDs，是本輪固化的省 Agy 規則：
+  避免對已 reject 的 row 重複付 review 成本。下一輪需把 packet_005..008 的 IDs 一併排除。
+- 主代理掃描補上 gate 的兩個盲點：(1) `r` 非假名（Cyrillic/Latin，iter032 的 5291）尚未
+  deterministic 化；(2) placeholder pattern `的語氣/的動作` 會誤判自然句。兩者都建議
+  之後 harden 成 gate 規則（前者加 `r` 純假名檢查、後者把 placeholder 限定在 meaning 欄位
+  或加 context 條件），把人工掃描成本轉成 0-token deterministic QA。
+- morbid/諺語（死人に口なし）validator 不會擋，只能靠審查語感；維持主代理 sensitive+morbid
+  掃描，並在有 slack 時優先排除而非硬留。
+- 兩個 fresh packet（150+90）各一次 Agy 呼叫，proxy 合計 output ≈44.5KB / 250s；
+  比硬湊單一 240-row 串流穩定。每 100 筆才一次 Neon import/build，`tee` 存 log。
+- related 全量 embedding 繼續延後（仍有 22,049 issues）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
