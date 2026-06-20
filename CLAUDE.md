@@ -2693,6 +2693,27 @@ DB：`2ece197d-60a0-4ac9-994d-5fa2119e37f1`、verb 0/0、queue 0、runtime/build
 - candidate gate 再次擋下越權（要求 e 卻只給 m），證明 required-field gate 不可省。
 - 七批共 688 筆，Sonnet 累計改 26 筆、排除 14 筆；related 繼續延後（21,174 issues）。
 
+### Iteration 043 — 第八批 cheap legacy meaning（100 筆，refined selector）
+
+狀態：verified legacy meaning 第八批（ids 4416-5098）。selector 已排除含 low_value_example
+的 dual-issue row，本批 0 gate 拒絕、revertedExample 100。
+
+- Haiku 2×50，100 changed，0 dup/latin/simplified。
+- Sonnet 改 8 筆：4424 幼い、4791 解明、4906 反撃（照搬日文漢字）；4701 書き込み「塗鴉」
+  與 4719 申し「呃」是真錯義；4431 洋服、4834「裝器」非詞、5027 死後贅詞。無排除。
+- full gate issueDelta 100→0、changedExample 0，apply 100 筆。
+
+品質：badEntries 8741→8641、issueCount 21174→21074、
+legacy_meaning_unreviewed 7622→7522、low_value_example 維持 3780。
+DB：`afd78eb0-98b2-48cc-b857-e378593269c3`、verb 0/0、queue 0、runtime/build 通過。
+
+省成本反省：
+
+- refined selector（排除 low_value_example）後本批 0 gate 拒絕，dual-issue 問題解決。
+- 本批 Sonnet 改 8 筆偏多，主因深層 legacy 出現較多「照搬日文漢字」與偶發錯義；
+  prompt 已含相關規則但 cheap model 仍會犯，審查不可省。
+- 八批共 788 筆，Sonnet 累計改 34 筆；related 繼續延後（21,074 issues）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
