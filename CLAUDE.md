@@ -2605,6 +2605,28 @@ DB：`15f10668-81fa-4569-8a89-313b9a9a2547`、verb 0/0、queue 0、runtime/build
   讓 cheap draft 接近可直接套用，但每批仍有 1-2 筆 Haiku 把對的改錯或加贅詞，審查不可省。
 - 還有 ~1363 verified legacy 可續做；related embedding 繼續延後（21,563 issues）。
 
+### Iteration 039 — 第四批 cheap legacy meaning（99 筆）
+
+狀態：verified legacy meaning 第四批（ids 2813-3066）。流程同前。
+
+- Haiku 2×50，84 changed，0 dup/latin/simplified。
+- Sonnet 改 3 筆：2874 相性→「合拍程度、契合度」（避免照搬日文詞）、3026 正しく
+  「恰好」→「確實、的確」（恰好是 ちょうど）、3060 加減→「程度、調整、加減」（鹹淡度過窄）。
+- 排除 1 筆 3034 童貞（成人/性內容，比照 iter036 巨乳）；用 99 ids 重新 export expected。
+- full gate issueDelta 99→0、changedExample 0，apply 99 筆。
+
+品質：badEntries 9130→9031、issueCount 21563→21464、
+legacy_meaning_unreviewed 8011→7912、low_value_example 維持 3780。
+DB：`618fa160-1e71-467c-b9ae-df542f460533`、verb 0/0、queue 0、runtime/build 通過。
+
+省成本反省：
+
+- 成人詞（巨乳/童貞）每隔幾批會出現一個，排除流程已固定：reviewed 不蓋、用存活 ids
+  重新 export expected。已寫進 state next_actions 提醒下一輪留意。
+- 四批共 398 筆，Sonnet 累計改 16 筆（約 4%）；verified gloss + 累積 prompt 規則讓
+  cheap draft 穩定高品質，但每批仍有 1-3 筆需修，審查不可省。
+- 還有 ~1264 verified legacy；related embedding 繼續延後（21,464 issues）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
