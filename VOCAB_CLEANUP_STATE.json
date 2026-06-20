@@ -1,12 +1,12 @@
 {
   "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST instead of re-reading the 1900-line CLAUDE.md tail. Update it at the end of every iteration. Keep it short.",
   "updated": "2026-06-20",
-  "head_commit": "70c2a0e",
+  "head_commit": "e8b781f",
   "pipeline_stage": "content-cleanup (meaning cleanup track, since iter036)",
   "quality": {
     "entries": 13000,
-    "badEntries": 9031,
-    "issueCount": 21464,
+    "badEntries": 8931,
+    "issueCount": 21364,
     "note": "badEntries high because legacy_meaning_unreviewed is a provenance flag (unverified), not known-wrong"
   },
   "verb_invariant": {
@@ -18,14 +18,14 @@
     "must_stay": "generatedSuspect/mechanicalError/candidateQueue all 0 after every batch"
   },
   "buckets": {
-    "cheap_model_candidate": 1686,
+    "cheap_model_candidate": 1586,
     "semantic_review": 3036,
     "katakana_review": 2498,
     "grammar_high_risk": 1283,
     "verb_quarantine": 528
   },
   "top_issues": {
-    "legacy_meaning_unreviewed": 7912,
+    "legacy_meaning_unreviewed": 7812,
     "low_value_example": 3780,
     "meaning_latin": 2982,
     "chinese_latin": 2912,
@@ -51,10 +51,18 @@
     "how_used": "Exporter adds gs (provenance) + gj (JMdict candidate senses). gs=jmdict_entry_matched proves the gloss belongs to the word's JMdict entry, but contextual sense selection is still reviewed. Other statuses must not be trusted blindly.",
     "active_bucket_impact": "cheap_model_candidate legacy_meaning: 1832/1935 (94.7%) entry-matched, 103 unreliable."
   },
-  "last_neon_import_run_id": "618fa160-1e71-467c-b9ae-df542f460533",
+  "last_neon_import_run_id": "b37ec08e-5c88-4ad9-bdc7-dfa64ddd2e26",
   "last_meaning_checkpoint": {
-    "iteration": 39,
-    "applied_ids_range": "iter036: 2110-2346; iter037: 2349-2602; iter038: 2603-2812; iter039: 2813-3066. Next excludes all four ranges + 1328 + 2250 + 3034.",
+    "iteration": 40,
+    "applied_ids_range": "iter036:2110-2346; 037:2349-2602; 038:2603-2812; 039:2813-3066; 040:3068-3461. Next excludes all + 1328 + 2250 + 3034.",
+    "iter040": {
+      "applied_rows": 100,
+      "haiku_changed_meaning": 98,
+      "haiku_write_glitch": "both Haiku agents ECHOED the JSONL in chat instead of writing the file (2 tool_uses). Parent reconstructed both files from the replies; coverage/order check confirmed exact. NEXT TIME: tell Haiku explicitly to use the Write tool and confirm the file, or just capture its stdout.",
+      "sonnet_corrections": "3088 この世->今世、人世間, 3138 文庫->文庫本、叢書, 3340 設け 設定->設置、準備, 3453 日程 日期->行程、日程安排",
+      "legacy_meaning_unreviewed_after": 7812,
+      "neon_import_run_id": "b37ec08e-5c88-4ad9-bdc7-dfa64ddd2e26"
+    },
     "iter039": {
       "applied_rows": 99,
       "haiku_changed_meaning": 84,
@@ -95,7 +103,7 @@
   ],
   "deferred_note": "id 1328 掛け: meaning was garbage (我們); gloss=credit/bill is correct but old example is about phone-not-connecting. Needs combined meaning+example single-row semantic correction outside the meaning-only gate.",
   "next_actions": [
-    "CONTINUE meaning cleanup (iters 036-039 done, 398 rows). Next: cheap_model_candidate + legacy_meaning + jmdict_entry_matched, next 100 by frequency_rank, EXCLUDING applied (036:2110-2346, 037:2349-2602, 038:2603-2812, 039:2813-3066) + 1328 + 2250 + 3034. ~1264 verified legacy rows remain. Watch for adult terms (巨乳/童貞 excluded so far). Use the loop in last_meaning_checkpoint.loop_note.",
+    "CONTINUE meaning cleanup (iters 036-040 done, 498 rows). Next: cheap_model_candidate + legacy_meaning + jmdict_entry_matched, next 100 by frequency_rank, EXCLUDING applied (036-040: ids 2110-3461 as packeted) + 1328 + 2250 + 3034. ~1164 verified legacy rows remain. Watch for adult terms (巨乳/童貞 excluded so far). Tell Haiku to USE THE WRITE TOOL (iter040 it echoed to chat instead). Use the loop in last_meaning_checkpoint.loop_note.",
     "Then: cheap_model_candidate latin (44 verified) + placeholder (134 verified) - small, clearly-broken, high value.",
     "low_value_example fallback (1402) and related vectors still deferred (21,763 issues)."
   ],

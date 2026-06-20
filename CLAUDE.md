@@ -2627,6 +2627,29 @@ DB：`618fa160-1e71-467c-b9ae-df542f460533`、verb 0/0、queue 0、runtime/build
   cheap draft 穩定高品質，但每批仍有 1-3 筆需修，審查不可省。
 - 還有 ~1264 verified legacy；related embedding 繼續延後（21,464 issues）。
 
+### Iteration 040 — 第五批 cheap legacy meaning（100 筆）
+
+狀態：verified legacy meaning 第五批（ids 3068-3461）。
+
+- Haiku 2×50，98 changed，0 dup/latin/simplified。**本批 Haiku 把 JSONL 直接 echo
+  在對話而非寫檔**（只用 2 tool calls）；主代理從回覆重建兩個 output 檔，coverage/order
+  檢查確認逐筆一致，無誤。下批 Haiku prompt 要強調用 Write tool。
+- Sonnet 改 4 筆：3088 この世→「今世、人世間」、3138 文庫→「文庫本、叢書」、
+  3340 設け「設定」→「設置、準備」（設定=config 是錯義）、3453 日程「日期」→「行程、日程安排」。
+- 黒人/白人 是中性人口詞、死者/戦場 是一般詞彙，保留；本批無成人詞。
+- full gate issueDelta 100→0、changedExample 0，apply 100 筆。
+
+品質：badEntries 9031→8931、issueCount 21464→21364、
+legacy_meaning_unreviewed 7912→7812、low_value_example 維持 3780。
+DB：`b37ec08e-5c88-4ad9-bdc7-dfa64ddd2e26`、verb 0/0、queue 0、runtime/build 通過。
+
+省成本反省：
+
+- Haiku echo-not-write 失誤：output 仍完整在回覆裡，重建 + coverage check 即可救回，
+  不必重跑一次 Haiku（省 ~194K tokens）。但下批要把「USE THE WRITE TOOL」寫進 prompt。
+- 五批共 498 筆，Sonnet 累計改 20 筆（約 4%）；品質穩定。
+- 還有 ~1164 verified legacy；related embedding 繼續延後（21,364 issues）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
