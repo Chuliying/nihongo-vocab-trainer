@@ -2669,6 +2669,30 @@ DB：`19a44967-bd84-430c-b14d-e0d266e10ae5`、verb 0/0、queue 0、runtime/build
 - candidate gate 仍抓到 1 筆英文殘留（3807），證明 deterministic latin gate 不可省。
 - 六批共 597 筆，Sonnet 累計改 23 筆、排除 4 筆成人/性詞；related 繼續延後（21,265 issues）。
 
+### Iteration 042 — 第七批 cheap legacy meaning（91 筆）+ dual-issue 發現
+
+狀態：verified legacy meaning 第七批（ids 3967-4415）。本批揭露 dual-issue 結構問題。
+
+- Haiku 2×50，99 changed，0 dup/latin/simplified。
+- **新發現**：candidate gate 拒絕 8 筆——這些 row 同時有 legacy_meaning 與
+  low_value_example，required_patch_fields 因此含 `e`，meaning-only 無法滿足。
+  全部排除（4064/4085/4253/4352/4353/4355/4371/4373）。剩餘 verified legacy 分為
+  ~533 純 legacy（meaning-only，續做）與 ~437 dual（需 meaning+example 合修，延後）。
+- Sonnet 改 3 筆：3969 濡れ「淫亂、不貞」→「淋濕、潮濕」（選錯義且過度色情化）、
+  4108 手前「那邊」→「面前、這一側」（手前是近側不是那邊）、4315 賃金「時薪」→「工資、薪資」
+  （時薪是時給，不是賃金）；另排除 1 筆 4298 建て（gloss 歧義）。共排除 9 筆，apply 91。
+
+品質：badEntries 8832→8741、issueCount 21265→21174、
+legacy_meaning_unreviewed 7713→7622、low_value_example 維持 3780。
+DB：`2ece197d-60a0-4ac9-994d-5fa2119e37f1`、verb 0/0、queue 0、runtime/build 通過。
+
+省成本反省：
+
+- dual-issue 是新風險：選批時要額外排除 `issues[] 含 low_value_example` 的 row，
+  否則每批會被 gate 擋幾筆。已寫進 state SELECTION_REFINEMENT，下批改進 selector。
+- candidate gate 再次擋下越權（要求 e 卻只給 m），證明 required-field gate 不可省。
+- 七批共 688 筆，Sonnet 累計改 26 筆、排除 14 筆；related 繼續延後（21,174 issues）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。

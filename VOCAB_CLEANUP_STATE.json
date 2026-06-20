@@ -1,12 +1,12 @@
 {
   "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST instead of re-reading the 1900-line CLAUDE.md tail. Update it at the end of every iteration. Keep it short.",
   "updated": "2026-06-20",
-  "head_commit": "9b4d9c6",
+  "head_commit": "61d3de1",
   "pipeline_stage": "content-cleanup (meaning cleanup track, since iter036)",
   "quality": {
     "entries": 13000,
-    "badEntries": 8832,
-    "issueCount": 21265,
+    "badEntries": 8741,
+    "issueCount": 21174,
     "note": "badEntries high because legacy_meaning_unreviewed is a provenance flag (unverified), not known-wrong"
   },
   "verb_invariant": {
@@ -18,14 +18,14 @@
     "must_stay": "generatedSuspect/mechanicalError/candidateQueue all 0 after every batch"
   },
   "buckets": {
-    "cheap_model_candidate": 1487,
+    "cheap_model_candidate": 1396,
     "semantic_review": 3036,
     "katakana_review": 2498,
     "grammar_high_risk": 1283,
     "verb_quarantine": 528
   },
   "top_issues": {
-    "legacy_meaning_unreviewed": 7713,
+    "legacy_meaning_unreviewed": 7622,
     "low_value_example": 3780,
     "meaning_latin": 2982,
     "chinese_latin": 2912,
@@ -51,10 +51,19 @@
     "how_used": "Exporter adds gs (provenance) + gj (JMdict candidate senses). gs=jmdict_entry_matched proves the gloss belongs to the word's JMdict entry, but contextual sense selection is still reviewed. Other statuses must not be trusted blindly.",
     "active_bucket_impact": "cheap_model_candidate legacy_meaning: 1832/1935 (94.7%) entry-matched, 103 unreliable."
   },
-  "last_neon_import_run_id": "19a44967-bd84-430c-b14d-e0d266e10ae5",
+  "last_neon_import_run_id": "2ece197d-60a0-4ac9-994d-5fa2119e37f1",
   "last_meaning_checkpoint": {
-    "iteration": 41,
-    "applied_ids_range": "036:2110-2346; 037:2349-2602; 038:2603-2812; 039:2813-3066; 040:3068-3461; 041:3462-3956. Excludes also 1328+2250+3034+3780.",
+    "iteration": 42,
+    "applied_ids_range": "036-042 packeted from 2110 up to 4415. Excludes also 1328+2250+3034+3780+4298.",
+    "SELECTION_REFINEMENT": "From iter043 on, the meaning batch selector MUST also exclude rows whose issues[] contains low_value_example. iter042 hit 8 such dual-issue rows that the meaning-only gate refuses (it requires fixing `e` too). Remaining verified-legacy split: ~533 PURE legacy (meaning-only, do these next, ~5-6 batches) + ~437 DUAL legacy+low_value (need combined meaning+example; defer - real-example cheap pool is drained).",
+    "iter042": {
+      "applied_rows": 91,
+      "haiku_changed_meaning": 90,
+      "sonnet_corrections": "3969 濡れ 淫亂->淋濕、潮濕, 4108 手前 那邊->面前、這一側, 4315 賃金 時薪->工資、薪資",
+      "parent_exclusions": "8 dual legacy+low_value rows (4064/4085/4253/4352/4353/4355/4371/4373) + 4298 建て (ambiguous)",
+      "legacy_meaning_unreviewed_after": 7622,
+      "neon_import_run_id": "2ece197d-60a0-4ac9-994d-5fa2119e37f1"
+    },
     "iter041": {
       "applied_rows": 99,
       "haiku_changed_meaning": 99,
@@ -111,7 +120,7 @@
   ],
   "deferred_note": "id 1328 掛け: meaning was garbage (我們); gloss=credit/bill is correct but old example is about phone-not-connecting. Needs combined meaning+example single-row semantic correction outside the meaning-only gate.",
   "next_actions": [
-    "CONTINUE meaning cleanup (iters 036-041 done, 597 rows). Next: cheap_model_candidate + legacy_meaning + jmdict_entry_matched, next 100 by frequency_rank, EXCLUDING applied ids (036-041 packeted, see applied_ids_range) + 1328 + 2250 + 3034 + 3780. ~1065 verified legacy rows remain. Watch adult terms (巨乳/童貞/処女 excluded). Tell Haiku to USE THE WRITE TOOL. Use the loop in last_meaning_checkpoint.loop_note.",
+    "CONTINUE meaning cleanup (iters 036-042 done, 688 rows). Next: cheap_model_candidate + legacy_meaning + jmdict_entry_matched + NO low_value_example in issues[], next 100 by frequency_rank, EXCLUDING applied ids + 1328+2250+3034+3780+4298. ~533 PURE verified legacy remain (~5-6 batches). Then the ~437 dual legacy+low_value rows need a combined approach. Watch adult terms. Tell Haiku to USE THE WRITE TOOL. See last_meaning_checkpoint.SELECTION_REFINEMENT + loop_note.",
     "Then: cheap_model_candidate latin (44 verified) + placeholder (134 verified) - small, clearly-broken, high value.",
     "low_value_example fallback (1402) and related vectors still deferred (21,763 issues)."
   ],
