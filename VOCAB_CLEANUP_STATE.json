@@ -1,12 +1,12 @@
 {
   "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST instead of re-reading the 1900-line CLAUDE.md tail. Update it at the end of every iteration. Keep it short.",
   "updated": "2026-06-20",
-  "head_commit": "090444e",
+  "head_commit": "f82dd3b",
   "pipeline_stage": "content-cleanup",
   "quality": {
     "entries": 13000,
-    "badEntries": 9457,
-    "issueCount": 21948,
+    "badEntries": 9429,
+    "issueCount": 21862,
     "note": "badEntries high because legacy_meaning_unreviewed is a provenance flag (unverified), not known-wrong"
   },
   "verb_invariant": {
@@ -18,7 +18,7 @@
     "must_stay": "generatedSuspect/mechanicalError/candidateQueue all 0 after every batch"
   },
   "buckets": {
-    "cheap_model_candidate": 2112,
+    "cheap_model_candidate": 2084,
     "semantic_review": 3036,
     "katakana_review": 2498,
     "grammar_high_risk": 1283,
@@ -26,7 +26,7 @@
   },
   "top_issues": {
     "legacy_meaning_unreviewed": 8310,
-    "low_value_example": 3866,
+    "low_value_example": 3780,
     "meaning_latin": 2982,
     "chinese_latin": 2912,
     "stale_llm_source": 2727,
@@ -51,15 +51,15 @@
     "how_used": "Exporter adds gs (provenance) + gj (JMdict candidate senses). gs=jmdict_entry_matched proves the gloss belongs to the word's JMdict entry, but contextual sense selection is still reviewed. Other statuses must not be trusted blindly.",
     "active_bucket_impact": "cheap_model_candidate legacy_meaning: 1832/1935 (94.7%) entry-matched, 103 unreliable."
   },
-  "last_neon_import_run_id": "804b039e-39d8-4b68-aeb4-ca00ceef21e2",
+  "last_neon_import_run_id": "03e6b463-1c2f-46ff-a720-5ab66db61d40",
   "deferred_ids": [
     1328
   ],
   "deferred_note": "id 1328 掛け: meaning was garbage (我們); gloss=credit/bill is correct but old example is about phone-not-connecting. Needs combined meaning+example single-row semantic correction outside the meaning-only gate.",
   "next_actions": [
-    "Continue legacy_meaning meaning cleanup from the refreshed manifest.",
-    "Continue Agy-first reviewed real-example checkpoints in 150-row packets; sync every 100 accepted rows.",
-    "Related vectors: defer full embedding until content issues drop."
+    "PIVOT: cheap+proposed real-example track is EXHAUSTED at iter035 (low_value_example 4166->3780 over iters 028-035). See real_examples.next_strategy_choice. Recommended next: meaning cleanup on the cheap_model_candidate bucket (2084 rows: meaning_latin/legacy_meaning/placeholder) via the Haiku-draft + Sonnet-review meaning loop (skill section 2).",
+    "Alt: tackle low_value_example fallback rows (1402, no Tatoeba exact match) with a looser sourcing strategy, or widen real-example candidates to other low-risk buckets.",
+    "Related vectors: still defer full embedding (21,862 issues remain)."
   ],
   "model_stack": "Opus=one-time planning (not per-batch). Haiku=cheap drafting, 2x50 parallel per 100-row checkpoint. Sonnet=hub orchestrator + reviewer. codex exec is RETIRED.",
   "hard_constraints": [
@@ -72,9 +72,10 @@
   "real_examples": {
     "status": "candidate generator, artifact validator and example-only apply gate built; translation/reading review remains",
     "source": "Tatoeba/Tanaka CC-BY (scratch/tatoeba, gitignored); NOT NHK (copyright/register)",
-    "coverage": "queue now 3866 after iter034. ALWAYS regenerate select->enrich->validate at the start of each iteration so applied rows drop out, THEN filter out previously-packeted ids (the rejects stay in the queue and would be re-reviewed). filtered file = real_example_candidates.enriched.filtered.jsonl. Packets used so far: 005-010 (exclude all of these next).",
-    "tools": "selector uses exact surface/lemma plus coarse POS, difficulty gates and attribution; enrichment adds direct cmn links and Tatoeba human transcriptions; validator/apply gate require explicit reading and translation review",
-    "next": "regenerate candidates, filter out all previously-packeted ids (packets 005-010), prepare next packet, Agy review, normalize, gate, scan(non-kana-in-r + sensitive + morbid + untranslated-English-in-c), accumulate 100 accepts",
+    "INFLECTION": "iter035 DRAINED the cheap_model_candidate real-example pool that has a PROPOSED Tatoeba candidate. prepare_real_example_review --risk cheap_model_candidate now returns 0 rows after excluding packets 005-011. The 2084 cheap_model_candidate bucket rows that remain are bad for OTHER reasons (meaning_latin / legacy_meaning / placeholder), NOT low_value_example-with-candidate. Remaining low_value_example rows (3780) are mostly FALLBACK (no natural Tatoeba sentence) or live in non-cheap risk buckets.",
+    "coverage": "queue 3780 after iter035; cheap+proposed exhausted. Packets used: 005-011.",
+    "tools": "selector uses exact surface/lemma plus coarse POS, difficulty gates and attribution; enrichment adds direct cmn links and Tatoeba human transcriptions; validator/apply gate require explicit reading and translation review. scripts/scan_real_example_checkpoint.py = advisory QA scanner (non-kana-in-r, english-in-c, simplified, sensitive/morbid w/ benign-compound allowlist).",
+    "next_strategy_choice": "Real-example cheap track is done. PIVOT options: (A) switch to meaning cleanup on the cheap_model_candidate bucket (latin/legacy/placeholder) via the meaning loop (Haiku draft + Sonnet review) - 2084 rows available; (B) handle low_value_example FALLBACK rows (need a sourcing strategy beyond current Tatoeba exact-match, e.g. looser retrieval or accept 1402 fallbacks stay); (C) widen real-example candidates to other low-risk buckets. Recommend (A): biggest clean, lowest risk.",
     "ref": ".claude/skills/vocab-cleanup/references/real-examples.md"
   },
   "example_target_audit": {
@@ -86,31 +87,29 @@
     "purpose": "Prevents substring, kana-homophone and coarse-POS collisions from entering the cheap queue."
   },
   "last_example_checkpoint": {
-    "iteration": 34,
-    "reviewed_rows": 100,
-    "low_value_example_before": 3966,
-    "low_value_example_after": 3866,
+    "iteration": 35,
+    "reviewed_rows": 86,
+    "note": "final cheap+proposed real-example checkpoint; only 86 because the pool drained (not the usual 100)",
+    "low_value_example_before": 3866,
+    "low_value_example_after": 3780,
     "meaning_changes": 0,
     "quality_score_changes": 0,
-    "neon_import_run_id": "804b039e-39d8-4b68-aeb4-ca00ceef21e2",
+    "neon_import_run_id": "03e6b463-1c2f-46ff-a720-5ab66db61d40",
     "runtime_repository": "passed",
     "build": "passed"
   },
   "last_agy_checkpoint": {
-    "iteration": 34,
-    "note": "regenerate+filter (drop 280 prev-packeted 005-008); two packets combined to 100: ckpt_009 (packet_009, 150 rows) 81 + ckpt_010 (packet_010, 50 rows) 19",
-    "ckpt009_agy_accepts": 83,
-    "ckpt009_agy_rejects": 67,
-    "ckpt009_malformed_lines": 1,
-    "ckpt009_parent_exclusions": "7818 (Agy emitted malformed 'x if False else y' for r -> forced reject), 7266 (untranslated English 'his' in c)",
-    "ckpt010_agy_accepts": 41,
-    "ckpt010_agy_rejects": 9,
-    "ckpt010_parent_exclusions": "8068 (morbid: 死因はガン / death by cancer) + trimmed to 19",
-    "applied_rows": 100,
-    "low_value_example_after": 3866,
-    "neon_import_run_id": "804b039e-39d8-4b68-aeb4-ca00ceef21e2",
+    "iteration": 35,
+    "note": "FINAL cheap+proposed packet. packet_011 returned only 114 rows (pool draining); 88 accept; ckpt_011 86 after 2 contract rejects. Applied 86 (not 100) because cheap+proposed is now exhausted.",
+    "packet011_rows": 114,
+    "agy_accepts": 88,
+    "agy_rejects": 26,
+    "applied_rows": 86,
+    "parent_kept_benign_sensitive": "8645 (剣道 kendo), 8953 (血統 lineage) - scanner flagged, kept",
+    "low_value_example_after": 3780,
+    "neon_import_run_id": "03e6b463-1c2f-46ff-a720-5ab66db61d40",
     "runtime_repository": "passed",
     "build": "passed",
-    "gate_note": "Agy occasionally emits a malformed JSON line (Python-ish 'a if False else b'); parent must scan-and-reject that row, not crash the batch. Parent scans cover: non-kana-in-r (Cyrillic/Latin), sensitive/morbid (incl. 死因/ガン), untranslated English in c. Benign metaphor compounds (必死/苦戦/殺到) are NOT sensitive — keep them."
+    "scanner_added": "scripts/scan_real_example_checkpoint.py replaces the per-batch inline scans"
   }
 }

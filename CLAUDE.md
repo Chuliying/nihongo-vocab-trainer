@@ -2412,6 +2412,71 @@ drop out）、過濾掉先前 packet 已 review 過的 IDs、跑兩個 fresh pac
 - 小 top-up packet（50 rows / 56s）補最後 19 筆，比再跑一個 150-row packet 省。
 - 每 100 筆一次 Neon import/build，`tee` 存 log；related 全量 embedding 繼續延後（21,948 issues）。
 
+### Iteration 035 — final cheap+proposed real-example checkpoint + scanner script
+
+狀態：完成最後一批 cheap+proposed real-example checkpoint（86 筆），並把反覆的人工掃描
+固化成 `scripts/scan_real_example_checkpoint.py`。本輪確認 cheap+proposed real-example
+queue 已耗盡，是策略轉折點。
+
+候選重生與過濾：
+
+- regenerate → enrich → validate：queue 3866，candidates 5900。
+- 過濾 packets 005-010 的 680 個 ID（kept 3486 / dropped 380）。
+
+packet_011：
+
+- `--offset 0 --limit 150` 但只取得 **114 rows**——cheap+proposed pool 將盡。
+- probe `--offset 114`：剩餘 cheap+proposed = **0**，確認耗盡。
+- Agy 156s，88 accept / 26 reject、0 malformed（77% accept，明顯高於前幾批，
+  代表剩下的是較乾淨的尾段）。
+- normalize 2 contract reject → 86。
+- scanner 旗標 2 筆 sensitive 皆 false-positive（剣道＝劍道武術、血統＝血脈），保留。
+- gate clean，apply 全部 86（非 100，因 pool 耗盡，不為湊數動其他 bucket）。
+
+品質結果：
+
+```json
+{
+  "before": { "badEntries": 9457, "issueCount": 21948, "low_value_example": 3866 },
+  "after":  { "badEntries": 9429, "issueCount": 21862, "low_value_example": 3780 }
+}
+```
+
+動詞與 DB gate：
+
+```json
+{
+  "withVerbInfo": 678,
+  "candidateQueue": 0,
+  "generatedSuspect": 0,
+  "mechanicalError": 0,
+  "dbImportRunId": "03e6b463-1c2f-46ff-a720-5ab66db61d40",
+  "runtimeRepository": "passed",
+  "build": "passed"
+}
+```
+
+**策略轉折（重要）**：
+
+- iters 028-035 把 `low_value_example` 從 4366 一路降到 3780。cheap_model_candidate
+  且「有 Tatoeba proposed candidate」的 real-example queue 至此耗盡。
+- 剩下的 cheap_model_candidate bucket（2084 筆）大多是 **meaning** 問題
+  （meaning_latin / legacy_meaning / placeholder），不是有候選的 low_value_example。
+- 剩餘 low_value_example（3780）多為 **fallback**（找不到自然 Tatoeba 句）或在
+  非 cheap 風險 bucket。
+- 下一步建議 PIVOT 到 cheap_model_candidate 的 **meaning cleanup**（skill section 2 的
+  Haiku draft + Sonnet review loop），或為 fallback low_value rows 設計更鬆的 sourcing。
+
+省成本反省：
+
+- 把三道人工掃描（non-kana-in-r / english-in-c / simplified / sensitive-morbid）固化成
+  `scan_real_example_checkpoint.py`，含 benign 複合詞 allowlist（必死/苦戦/殺到/剣道…），
+  之後每批一行指令取代手寫 python，0 token deterministic QA。
+- 用 probe（offset 114）一次確認 pool 耗盡，避免下一輪再盲目準備空 packet 浪費 Agy。
+- 本輪 86 筆而非硬湊 100：cheap+proposed 沒了，硬湊只能動 semantic/katakana/verb 等
+  hard-constraint 禁區，得不償失。誠實做完尾段、留清楚 pivot 註記給下一輪更省。
+- 每批一次 Neon import/build，`tee` 存 log；related embedding 繼續延後（21,862 issues）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
