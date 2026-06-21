@@ -46,6 +46,18 @@ type Props = {
   onResetProgress: () => void;
 };
 
+// Scale the front-card word down as it gets longer so it stays on one line
+// instead of wrapping (wrapping started at ~4 characters at the base size).
+function wordFontSizeClamp(word: string | undefined): string {
+  const len = [...(word ?? "")].length;
+  if (len <= 3) return "clamp(3.6rem, 18vw, 5.8rem)";
+  if (len === 4) return "clamp(2.9rem, 14vw, 4.6rem)";
+  if (len === 5) return "clamp(2.4rem, 11.5vw, 3.9rem)";
+  if (len === 6) return "clamp(2.05rem, 9.8vw, 3.3rem)";
+  if (len === 7) return "clamp(1.8rem, 8.5vw, 2.9rem)";
+  return "clamp(1.5rem, 7vw, 2.5rem)";
+}
+
 export function CardMode({
   entries,
   loadingEntries,
@@ -313,7 +325,10 @@ export function CardMode({
                 <Badge className="absolute left-5 top-5">
                   推估 {current?.jlpt_level}
                 </Badge>
-                <span className="font-serif text-[clamp(3.6rem,18vw,5.8rem)] leading-none font-semibold">
+                <span
+                  className="font-serif leading-none font-semibold whitespace-nowrap"
+                  style={{ fontSize: wordFontSizeClamp(current?.word) }}
+                >
                   {current?.word}
                 </span>
                 <span className="absolute bottom-6 font-display text-xs tracking-wide text-muted-foreground/70">
