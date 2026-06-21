@@ -2753,6 +2753,21 @@ DB：`b15c3f94-818e-4c54-ae3d-05a3a14440e2`、verb 0/0、queue 0、runtime/build
 - 簡體掃描要用完整字集（舰/齐 都曾漏），但 困/台/向/材 等共用字不是 leak，別誤判。
 - 十批共 988 筆，Sonnet 累計改 45 筆；剩 ~233 pure-legacy；related 延後（20,874 issues）。
 
+### Iteration 046 — 第十一批 cheap legacy meaning（100 筆）
+
+狀態：verified legacy meaning 第十一批（ids 7044-7835）。本批品質最高，Sonnet 只改 1 筆。
+
+- Haiku 2×50，100 changed、coverage 100、0 dup/latin/simplified。
+- Sonnet 改 1 筆：7272 昇格 被寫成「昇進」（另一個日文詞）→「升格、晉升」。無排除。
+- full gate issueDelta 100→0、changedExample 0，apply 100 筆。
+
+品質：badEntries 8441→8341、issueCount 20874→20774、
+legacy_meaning_unreviewed 7322→7222、low_value_example 維持 3780。
+DB：`cc78043f-dc1b-440a-967a-9d6afc574903`、verb 0/0、queue 0、runtime/build 通過。
+
+省成本反省：累計 prompt 規則後本批返工降到 1 筆；剩 ~133 pure-legacy（約 1-2 批）。
+十一批共 1,088 筆，Sonnet 累計改 46 筆；related 延後（20,774 issues）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
