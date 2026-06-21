@@ -2768,6 +2768,26 @@ DB：`cc78043f-dc1b-440a-967a-9d6afc574903`、verb 0/0、queue 0、runtime/build
 省成本反省：累計 prompt 規則後本批返工降到 1 筆；剩 ~133 pure-legacy（約 1-2 批）。
 十一批共 1,088 筆，Sonnet 累計改 46 筆；related 延後（20,774 issues）。
 
+### Iteration 047 — 第十二批 cheap legacy meaning（100 筆）+ kana 漏網
+
+狀態：verified legacy meaning 第十二批（ids 7838-8717）。本批 agent A 品質明顯下降。
+
+- Haiku 2×50；**agent A 把 11 筆日文詞當「已正確」照抄**：4 筆含假名（速やか/厚い/
+  可愛らしい/情けない）、7 筆生日文漢字（苦悩/補完/頑丈/利便/制圧/多用/続行）。
+  latin/簡體掃描抓不到假名與新字體（圧/悩/証），主代理新增 kana regex 全抓出並翻譯。
+  agent B 半批正常。
+- Sonnet 共改 11 筆，無排除。full gate issueDelta 100→0、changedExample 0，apply 100 筆。
+
+品質：badEntries 8341→8241、issueCount 20774→20674、
+legacy_meaning_unreviewed 7222→7122、low_value_example 維持 3780。
+DB：`52f7913e-3783-440b-bcd2-bdc285298fd7`、verb 0/0、queue 0、runtime/build 通過。
+
+省成本反省：
+
+- **每批審查必加 kana 掃描**（`[぀-ヿ]`）；cheap model 偶爾整段照抄日文，
+  latin/簡體 gate 抓不到。已寫進 state KANA_SCAN。
+- 十二批共 1,188 筆，Sonnet 累計改 57 筆；剩 ~33 pure-legacy（最後一批）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
