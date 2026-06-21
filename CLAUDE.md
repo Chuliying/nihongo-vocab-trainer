@@ -2788,6 +2788,32 @@ DB：`52f7913e-3783-440b-bcd2-bdc285298fd7`、verb 0/0、queue 0、runtime/build
   latin/簡體 gate 抓不到。已寫進 state KANA_SCAN。
 - 十二批共 1,188 筆，Sonnet 累計改 57 筆；剩 ~33 pure-legacy（最後一批）。
 
+### Iteration 048 — 第十三批（最後 33 筆）→ PURE-legacy track 完成
+
+狀態：最後 33 筆 pure-legacy（ids 8721-8956）。完成後 pure-legacy verified track 歸零。
+
+- 單一 Haiku agent 跑 33 筆；其中一行有 trailing comma（JSONL 格式錯），主代理 strip 後通過。
+- kana/latin/簡體掃描皆 0。Sonnet 改 2 筆：8898 到底「絕對」→「無論如何、怎麼也」
+  （とうてい 接否定）、8906 単身「單身」→「單獨、隻身」。無排除。
+- full gate issueDelta 33→0、changedExample 0，apply 33 筆。
+
+品質：badEntries 8241→8208、issueCount 20674→20641、
+legacy_meaning_unreviewed 7122→7089、low_value_example 維持 3780。
+DB：`6898abda-97a7-4cf7-b211-657af3f5997e`、verb 0/0、queue 0、runtime/build 通過。
+
+**Pure-legacy track 完成**：cheap_model_candidate + legacy_meaning + jmdict_entry_matched
++ 非 low_value 的 PURE rows 已全部清完（iters 036-048 共 1,221 筆，
+legacy_meaning_unreviewed 8310→7089）。cheap legacy bucket 剩 437 筆 dual
+（legacy+low_value），需 meaning+example 合修，且 Tatoeba cheap pool 已抽乾，
+需另定策略（見 state PURE_LEGACY_DONE）。
+
+省成本反省：
+
+- 33 筆用單一 agent（非 2×50）即可；小尾批不必硬拆。
+- Haiku 偶發 trailing comma / 漏行 / 照抄日文；主代理的 deterministic 修補
+  （strip comma、補行、kana/簡體/latin 掃描）都比重跑整批省。
+- 十三批共 1,221 筆，Sonnet 累計改 59 筆；related 延後（20,641 issues）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
