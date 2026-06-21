@@ -2733,6 +2733,26 @@ DB：`520db53b-d30f-4f23-9eb1-c5e49094abbd`、verb 0/0、queue 0、runtime/build
 - inline 簡體 regex 太窄（漏 齐）；審查時應用更完整字集或 opencc 掃 `m`，已記入 state SCANNER_GAP。
 - 九批共 888 筆，Sonnet 累計改 39 筆；related 繼續延後（20,974 issues）。
 
+### Iteration 045 — 第十批 cheap legacy meaning（100 筆）
+
+狀態：verified legacy meaning 第十批（ids 6023-7042）。
+
+- Haiku 2×50；A 漏了 2 筆（6520/6524），主代理補（上品→高雅、伝達→傳達）並重驗 coverage==100。
+- Sonnet 改 6 筆，含 **6663 船長 被寫成「舰长」（簡體 舰）**——用更完整簡體字集才抓到；
+  另 6723「分文」誤字、6082 太い、6686「秘力」非詞、6736 桌布、6769 終始 修正。無排除。
+- comprehensive 簡體掃描的 困/台 是 false positive（兩者繁體相同/台灣通用），已確認。
+- full gate issueDelta 100→0、changedExample 0，apply 100 筆。
+
+品質：badEntries 8541→8441、issueCount 20974→20874、
+legacy_meaning_unreviewed 7422→7322、low_value_example 維持 3780。
+DB：`b15c3f94-818e-4c54-ae3d-05a3a14440e2`、verb 0/0、queue 0、runtime/build 通過。
+
+省成本反省：
+
+- Haiku 偶爾漏行（本批漏 2）；coverage 檢查＋主代理補行比重跑整批省。
+- 簡體掃描要用完整字集（舰/齐 都曾漏），但 困/台/向/材 等共用字不是 leak，別誤判。
+- 十批共 988 筆，Sonnet 累計改 45 筆；剩 ~233 pure-legacy；related 延後（20,874 issues）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
