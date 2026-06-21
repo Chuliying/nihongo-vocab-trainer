@@ -117,7 +117,11 @@ function validateOrder(expectedRows, outputRows) {
 
 function validatePatch(output, expected, current, options = {}) {
   const errors = [];
+  const keepLowValue = options.keepLowValue === true;
   const required = new Set(expected.required_patch_fields || []);
+  // Phase-1 dual-row mode: fix the meaning only and deliberately keep the
+  // (still low-value) example for a later low_value_example campaign.
+  if (keepLowValue) required.delete("e");
   const original = currentCompact(current);
   const expectedOriginal = {
     m: expected.original && expected.original.m,
@@ -132,6 +136,10 @@ function validatePatch(output, expected, current, options = {}) {
   const hasE = Object.prototype.hasOwnProperty.call(output, "e") || Object.prototype.hasOwnProperty.call(output, "example");
   const outputMeaning = hasM ? String(output.m || output.meaning || "") : original.m;
   const outputExample = hasE ? normalizeExample(output.e || output.example) : original.e;
+  const exampleChanged = !sameExample(outputExample, original.e);
+  if (keepLowValue && exampleChanged) {
+    errors.push("keep-low-value-example mode must not change the example");
+  }
 
   if (required.has("m")) {
     if (!hasM) errors.push("missing required m");
@@ -159,7 +167,9 @@ function validatePatch(output, expected, current, options = {}) {
   if (hasDisplayPrefix(outputMeaning)) errors.push("m exposes display prefix");
   if (containsBadLatin(outputExample.c)) errors.push("e.c contains English/Latin text");
   if (hasPlaceholder(outputExample.c)) errors.push("e.c contains placeholder text");
-  if (isLowValueJapanese(outputExample.j)) errors.push("e.j is a low-value/meta sentence");
+  // In keep-low-value mode the example is intentionally left untouched, so do not
+  // re-flag its low-value sentence (the row keeps the low_value_example issue).
+  if (!keepLowValue && isLowValueJapanese(outputExample.j)) errors.push("e.j is a low-value/meta sentence");
   if (containsKanji(outputExample.r)) errors.push("e.r contains kanji");
 
   const candidate = clone(current);
@@ -170,7 +180,9 @@ function validatePatch(output, expected, current, options = {}) {
     errors.push("e.j/e.r does not contain target word, reading, or accepted stem");
   }
 
-  const unresolved = qualityIssuesForEntry(candidate).filter((issue) => issue !== "stale_llm_source");
+  const allowedResidual = new Set(["stale_llm_source"]);
+  if (keepLowValue) allowedResidual.add("low_value_example");
+  const unresolved = qualityIssuesForEntry(candidate).filter((issue) => !allowedResidual.has(issue));
   if (unresolved.length) {
     errors.push(`candidate still has quality issues: ${unresolved.join(", ")}`);
   }
@@ -205,6 +217,7 @@ function main() {
   const expectedPath = path.resolve(argValue(args, "--expected"));
   const dryRun = args.includes("--dry-run");
   const candidateMode = args.includes("--candidate");
+  const keepLowValue = args.includes("--keep-low-value-example");
   if (candidateMode && !dryRun) {
     throw new Error("--candidate is only allowed with --dry-run");
   }
@@ -235,7 +248,7 @@ function main() {
     }
 
     const beforeIssues = qualityIssuesForEntry(location.entry).length;
-    const result = validatePatch(output, expected, location.entry, { candidateMode });
+    const result = validatePatch(output, expected, location.entry, { candidateMode, keepLowValue });
     if (result.errors.length) {
       console.error(`id ${expected.id}: ${result.errors.join("; ")}`);
       issueCount += result.errors.length;

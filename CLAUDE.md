@@ -2814,6 +2814,40 @@ legacy_meaning_unreviewed 8310→7089）。cheap legacy bucket 剩 437 筆 dual
   （strip comma、補行、kana/簡體/latin 掃描）都比重跑整批省。
 - 十三批共 1,221 筆，Sonnet 累計改 59 筆；related 延後（20,641 issues）。
 
+### Iteration 049 — DUAL rows Phase-1（meaning-only）+ gate 新旗標
+
+狀態：使用者選「分階段」策略。Phase 1 = 把 437 筆 dual rows（legacy_meaning +
+low_value_example）的**詞義先修掉、刻意保留爛例句**，例句留待 Phase 2 統一處理。
+
+**Dual rows 盤點**（規劃時查證）：437 筆，N2 301 / N1 89；Tatoeba top 候選 275 筆
+已被 real-example review 拒、162 筆根本無候選；但 213 筆有未審過的 alternate 候選。
+所以例句是硬 blocker，meaning 先做最划算。
+
+**新增 gate 旗標**：`apply_manifest_enrichment_patch.js --keep-low-value-example`
+- 把 `e` 從 required 移除，**要求例句不可變**（changedExample 必須 0）
+- 把 low_value_example 當作允許殘留的 issue
+- meaning 檢查、reviewed:true、target-word、kana/latin/簡體 全部照舊
+- 不加旗標時 dual row 仍被拒（已驗證：100 筆全 refuse）
+
+iter049 第一批 100 筆：
+- Haiku 2×50 只產 meaning；0 kana/latin/簡體/dup。
+- Sonnet 改 8 筆（5112 燃焼「燃燸」亂碼、4946 相対 選錯義為「相對」、4641 荒れ、
+  4699 拉致、4944 爆破、5113 発症、5190 役者、5337 合戦）。軍事/醫療詞（人質/戰艦/出血等）
+  是正當詞彙、只修義不碰例句，不排除。
+- gate（帶旗標）issueDelta **200→100**（legacy 解、low_value 保留）、changedExample 0，apply 100。
+
+品質：badEntries 8208（不變，因 row 仍有 low_value）、issueCount 20641→20541、
+**legacy_meaning_unreviewed 7089→6989**、**low_value_example 3780 不變**（例句完整保留）。
+DB：`0c41e988-a5e0-4ad8-a29d-01977162bf02`、verb 0/0、queue 0、runtime/build 通過。
+
+省成本反省：
+
+- meaning 與 example 解耦：dual row 先用既有 meaning pipeline + 一個 deterministic
+  gate 旗標清掉詞義，不為 dual 另建專用 example pipeline。例句之後併入整體
+  low_value campaign（含 alternate-Tatoeba + 受審生成），見 state dual_phase1.phase2_todo。
+- 剩 ~337 dual（~3-4 批）。要排除 iter*_dual_reviewed 的 id（新 ledger）。
+- related 延後（20,541 issues）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
