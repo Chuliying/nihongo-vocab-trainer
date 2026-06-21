@@ -21,7 +21,9 @@ script, local embedding, or validator.**
 ## 0. Resume cold (always do this first)
 
 1. Read `VOCAB_CLEANUP_STATE.json` (repo root) — this is the short live state.
-   Do NOT read the 1900-line `CLAUDE.md` tail to resume; it is the human log.
+   CLAUDE.md is now a lean entry point; the full human history lives in
+   `docs/vocab-cleanup/iteration-log.md`. Do NOT read that log to resume — use
+   the state file. The log is only for tracing a specific past iteration.
 2. Check for concurrent work and in-flight processes:
    - `git status --short --branch` and `git log -3 --oneline`
    - `ps -axo pid,etime,command | grep -E 'cleanup:|db:import|codex|jamdict' | grep -v grep`
@@ -118,8 +120,9 @@ no cheap method reaches it. State this plainly; do not over-claim completion.
 
 1. Update `VOCAB_CLEANUP_STATE.json`: counts, buckets, head_commit, import_run_id,
    deferred_ids, next_actions. Keep it short.
-2. Append a dated `### Iteration NNN` block to `CLAUDE.md` (human log): what was
-   done, quality before/after, verb invariant, DB/build result.
+2. Append a dated `### Iteration NNN` block to `docs/vocab-cleanup/iteration-log.md`
+   (human log): what was done, quality before/after, verb invariant, DB/build result.
+   (CLAUDE.md is a lean entry point now — do not append iteration blocks there.)
 3. **省成本反省 (mandatory):** in 3-6 bullets, record where model/context/DB/build
    cost was spent and whether a cheaper deterministic path existed. Each iteration
    must leave the next one cheaper or safer. Record mistakes too (e.g. a redundant

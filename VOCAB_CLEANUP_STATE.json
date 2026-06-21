@@ -1,5 +1,5 @@
 {
-  "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST instead of re-reading the 1900-line CLAUDE.md tail. Update it at the end of every iteration. Keep it short.",
+  "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST. CLAUDE.md is a lean entry point; full history is docs/vocab-cleanup/iteration-log.md (do not read it to resume). Update this file at the end of every iteration. Keep it short.",
   "updated": "2026-06-20",
   "head_commit": "aceaef6",
   "pipeline_stage": "content-cleanup (meaning track; PURE-legacy DONE iter048; DUAL-row Phase-1 meaning-only started iter049)",
