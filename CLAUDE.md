@@ -2714,6 +2714,25 @@ DB：`afd78eb0-98b2-48cc-b857-e378593269c3`、verb 0/0、queue 0、runtime/build
   prompt 已含相關規則但 cheap model 仍會犯，審查不可省。
 - 八批共 788 筆，Sonnet 累計改 34 筆；related 繼續延後（21,074 issues）。
 
+### Iteration 044 — 第九批 cheap legacy meaning（100 筆）
+
+狀態：verified legacy meaning 第九批（ids 5103-6014）。
+
+- Haiku 2×50，100 changed，0 dup/latin、inline 簡體掃描 0。
+- Sonnet 改 5 筆，其中 **5170 一斉 被寫成「一齐」（簡體 齐）**——inline 簡體 regex 沒收
+  這個字，用更廣的字集才抓到。其餘：5358 有能、5367 決着「決出」、5622 急激「陡峭」、
+  5910 新刊 用詞修正。無排除。
+- full gate issueDelta 100→0、changedExample 0，apply 100 筆。
+
+品質：badEntries 8641→8541、issueCount 21074→20974（跌破 21,000）、
+legacy_meaning_unreviewed 7522→7422、low_value_example 維持 3780。
+DB：`520db53b-d30f-4f23-9eb1-c5e49094abbd`、verb 0/0、queue 0、runtime/build 通過。
+
+省成本反省：
+
+- inline 簡體 regex 太窄（漏 齐）；審查時應用更完整字集或 opencc 掃 `m`，已記入 state SCANNER_GAP。
+- 九批共 888 筆，Sonnet 累計改 39 筆；related 繼續延後（20,974 issues）。
+
 ## 最低成本 Flow
 
 核心原則：昂貴 LLM 只修「需要語言判斷的內容」，其他都用 deterministic script、本機 embedding、validator。
