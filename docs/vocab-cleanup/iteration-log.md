@@ -2507,3 +2507,45 @@ DB：`0c41e988-a5e0-4ad8-a29d-01977162bf02`、verb 0/0、queue 0、runtime/build
   low_value campaign（含 alternate-Tatoeba + 受審生成），見 state dual_phase1.phase2_todo。
 - 剩 ~337 dual（~3-4 批）。要排除 iter*_dual_reviewed 的 id（新 ledger）。
 - related 延後（20,541 issues）。
+
+### Iteration 050 — DUAL rows Phase-1（meaning-only）第二批 + chinese_latin 排除教訓
+
+接續 iter049 的 dual Phase-1（修詞義、保留爛例句）。選取 cheap_model_candidate +
+legacy_meaning_unreviewed + jmdict_entry_matched + low_value_example，排除所有
+iter*_legacy_reviewed / iter*_dual_reviewed id 與 1328/2250/3034/3780/4298。
+
+**關鍵教訓（chinese_latin）**：第一次選取（依 frequency_rank 取 top-100）混進 35 筆
+帶 `chinese_latin` 的列。這些列的拉丁字在**要保留的**爛例句 e.c 裡（如
+「用日文理解了lush mountain的意思」），而 `--keep-low-value-example` 只把
+stale_llm_source + low_value_example 當允許殘留，**不含 chinese_latin** → candidate
+gate 全擋下。iter049 剛好 0 筆 chinese_latin 才沒踩到。修正：dual 選取必須再排除
+issues[] 含 chinese_latin（它們屬 Phase 2，要連例句一起修）。另排除 id 5961（Ｋ，
+非日文符號，meaning_latin 本質無法消）。乾淨 pool（不含 chinese_latin）338 筆。
+
+**第二個小坑**：placeholder 偵測 regex（vocab_quality.js）會比對字面片段 `的語氣/
+的語調`；6434 口調 正確譯「語調、講話的語氣」反被判 meaning_placeholder。review 時改成
+「語氣、口吻、語調」避開字面片段。
+
+成本優化：重選 top-100 乾淨列時，85 筆已由 iter050a/b 起草過 → 直接重用，只用 1 次
+Haiku 補起草 15 筆新列（省一輪 2×50）。合併 85+15=100，重新匯出 expected 跑全 gate。
+
+iter050 100 筆：
+- Haiku 起草 0 kana/簡體；1 筆 latin（5961 已排除）、1 筆假 placeholder（6434）。
+- Sonnet 改 10 筆：5792 商人去重、5895 小遣い去陸語「零花錢」、5902 拳銃去重、
+  5913 曜日「週日(Sunday)」錯→「星期、星期幾」、5936 貴女、6157 呪文「魔法」→「咒語」、
+  6206 首脳「頭目」貶義→「首腦」、6288 直面「對面」錯→「面對」、6420 交付去重、6434 口調。
+- gate（帶旗標）issueDelta **200→100**（legacy 解、low_value 保留）、changedExample 0、apply 100（vocab_chunk_25.json）。
+
+品質：badEntries 8208（不變）、issueCount 20541→20441、
+**legacy_meaning_unreviewed 6989→6889**、**low_value_example 3780 不變**。
+DB：`4a587fbe-9ae3-4489-8702-aef6c11da65a`、verb 0/0、queue 0、runtime/build 通過。
+
+省成本反省：
+
+- 選取 predicate 要把「保留欄位帶進的 issue」也排除：dual 保留例句，故例句自身的
+  issue（chinese_latin）不能進 meaning-only gate。已把規則寫進 state
+  dual_phase1.CHINESE_LATIN_LESSON 與 next_actions，下批直接套，省一輪 gate 試錯。
+- 重用已起草列（85/100）避免重跑 Haiku；跨「重選」邊界時用 id 集合差集只補起草缺口。
+- placeholder regex 是字面比對：合法詞義若含 的語氣/的語調 會誤判，review 階段換詞即可，
+  不需改 gate。
+- 剩 ~237 乾淨 dual（~2-3 批）+ ~35 chinese_latin dual 留 Phase 2。related 延後（20,441 issues）。
