@@ -2714,3 +2714,36 @@ api_parity 全 match、verb 0/0、queue 0、runtime/build 通過。
   已把它們列入 review 必查。simplified 掸 也再次證明掃描字集要含次常見簡體。
 - badEntries 終於動了：純詞義/佔位列能「完全清乾淨」，比 dual（保留 low_value）對 badEntries
   更有感。剩 ~26 track-A（1 小批）後轉 TRACK B（chinese_latin dual）。
+
+### Iteration 055 — TRACK A 收尾（chinese_placeholder 詞義+例句中文）
+
+2026-06-26。Track A 剩餘 26 筆。其中 9 筆例句日文非統一模板，逐一檢視後發現 4 筆日文
+本身被「硬插字」弄壞（絶賛準備をして／途端準備をして／曰く準備をして／ちょうだい練習）——
+日文不通，光改中文翻譯也救不了，故**排除這 4 筆**（4637/4646/6005/7102），改丟給日後的
+real-example pass。本批處理乾淨的 22 筆（17 模板 + 後日 + 4 個 い形容詞）。
+
+Haiku 單組 22 筆，輸出 id/m/e/confidence/reason，j/r 照抄、只改 c。coverage 22/22、
+e.j/e.r 未動、無佔位/假名/簡體/latin。
+
+Sonnet 改 1 筆：7426 しつこい 草稿「固執」漏了「糾纏不放」核心語感 → 「糾纏不休、執拗、纏人」，
+e.c 改「他的態度總是糾纏不休。」其餘 21 approve。
+
+gate（標準）issueDelta 66→0、changedMeaning 22、changedExample 22 → apply 22
+（vocab_chunk_15,17,29,33,35）。逐 chunk 核對 22/22、0 stray。
+
+品質：**badEntries 8108→8086**、issueCount 約 19904→19838、meaning_placeholder 513→491、
+chinese_placeholder 441→419、legacy 6553→6535、low_value 3780 不變。DB import
+`2d6d0e53-8950-4321-bde7-1d6c3efaf0b5`、api_parity match、verb 0/0、runtime/build 通過。
+
+**TRACK A 完成**（iter054-055 共 122 筆）。剩餘可選 track A = 4（即上面 deferred 的壞日文列），
+歸 real-example pass，不在 track A 範圍。下一步依 goal 進 TRACK B（chinese_latin dual）。
+
+省成本反省：
+
+- 非模板列要先看日文是否通順：4 筆「硬插字」日文不通，光修中文是假乾淨；當機立斷 defer，
+  比硬翻一個漂亮但對不上的中文更負責。state 已記下這 4 個 id。
+- い形容詞列（ダサい/しつこい/いやらしい/めんどい）的「彼の態度はいつも〜です」日文是好的，
+  只需修 m+c；和製/語感誤差（しつこい≠固執）仍要 review 盯。
+- Track A 兩批合計 122 筆讓 badEntries 降 122，是目前對 badEntries CP 值最高的 track
+  （完全清乾淨、無殘留）。Track B（chinese_latin dual）因例句是 low-value，可能無法完全清，
+  下批先 Counter(issues) 確認 shape 再決定 keep-low-value 或升級例句。

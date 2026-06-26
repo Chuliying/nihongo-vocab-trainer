@@ -1,12 +1,12 @@
 {
   "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST. CLAUDE.md is a lean entry point; full history is docs/vocab-cleanup/iteration-log.md (do not read it to resume). Update this file at the end of every iteration. Keep it short.",
   "updated": "2026-06-26",
-  "head_commit": "815b838",
-  "pipeline_stage": "content-cleanup (meaning track; DUAL clean DONE iter053; TRACK A = chinese_placeholder meaning+example STARTED iter054, 26 left; goal: A then B where B=chinese_latin dual)",
+  "head_commit": "f32743e",
+  "pipeline_stage": "content-cleanup; DUAL clean DONE iter053; TRACK A (chinese_placeholder meaning+example) DONE iter054-055 (122 rows; only 4 broken-jp deferred to real-example pass); NEXT = TRACK B chinese_latin dual",
   "quality": {
     "entries": 13000,
-    "badEntries": 8108,
-    "issueCount": 19904,
+    "badEntries": 8086,
+    "issueCount": 19838,
     "note": "badEntries high because legacy_meaning_unreviewed is a provenance flag (unverified), not known-wrong; dual rows stay 'bad' after meaning fix because low_value_example is intentionally kept for Phase 2"
   },
   "verb_invariant": {
@@ -25,13 +25,13 @@
     "verb_quarantine": 528
   },
   "top_issues": {
-    "legacy_meaning_unreviewed": 6553,
+    "legacy_meaning_unreviewed": 6535,
     "low_value_example": 3780,
     "meaning_latin": 2982,
     "chinese_latin": 2908,
     "stale_llm_source": 2725,
-    "meaning_placeholder": 513,
-    "chinese_placeholder": 441,
+    "meaning_placeholder": 491,
+    "chinese_placeholder": 419,
     "missing_target_word": 3
   },
   "jmdict_l1": {
@@ -51,7 +51,7 @@
     "how_used": "Exporter adds gs (provenance) + gj (JMdict candidate senses). gs=jmdict_entry_matched proves the gloss belongs to the word's JMdict entry, but contextual sense selection is still reviewed. Other statuses must not be trusted blindly.",
     "active_bucket_impact": "cheap_model_candidate legacy_meaning: 1832/1935 (94.7%) entry-matched, 103 unreliable."
   },
-  "last_neon_import_run_id": "99f8be24-9bc8-45e5-a258-d1a7312860e0",
+  "last_neon_import_run_id": "2d6d0e53-8950-4321-bde7-1d6c3efaf0b5",
   "dual_phase1": {
     "strategy": "User chose phased (option 3). Phase 1 = fix the MEANING of the 437 dual (legacy_meaning + low_value_example) rows now, deliberately KEEPING the low-value example for a later unified low_value_example campaign (Phase 2).",
     "gate_flag": "NEW: apply_manifest_enrichment_patch.js --keep-low-value-example. Drops `e` from required, REQUIRES the example unchanged (changedExample must be 0), and treats low_value_example as an allowed residual. Meaning checks + reviewed:true still enforced. Use this flag (dry-run AND apply) for every dual batch.",
@@ -70,7 +70,9 @@
     "what": "cheap_model_candidate + meaning_placeholder/meaning_latin + chinese_placeholder + jmdict_entry_matched, EXCLUDE low_value_example + chinese_latin. The meaning m is a literal placeholder (名詞概念) AND the example.chinese embeds the same placeholder (關於名詞概念，在課堂上大家一起討論了). The example.japanese is a UNIFORM TEMPLATE: '<word>について、クラスでみんなで話し合いました。' (116/126) — keep j+r, rewrite c to a natural translation. These rows have required=[m,e] and resolve FULLY (issueDelta 300->0, badEntries drops) because no low_value residual.",
     "total_selectable": 126,
     "iter054": {"applied_rows": 100, "ids_first": 3196, "sonnet_corrections": 5, "sonnet_notes": "3202 求人 false-friend->徵才招聘; 3305 叩き simplified 掸->撣; 3599 懸念->擔憂; 3649 共感->共鳴; 3808 絶滅->滅絕. Patched m+e.c directly then approved-all.", "issueDelta": "300->0", "badEntries_after": 8108, "neon_import_run_id": "99f8be24-9bc8-45e5-a258-d1a7312860e0", "chunks": "12-15"},
-    "remaining": 26,
+    "iter055": {"applied_rows": 22, "ids_first": 3935, "sonnet_corrections": 1, "sonnet_notes": "7426 しつこい 固執->糾纏不休 (固執 misses persistence nuance). 4 rows DEFERRED (broken japanese: 4637 絶賛/4646 途端/6005 曰く/7102 ちょうだい force-inserted into a template -> ungrammatical jp; can't make c clean by translation alone -> send to real-example pass).", "issueDelta": "66->0", "badEntries_after": 8086, "neon_import_run_id": "2d6d0e53-8950-4321-bde7-1d6c3efaf0b5", "chunks": "15,17,29,33,35"},
+    "status": "DONE (iter054-055, 122 rows). 4 deferred broken-jp rows (4637/4646/6005/7102) remain chinese_placeholder; they need a real/rewritten japanese example, not a c-only fix.",
+    "remaining": 4,
     "ledger": "scratch/cleanup_pipeline/batches/iter*_placeholder_reviewed.jsonl (exclude these ids when selecting next track-A batch)",
     "HAIKU_RECIPE": "Haiku outputs keys id/m/e/confidence/reason; m=real meaning; e={j,r,c} with j&r COPIED verbatim and c rewritten to natural TW translation (no placeholder/kana/simplified). Watch false-friends (求人=ask-for-help not job, 共感/懸念/絶滅 unnatural) and simplified 掸/涌/掳."
   },
@@ -169,7 +171,7 @@
   ],
   "deferred_note": "id 1328 掛け: meaning was garbage (我們); gloss=credit/bill is correct but old example is about phone-not-connecting. Needs combined meaning+example single-row semantic correction outside the meaning-only gate.",
   "next_actions": [
-    "GOAL 'A then B' IN PROGRESS. TRACK A (chinese_placeholder meaning+example) started iter054 (100 rows, badEntries 8208->8108). ~26 track-A rows remain (1 small batch) — see track_A_chinese_placeholder (selection, HAIKU_RECIPE, ledger). Finish A, THEN TRACK B = chinese_latin dual rows (~35) + symbol 5961: these have chinese_latin in the KEPT low-value example, so must fix BOTH meaning AND example to clear chinese_latin (similar to track A but the example is low-value template too — likely rewrite example.chinese, and decide whether to keep/replace the low-value japanese). After A&B: (c) non-cheap jmdict legacy; (d) non-verified legacy; (e) low_value_example real examples (Tatoeba, 3780); (f) related vectors. DUAL clean segment already DONE (iter049-053, 437 rows). Select: cheap_model_candidate + legacy_meaning_unreviewed + jmdict_entry_matched + low_value_example IN issues[], **EXCLUDE chinese_latin IN issues[]** (see dual_phase1.CHINESE_LATIN_LESSON), EXCLUDE iter*_legacy_reviewed + iter*_dual_reviewed ids + 1328/2250/3034/3780/4298/5961. Then Phase 2 = examples (see dual_phase1.phase2_todo), which is also where the ~35 chinese_latin dual rows live.",
+    "GOAL 'A then B': TRACK A DONE (iter054-055, 122 rows, badEntries 8208->8086; only 4 broken-jp rows deferred to real-example pass). NOW ON TRACK B = chinese_latin dual rows (~35) + symbol 5961. Track B shape (VERIFY before drafting): these rows have chinese_latin embedded in the KEPT low-value example's e.c (e.g. '用日文理解了lush mountain的意思'), plus a bad meaning. Must fix meaning AND rewrite e.c to clear chinese_latin. Check first whether their example.japanese is the low-value meta template (日本語で...の意味を理解しました) — if so, e.c rewrite that drops the english is enough to clear chinese_latin, but the row likely still has low_value_example (so won't fully clean; decide keep-low-value vs upgrade). Run a Counter(issues) on the chinese_latin cheap rows first. Selection: cheap_model_candidate + chinese_latin in issues, jmdict-verified; exclude reviewed ledgers + manual list. After A&B: (c) non-cheap jmdict legacy; (d) non-verified legacy; (e) low_value_example real examples (Tatoeba, 3780); (f) related vectors. Select: cheap_model_candidate + legacy_meaning_unreviewed + jmdict_entry_matched + low_value_example IN issues[], **EXCLUDE chinese_latin IN issues[]** (see dual_phase1.CHINESE_LATIN_LESSON), EXCLUDE iter*_legacy_reviewed + iter*_dual_reviewed ids + 1328/2250/3034/3780/4298/5961. Then Phase 2 = examples (see dual_phase1.phase2_todo), which is also where the ~35 chinese_latin dual rows live.",
     "PURE-LEGACY TRACK COMPLETE (iters 036-048, 1221 verified legacy meaning rows cleaned; legacy_meaning_unreviewed 8310->7089). What remains in the cheap legacy bucket is 437 DUAL rows (legacy_meaning + low_value_example) that the meaning-only gate refuses - they need meaning+example fixed together; the Tatoeba cheap+proposed example pool is drained, so this needs a design decision (see PURE_LEGACY_DONE). OTHER open tracks: jmdict_entry_matched legacy meanings that are NOT in cheap bucket; non-verified legacy (homophone_suspect/gloss_unmatched gloss); cheap latin(~44 verified)/placeholder(~134); semantic_review/katakana/grammar (NOT cheap flow); low_value_example fallback (1402); related vectors (last). Scans for any meaning batch: kana[\\u3040-\\u30ff] + simplified(broad set) + latin + adult terms. Haiku: USE WRITE TOOL, verify coverage==100, watch trailing commas.",
     "Then: cheap_model_candidate latin (44 verified) + placeholder (134 verified) - small, clearly-broken, high value.",
     "low_value_example fallback (1402) and related vectors still deferred (21,763 issues)."
