@@ -2667,3 +2667,50 @@ gate（帶旗標）issueDelta 74→37、changedMeaning 37、changedExample 0 →
 - **決策點**：乾淨 dual 已盡。下一步要選新 track（chinese_latin dual 需連例句修=Phase-2、
   非 cheap 的 jmdict legacy、cheap latin/placeholder、low_value 真實例句、related 向量）。
   已寫進 state next_actions 供下個 session 直接挑。
+
+### Iteration 054 — TRACK A 起手：chinese_placeholder 詞義+例句中文（badEntries 首次下降）
+
+2026-06-26。乾淨 dual 清完後，使用者下指令 goal「A then B」。TRACK A =
+cheap_model_candidate + meaning_placeholder/latin + chinese_placeholder +
+jmdict_entry_matched（排除 low_value_example/chinese_latin）。共 126 筆可選，取
+frequency top-100（首 id 3196，全 N3 名詞）。
+
+這批的資料型態：m 是字面佔位「名詞概念」，例句中文也嵌了同一佔位
+「關於名詞概念，在課堂上大家一起討論了」，而例句日文是**統一模板**
+「<word>について、クラスでみんなで話し合いました。」。修法＝給真詞義 m + 保留例句
+j/r、把 c 改寫成自然中文翻譯。**因為沒有 low_value 殘留，這批會「完全清乾淨」**
+（issueDelta 300→0，3 個 issue 全消，列直接退出 manifest）。
+
+走錯一步先記：原本想當「純詞義」批，gate 拒絕後才發現 100 筆裡 92 筆同時帶
+chinese_placeholder（required 含 e），於是改成 meaning+example 批、重新選材重導。
+
+Haiku 2×50，輸出 keys id/m/e/confidence/reason，j/r 照抄、只改 c。合併後
+coverage 100/100、e.j/e.r 未動、m 與 e.c 皆無佔位/假名/簡體/latin。
+
+Sonnet 改 5 筆（直接 patch m+e.c 後全 approve）：
+- 3202 求人：**false friend**（中文「求人」=求助，非職缺）→ 徵才、招聘、職缺。
+- 3305 叩き：簡體「掸」→「撣」（撣子/撣灰）。
+- 3599 懸念：和製漢語不自然 → 擔憂、憂慮、顧慮。
+- 3649 共感：和製漢語 → 共鳴、同感、認同。
+- 3808 絶滅：→ 更自然的 滅絕、絕種、根除。
+
+gate（標準，非 keep-low-value）issueDelta 300→0、changedMeaning 100、
+changedExample 100 → apply 100（vocab_chunk_12-15）。逐 chunk 核對 100/100、0 stray
+（允許鍵含 meaning/example/quality_score/source，因改例句會更新 source.example）。
+
+品質：**badEntries 8208→8108（本 session 首次下降！）**、issueCount 約 20441→19904、
+meaning_placeholder 613→513、chinese_placeholder 541→441、legacy 6652→6553、
+low_value_example 3780 不變。DB import `99f8be24-9bc8-45e5-a258-d1a7312860e0`、
+api_parity 全 match、verb 0/0、queue 0、runtime/build 通過。
+
+省成本反省：
+
+- TRACK A 的 example 日文是統一模板，理論上 e.c 可用「關於<詞>，…」確定性產生；但詞義
+  多義時挑首義仍需語感，故仍走 Haiku+review。未來若要更省，可對「純模板列」用 m 的首義
+  字串 deterministic 組 e.c，只把非模板列（10/126）丟給 Haiku。
+- 選材一定要先看 issues[] 全集：誤以為是純詞義，92/100 其實帶 chinese_placeholder。下次選
+  track 先 `Counter(issues 組合)` 再決定 required/gate。
+- false friend（求人）與和製漢語（共感/懸念/絶滅）是這類「日文漢字詞」最大風險；HAIKU_RECIPE
+  已把它們列入 review 必查。simplified 掸 也再次證明掃描字集要含次常見簡體。
+- badEntries 終於動了：純詞義/佔位列能「完全清乾淨」，比 dual（保留 low_value）對 badEntries
+  更有感。剩 ~26 track-A（1 小批）後轉 TRACK B（chinese_latin dual）。
