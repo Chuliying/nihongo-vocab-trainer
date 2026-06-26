@@ -2592,3 +2592,43 @@ queue 0、runtime/build 通過。
   不一致，已 amend 補回）。下次 stage chunk 不要照 apply 的 tail，要用 id 集合算跨哪幾個
   chunk（每 chunk 250 筆，chunk_N 覆蓋 id (N-1)*250+1..N*250），或 `git add public/data/chunks`
   後用 `git status` 核對只有預期 chunk 變動。
+
+### Iteration 052 — DUAL rows Phase-1（meaning-only）第四批
+
+2026-06-26。延續 dual 詞義清理。選取同 iter051 predicate（cheap_model_candidate +
+legacy_meaning + low_value_example + jmdict_entry_matched，排除 chinese_latin/已審
+id/手動清單），iter051 的 100 已由 dual_reviewed 帳本自動排除，乾淨 pool 137 → 取
+frequency top-100（首 id 7527，跨 N2 尾段進入 N1，全常見名詞）。
+
+**新坑：example drift（已修並記入 state）**。本批兩個 Haiku 都輸出了 `e` 欄位，且把
+`e.c` 改寫成嵌入新詞義（如 受給 的 e.c「用日文理解了領取的意思」）。dual 列的
+required[] 同時含 `m` 與 `e`，strip-drift 只還原「非 required」欄位 → 沒還原 `e` →
+keep-low-value gate 以「e changed but was not required」拒絕 48 列。修法：合併後用
+expected[].original.e 覆蓋每列的 `e`（保留新 `m`），changedExample 歸 0，gate 通過。
+下批要嘛同樣 force e 還原，要嘛叫 Haiku 完全不要輸出 `e`。
+
+Sonnet 改 5 筆（其餘 95 approved；2 筆 8249/8368 詞義原本就對，保留+蓋 reviewed）：
+- 7616 発現：草稿誤加「發現」(discovery=発見) → 「顯現、表現、表達（如基因表現）」。
+- 7719 略奪：草稿含簡體「掳」(擄) → 「掠奪、搶劫、洗劫」。
+- 7905 供養：冷僻「薦經」→ 「供養、祭祀亡者、追薦」。
+- 8281 流入：異體「涌」→ 統一「流入、湧入」。
+- 8433 覆い：誤譯「外套」(coat) → 「罩子、覆蓋物、遮蓋物」。
+
+gate（帶旗標）issueDelta 200→100、changedMeaning 98、changedExample 0 → apply 100
+（vocab_chunk_30-33）。staging 前用 id 集合逐 chunk 核對「100/100 覆蓋、0 stray、只動
+meaning+quality_score」，避免 iter051 的漏 stage。
+
+品質：badEntries 8208（不變）、**legacy_meaning_unreviewed 6789→6689**、
+**byIssue.low_value_example 3780 不變**（byIssueBucket.low_value 因 legacy 解後主 bucket
+翻轉而升到 975，屬正常）。DB import `2dbb8cbe-da0c-42f9-a724-d385b58993e2`、api_parity
+全 match、verb 0/0、queue 0、runtime/build 通過。
+
+省成本反省：
+
+- 簡體掃描要把 掳(擄)/涌(湧) 這類「次常見簡體/異體」加進 backstop 集；本批靠人工逐列才
+  抓到，已把它們補進掃描字集的 mental note（理想是裝 opencc 一次解決，但 ROI 仍低）。
+- example drift 是本批最大時間成本（gate 拒一輪才發現）。根因是 dual 列 required 含 e；
+  已寫成可重用修法（force e:=original）並進 state，下批 0 試錯。
+- 殘留錯誤型態：和製漢語直譯（発現→發現是 false friend、可決/誘致/異動 等 JP 詞）需
+  review 盯，但量小。剩 ~37 乾淨 dual（1 小批）即清完 Phase-1 乾淨段；之後是 ~35
+  chinese_latin dual + 符號（Phase-2，需連例句修）與 related 向量。

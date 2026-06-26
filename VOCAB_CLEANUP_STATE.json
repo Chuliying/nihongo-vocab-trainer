@@ -1,8 +1,8 @@
 {
   "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST. CLAUDE.md is a lean entry point; full history is docs/vocab-cleanup/iteration-log.md (do not read it to resume). Update this file at the end of every iteration. Keep it short.",
   "updated": "2026-06-26",
-  "head_commit": "c1a6401",
-  "pipeline_stage": "content-cleanup (meaning track; PURE-legacy DONE iter048; DUAL-row Phase-1 meaning-only iter049-051 in progress)",
+  "head_commit": "1293d9c",
+  "pipeline_stage": "content-cleanup (meaning track; PURE-legacy DONE iter048; DUAL-row Phase-1 meaning-only iter049-052 in progress)",
   "quality": {
     "entries": 13000,
     "badEntries": 8208,
@@ -25,7 +25,7 @@
     "verb_quarantine": 528
   },
   "top_issues": {
-    "legacy_meaning_unreviewed": 6789,
+    "legacy_meaning_unreviewed": 6689,
     "low_value_example": 3780,
     "meaning_latin": 2982,
     "chinese_latin": 2908,
@@ -51,16 +51,17 @@
     "how_used": "Exporter adds gs (provenance) + gj (JMdict candidate senses). gs=jmdict_entry_matched proves the gloss belongs to the word's JMdict entry, but contextual sense selection is still reviewed. Other statuses must not be trusted blindly.",
     "active_bucket_impact": "cheap_model_candidate legacy_meaning: 1832/1935 (94.7%) entry-matched, 103 unreliable."
   },
-  "last_neon_import_run_id": "8e816233-e594-41e9-b090-cba904e6397a",
+  "last_neon_import_run_id": "2dbb8cbe-da0c-42f9-a724-d385b58993e2",
   "dual_phase1": {
     "strategy": "User chose phased (option 3). Phase 1 = fix the MEANING of the 437 dual (legacy_meaning + low_value_example) rows now, deliberately KEEPING the low-value example for a later unified low_value_example campaign (Phase 2).",
     "gate_flag": "NEW: apply_manifest_enrichment_patch.js --keep-low-value-example. Drops `e` from required, REQUIRES the example unchanged (changedExample must be 0), and treats low_value_example as an allowed residual. Meaning checks + reviewed:true still enforced. Use this flag (dry-run AND apply) for every dual batch.",
     "iter049": {"applied_rows": 100, "ids_first": 4064, "haiku_changed_meaning": 100, "sonnet_corrections": 8, "legacy_after": 6989, "low_value_unchanged": 3780, "neon_import_run_id": "0c41e988-a5e0-4ad8-a29d-01977162bf02"},
     "iter050": {"applied_rows": 100, "ids_first": 5603, "haiku_changed_meaning": 100, "sonnet_corrections": 10, "legacy_after": 6889, "low_value_unchanged": 3780, "neon_import_run_id": "4a587fbe-9ae3-4489-8702-aef6c11da65a", "chunk": "vocab_chunk_25.json"},
-    "iter051": {"applied_rows": 100, "ids_first": 6468, "haiku_changed_meaning": 100, "sonnet_corrections": 3, "sonnet_notes": "7293 発足->成立、啟動、創立; 7518 策定->制定、制訂、訂立 (both JP words, not Chinese); 7285 添加->putting 添加 first", "legacy_after": 6789, "low_value_unchanged": 3780, "neon_import_run_id": "8e816233-e594-41e9-b090-cba904e6397a", "chunks": "27-30"},
+    "iter051": {"applied_rows": 100, "ids_first": 6468, "haiku_changed_meaning": 100, "sonnet_corrections": 3, "sonnet_notes": "7293 発足->成立、啟動、創立; 7518 策定->制定、制訂、訂立 (both JP words, not Chinese); 7285 添加->putting 添加 first", "legacy_after": 6789, "low_value_unchanged": 3780, "neon_import_run_id": "8e816233-e594-41e9-b090-cba904e6397a", "chunks": "25-30"},
+    "iter052": {"applied_rows": 100, "ids_first": 7527, "haiku_changed_meaning": 98, "sonnet_corrections": 5, "sonnet_notes": "7616 発現 drop wrong 發現(=発見); 7719 略奪 strip simplified 掳; 7905 供養 de-obscure 薦經; 8281 流入 strip variant 涌; 8433 覆い drop wrong 外套. 2 rows already-correct (8249/8368) kept+reviewed.", "EXAMPLE_DRIFT_LESSON": "Haiku emitted an `e` field and rewrote e.c to embed the new gloss; for dual rows `e` is in required[] so strip-drift did NOT revert it and the keep-low-value gate refused 48 rows. FIX (applied): overwrite each output row's e with expected[].original.e before the gate. Next dual batch: after combine, force e := original e from expected, OR tell Haiku to omit `e` entirely.", "legacy_after": 6689, "low_value_unchanged": 3780, "neon_import_run_id": "2dbb8cbe-da0c-42f9-a724-d385b58993e2", "chunks": "30-33"},
     "CHINESE_LATIN_LESSON": "iter050 CRITICAL: dual selection MUST also exclude issues[] containing chinese_latin. Those rows have latin (the English gloss) embedded in the KEPT low-value example's e.c (e.g. '用日文理解了lush mountain的意思'); --keep-low-value-example does NOT treat chinese_latin as allowed residual (only stale_llm_source + low_value_example are), so the gate refuses them. iter049 happened to have 0 chinese_latin; iter050 first pulled 35 and the candidate gate caught them. Also exclude non-Japanese symbols (id 5961 Ｋ: meaning_latin unfixable since the word IS a latin letter). Placeholder regex in vocab_quality.js flags the literal fragment 的語氣/的語調 — avoid those exact substrings in m even when legitimately describing tone (口調).",
-    "remaining_dual": 137,
-    "remaining_dual_note": "137 = clean (no chinese_latin) jmdict dual rows still selectable after iter051 (~1-2 batches). PLUS ~35 chinese_latin dual rows + 1 symbol (5961) that the meaning-only keep-low-value gate refuses; those go to Phase 2 (need example fixed to clear chinese_latin).",
+    "remaining_dual": 37,
+    "remaining_dual_note": "37 = clean (no chinese_latin) jmdict dual rows still selectable after iter052 (~1 small batch left to finish Phase-1 clean segment). PLUS ~35 chinese_latin dual rows + 1 symbol (5961) that the meaning-only keep-low-value gate refuses; those go to Phase 2 (need example fixed to clear chinese_latin).",
     "dual_reviewed_ledger": "scratch/cleanup_pipeline/batches/iter*_dual_reviewed.jsonl (exclude these ids too when selecting next dual batch)",
     "phase2_todo": "After all dual meanings done, the 437 rows (+ ~3343 other low_value) still need real/sourced examples. Tatoeba exact-match top candidate already rejected for these; 213 have un-reviewed ALTERNATE candidates (top-k #2+), 162 have none. Phase 2 = looser Tatoeba (present alternates, skip rejected sentence_ids) + reviewed generation for the tail."
   },
@@ -159,7 +160,7 @@
   ],
   "deferred_note": "id 1328 掛け: meaning was garbage (我們); gloss=credit/bill is correct but old example is about phone-not-connecting. Needs combined meaning+example single-row semantic correction outside the meaning-only gate.",
   "next_actions": [
-    "DUAL Phase-1 in progress (iter049-051 done, 300 rows): fix dual rows' MEANINGS with the meaning pipeline + apply_manifest_enrichment_patch.js --keep-low-value-example (see dual_phase1). ~137 clean dual rows remain (~1-2 batches). Select: cheap_model_candidate + legacy_meaning_unreviewed + jmdict_entry_matched + low_value_example IN issues[], **EXCLUDE chinese_latin IN issues[]** (see dual_phase1.CHINESE_LATIN_LESSON), EXCLUDE iter*_legacy_reviewed + iter*_dual_reviewed ids + 1328/2250/3034/3780/4298/5961. Then Phase 2 = examples (see dual_phase1.phase2_todo), which is also where the ~35 chinese_latin dual rows live.",
+    "DUAL Phase-1 in progress (iter049-052 done, 400 rows): fix dual rows' MEANINGS with the meaning pipeline + apply_manifest_enrichment_patch.js --keep-low-value-example (see dual_phase1). ~37 clean dual rows remain (~1 small batch). NOTE iter052: Haiku may emit a rewritten `e`; force e:=expected.original.e before the gate (see dual_phase1.iter052.EXAMPLE_DRIFT_LESSON). Select: cheap_model_candidate + legacy_meaning_unreviewed + jmdict_entry_matched + low_value_example IN issues[], **EXCLUDE chinese_latin IN issues[]** (see dual_phase1.CHINESE_LATIN_LESSON), EXCLUDE iter*_legacy_reviewed + iter*_dual_reviewed ids + 1328/2250/3034/3780/4298/5961. Then Phase 2 = examples (see dual_phase1.phase2_todo), which is also where the ~35 chinese_latin dual rows live.",
     "PURE-LEGACY TRACK COMPLETE (iters 036-048, 1221 verified legacy meaning rows cleaned; legacy_meaning_unreviewed 8310->7089). What remains in the cheap legacy bucket is 437 DUAL rows (legacy_meaning + low_value_example) that the meaning-only gate refuses - they need meaning+example fixed together; the Tatoeba cheap+proposed example pool is drained, so this needs a design decision (see PURE_LEGACY_DONE). OTHER open tracks: jmdict_entry_matched legacy meanings that are NOT in cheap bucket; non-verified legacy (homophone_suspect/gloss_unmatched gloss); cheap latin(~44 verified)/placeholder(~134); semantic_review/katakana/grammar (NOT cheap flow); low_value_example fallback (1402); related vectors (last). Scans for any meaning batch: kana[\\u3040-\\u30ff] + simplified(broad set) + latin + adult terms. Haiku: USE WRITE TOOL, verify coverage==100, watch trailing commas.",
     "Then: cheap_model_candidate latin (44 verified) + placeholder (134 verified) - small, clearly-broken, high value.",
     "low_value_example fallback (1402) and related vectors still deferred (21,763 issues)."
