@@ -2549,3 +2549,46 @@ DB：`4a587fbe-9ae3-4489-8702-aef6c11da65a`、verb 0/0、queue 0、runtime/build
 - placeholder regex 是字面比對：合法詞義若含 的語氣/的語調 會誤判，review 階段換詞即可，
   不需改 gate。
 - 剩 ~237 乾淨 dual（~2-3 批）+ ~35 chinese_latin dual 留 Phase 2。related 延後（20,441 issues）。
+
+### Iteration 051 — DUAL rows Phase-1（meaning-only）第三批
+
+2026-06-26。延續 iter049-050 的 dual（legacy_meaning + low_value_example 雙標）詞義清理。
+選取：cheap_model_candidate + legacy_meaning_unreviewed + low_value_example IN issues[]
++ gloss_status==jmdict_entry_matched，排除 chinese_latin、所有 iter*_legacy/dual_reviewed
+id 與手動排除清單（1328/2250/3034/3780/4298/5961）。乾淨 selectable pool 237 → 取
+frequency top-100（首 id 6468，全 N2 名詞）。
+
+流程照 playbook：export A/B 2×50 + full 100 → Haiku 2 平行起草（各 50）→ 合併
+coverage 100/100、0 kana、0 禁字串、0 簡體洩漏 → strip-drift（0 漂移）→ candidate gate
+（--keep-low-value-example）issueDelta 200→100、changedExample 0 → Sonnet review。
+
+Sonnet 改 3 筆（其餘 97 approved，整批因 gloss 已 jmdict 驗證、皆常見 N2 名詞而品質很高）：
+- 7293 発足：草稿「發足」非中文 → 「成立、啟動、創立」。
+- 7518 策定：草稿含日語詞「策定」→ 「制定、制訂、訂立」。
+- 7285 添加：把「添加」提為首要詞義（草稿首位是「追加」，偏向另點/補訂）。
+
+review-merge 蓋 reviewed:true → 全 gate（非 candidate，強制 reviewed）issueDelta 200→100、
+changedExample 0 → apply 100 筆（vocab_chunk_27-30）。
+
+品質：badEntries 8208（不變，dual 列保留 low_value 仍算 bad）、
+**legacy_meaning_unreviewed 6889→6789**、**low_value_example 3780 不變**、
+chinese_latin 2912→2908、stale_llm_source 2727→2725。
+DB import：`8e816233-e594-41e9-b090-cba904e6397a`、api_parity 全 match、verb 0/0、
+queue 0、runtime/build 通過。
+
+省成本反省：
+
+- 本批 0 簡體/假名/placeholder 誤判、僅 3 筆 review 改（最低之一），印證「gloss 已
+  jmdict_entry_matched 的常見 N2 名詞」是最便宜最安全的 track；select predicate 直接沿用
+  iter050 寫進 state 的規則，無 gate 試錯，省一輪。
+- 主要殘留錯誤型態從「簡體/陸語/假名」轉為「日語詞直接當中文」（發足/策定）。下批 review
+  可加一個輕量掃描：m 中出現非中文常用的和製漢語詞（如 ～足/策定/～済み）就抽看，省人工通讀。
+- opencc 不在環境內；用手動 broad 簡體集 regex 當 backstop 已足夠（本批 0 命中）。若要更穩可在
+  .venv 裝 opencc，但目前 ROI 低。
+- 剩 ~137 乾淨 dual（~1-2 批）即清完 Phase-1 乾淨段；~35 chinese_latin dual + 1 符號留 Phase-2
+  （需連例句修）。related 向量仍延後。
+- **staging 坑（本批犯過已修）**：apply 輸出用 `tail -15` 看會把開頭「Updated chunk 25/26」
+  截掉，導致 `git add` 只加 27-30、commit 漏掉 25/26（DB 已全寫、build 也跑全量，只 git
+  不一致，已 amend 補回）。下次 stage chunk 不要照 apply 的 tail，要用 id 集合算跨哪幾個
+  chunk（每 chunk 250 筆，chunk_N 覆蓋 id (N-1)*250+1..N*250），或 `git add public/data/chunks`
+  後用 `git status` 核對只有預期 chunk 變動。
