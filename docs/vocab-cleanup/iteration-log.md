@@ -2632,3 +2632,38 @@ meaning+quality_score」，避免 iter051 的漏 stage。
 - 殘留錯誤型態：和製漢語直譯（発現→發現是 false friend、可決/誘致/異動 等 JP 詞）需
   review 盯，但量小。剩 ~37 乾淨 dual（1 小批）即清完 Phase-1 乾淨段；之後是 ~35
   chinese_latin dual + 符號（Phase-2，需連例句修）與 related 向量。
+
+### Iteration 053 — DUAL rows Phase-1（meaning-only）最終批（清完乾淨段）
+
+2026-06-26。dual 乾淨段最後 37 筆（首 id 8441，全 N1 名詞）。承 iter052 的 example
+drift 教訓，這批改用「叫 Haiku 完全不要輸出 `e` 欄位」（prompt 明列 keys 僅
+id/m/confidence/reason），結果 0 example drift、strip-drift 與 gate 都不必還原 `e`，
+比 iter052 的事後 force-revert 更省。單一 Haiku group（37<50，不需拆兩組）。
+
+Haiku 標了 32/37 low/medium confidence——但那是因為「原詞義被上游 corrupt」（如
+心情→時間、歌謡→全部、肥料→男人、街頭→樹），不是它的譯文不確定；逐列查證後譯文大多正確。
+
+Sonnet 改 3 筆（其餘 34 approved）：
+- 8577 銭湯：草稿「錢湯」是日語詞 → 「公共澡堂、公共浴池、澡堂」。
+- 8694 発着：草稿含語意不清的「上下」→ 「到達與出發、起降、進出站」。
+- 8916 悪用：草稿「虐待」(abuse a person) 是誤義 → 「濫用、不當使用、惡意利用」。
+
+gate（帶旗標）issueDelta 74→37、changedMeaning 37、changedExample 0 → apply 37
+（vocab_chunk_33-35）。staging 前逐 chunk 核對 37/37 覆蓋、0 stray。
+
+品質：badEntries 8208（不變）、**legacy_meaning_unreviewed 6689→6652**、
+**low_value_example 3780 不變**。**剩餘乾淨 dual selectable = 0**——iter049-053 清完
+全部 437 筆乾淨 dual 詞義。DB import `56076bf3-0f87-4d48-b73a-ed4f32cf032d`、api_parity
+全 match、verb 0/0、queue 0、runtime/build 通過。
+
+省成本反省：
+
+- **「叫 Haiku 不要輸出 e」勝過事後 revert**：iter052 因 Haiku 改寫 e 被 gate 拒一輪才補救；
+  iter053 在 prompt 直接限定輸出 keys（id/m/confidence/reason），drift 歸零、少一輪試錯。
+  下批 dual/meaning-only 一律沿用此 prompt 約束。
+- 小批（37）不拆組省一次 Agent 呼叫；<50 就單 group。
+- low-confidence 標記要解讀為「原資料壞」而非「譯文不可信」；仍須逐列查 homophone/簡體，
+  但不必對每個 low 都改。
+- **決策點**：乾淨 dual 已盡。下一步要選新 track（chinese_latin dual 需連例句修=Phase-2、
+  非 cheap 的 jmdict legacy、cheap latin/placeholder、low_value 真實例句、related 向量）。
+  已寫進 state next_actions 供下個 session 直接挑。
