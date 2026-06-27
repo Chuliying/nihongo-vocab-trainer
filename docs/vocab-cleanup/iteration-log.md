@@ -3137,3 +3137,22 @@ runtime/build 通過。
   issueCount ~20441→19302**。
 - iter067 候選（1200 select）的乾淨深序列名詞快用完（剩 ~60）；下批重跑 selector 並 target
   id 6400+（更深、更多新漢字名詞）。
+
+### Iteration 071 — looser Tatoeba 真實例句第十三批（22 筆，抽乾 iter067 候選）
+
+2026-06-28。用盡 iter067 候選乾淨深序列 22 筆：心当たり/こま/債務/つまみ/制約/物体/金利/
+収納/粒子/評論/国道/銘柄/制定/意欲/趣旨/育児/休止/器具/迫力/擁護/返金/仲介。修 5885
+私=わたし。排除 幼女/函館/界隈/大尉ロナルドホープ。scanner 5890 戦後良性保留。
+
+apply gate resolvedLowValue 22、meaningChanges 0 → apply（chunk ×5）。逐 chunk 核對 22/22、
+0 stray。
+
+品質：**low_value_example 3494→3472（-22）**、**badEntries 7899→7882**、issueCount
+19302→19276。DB import `27d363c4-259c-47f3-b7ef-696414dd8b7b`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+省成本反省：
+
+- 本 session real-example 十三批 286 筆；**badEntries 8208→7882（-326）、low_value
+  3780→3472、issueCount ~20441→19276**。
+- iter067（1200 select）乾淨深序列抽乾；下批 select_real_examples.py target id 6400+。
