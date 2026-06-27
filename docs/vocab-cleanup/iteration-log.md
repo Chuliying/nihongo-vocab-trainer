@@ -2984,3 +2984,29 @@ runtime/build 通過。
 - 讀音檢核字集要精確：長音 ー 屬合法平假名讀音元件，勿用 [ァ-ヿ] 一刀切；已修為 [ァ-ヶ]。
 - 本 session real-example 累計五批 113 筆（checkpoint 012-016）；low_value 3780→3645。
 - iter062 候選抽乾，下批重跑 selector。selector 是固定大成本，每次 select 400 攤平。
+
+### Iteration 064 — looser Tatoeba 真實例句第六批（24 筆，深序列漢字名詞）
+
+2026-06-27/28。select_real_examples.py --top-k 6 --limit 700 → 484 proposed（69%）。改取
+**較深序列（id 5xxx）的 cheap_model_candidate / semantic 漢字名詞**，比早段 4xxx 外來語可靠
+（substring/專名假匹配少很多）。嚴選 24 筆：圖鑑/各社/包囲/フォント/キャンパス/インフラ/
+アプローチ/路上/理念/為替/欠陥/欠点/来場/施行/手当/後退/国語/国外/ペンギン/パニック/ナン/
+通用/見出し/発注。
+
+逐字複查讀音抓到 2 個 fugashi 錯（gate 不驗）：5435 何日間 なんかかん→なんにちかん；
+5407 私 わたくし→わたし。scanner：5435 軍隊/包囲、5374 戦後 屬良性史/軍描述保留。
+
+apply gate resolvedLowValue 24、meaningChanges 0 → apply（chunk ×1）。逐 chunk 核對 24/24、
+0 stray。
+
+品質：**low_value_example 3645→3621（-24）**、**badEntries 8015→8001**、issueCount 約
+19480→19442。DB import `cd02bb5f-7984-4237-9117-db4e90dbc579`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+省成本反省：
+
+- **改鎖定深序列漢字名詞（5xxx cheap/semantic）yield 與品質都更好**：早段 4xxx 多外來語，
+  substring（ダンスフロア/メールマガジン）與專名（ボブ/青山）假匹配高；漢字名詞句更自然、
+  讀音更可驗。已記入 state coverage 供下批優先。
+- fugashi 仍會錯複合詞讀音（何日間=なんにちかん），逐字看不可省。
+- 本 session real-example 六批 137 筆；low_value 3780→3621。iter064 候選尚餘 ~190，下批重用。
