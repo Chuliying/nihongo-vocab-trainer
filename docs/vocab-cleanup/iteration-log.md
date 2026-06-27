@@ -3236,3 +3236,23 @@ runtime/build 通過。
 - 本 session real-example 十七批 374 筆；**badEntries 8208→7819（-389）、low_value
   3780→3384、issueCount ~20441→19180**。
 - iter072 候選 id>6400 段將盡（剩 ~60），下批 select target id 7700+。
+
+### Iteration 076 — looser Tatoeba 真實例句第十八批（22 筆）
+
+2026-06-28。續用 iter072 候選 22 筆：圧迫/戦時/東部/階層/武力/加熱/募金/集約/処罰/助成/調味/
+持ち込み/締結/組み立て/接客/頭脳/増税/文献/脅し/ゆとり/生態/付録。修讀音 6754 私=わたし。
+排除 substring（語学力）、archaic（吹き）、name（盛岡/めぐみ）。scanner 6746 戦時/6472 敗戦
+良性史保留。
+
+apply gate resolvedLowValue 22、meaningChanges 0 → apply（chunk ×6）。逐 chunk 核對 22/22、
+0 stray。
+
+品質：**low_value_example 3384→3362（-22）**、**badEntries 7819→7802**、issueCount
+19180→19158。DB import `64f9120a-7713-43ab-9bf5-eaa939aeb29f`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+省成本反省：
+
+- 本 session real-example 十八批 396 筆；**badEntries 8208→7802（-406）、low_value
+  3780→3362、issueCount ~20441→19158**。
+- iter072 候選將盡（剩 ~40），下批 select target id 7700+。
