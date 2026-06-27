@@ -2938,3 +2938,26 @@ iter059 候選檔（300 select）clean proposed 已抽乾；下一批需重跑 s
 - **本 session 總結（iter051-061 + README）：badEntries 8208→8030（-178）、low_value_example
   3780→3690、issueCount ~20441→19565。完成 dual-clean(437)、track A(126)、track B-safe(25)、
   cheap 純詞義(11)、deferred(4)、real-example 三批(68)。verb invariant 全程 0/0。**
+
+### Iteration 062 — looser Tatoeba 真實例句第四批（21 筆，新 select 400）
+
+2026-06-27。延續 goal「繼續把 CLAUDE.md 待辦做完」。重跑 select_real_examples.py
+--top-k 6 --limit 400 → 269 proposed（67%），用 glob 排除全部已套用 checkpoint id（654 個）
+後嚴選 21 筆乾淨真句。涵蓋：ベンチ/ヒント/中日/ランプ/上場/とうとう/飲料/サンタ/ステーキ/
+縮小/シンガポール/ポンプ/ピアス/忍者/声明/有する/ウエスト/パズル/スペック/移籍/ハンドル。
+修讀音 4747 ランプ 私=わたし。
+
+scanner 0 flag → apply gate resolvedLowValue 21、meaningChanges 0 → apply（chunk ×2）。
+逐 chunk 核對 21/21、0 stray。
+
+品質：**low_value_example 3690→3669（-21）**、badEntries 8030→8027、issueCount 約
+19565→19522。DB import `1c558445-9db6-48d9-ae3d-3f2a5059e3e3`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+iter062 候選檔（400 select）尚餘 ~90 clean proposed，下一批可重用不必重跑 selector。
+
+省成本反省：
+
+- select 一次 400、預留多批用量；下批重用候選檔。selector 是這條 track 的最大固定成本。
+- 排除已套用 id 用 glob over checkpoint_*.jsonl（654 個）自動化，避免重複選到已修的列。
+- 過濾/讀音 SOP 持續 0 返工；本 session real-example 累計四批 89 筆。
