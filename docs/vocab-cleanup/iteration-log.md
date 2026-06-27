@@ -2786,3 +2786,30 @@ verb 0/0、runtime/build 通過。
 - 生成例句能讓 badEntries 與 low_value 同時降（比只修 c 的 keep-low-value 更徹底），但成本/風險
   高於純詞義；僅在例句本就壞掉、且無 Tatoeba 來源時採用。
 - 冷僻/多義詞（下し）寧可 defer 也不硬生例句：錯義例句比缺例句更糟。
+
+### Iteration 057 — cheap PURE-meaning 收尾（11 筆）+ 該 track 抽乾
+
+2026-06-27。照 README roadmap step 4。剩餘「純詞義、jmdict、無 example issue（一修就全乾淨）」
+的 cheap 列只剩 12 筆，排除 5436 北京（地名，cheap 不碰）後 11 筆：6 個副詞
+（そっくり/あくまで/ひたすら/なるべく/ともかく/ますます）＋早速/夜中/護衛/報復/亡命。
+
+小批（11）且全是常見詞，故 **Sonnet 自行起草詞義、不另開 Haiku**（省一次 agent 呼叫）；
+寫完跑 latin/kana/簡體/placeholder 自檢全過 → review-merge 全 approve 蓋 reviewed:true →
+full gate issueDelta 16→0、changedMeaning 11、changedExample 0 → apply 11
+（chunk 12-28 散落）。逐 chunk 核對 11/11、0 stray。
+
+品質：**badEntries 8061→8050**、issueCount 約 19741→19725、meaning_placeholder 491→483、
+meaning_latin 2957→2954。DB import `bbedebe1-b560-426a-8020-89c8c533a26d`、api_parity match、
+verb 0/0、runtime/build 通過。
+
+**cheap pure-meaning（jmdict、無 example issue）track 抽乾**：剩餘 0。之後所有 cheap
+meaning_latin/placeholder 列都「糾纏」著 chinese_latin/chinese_placeholder/low_value，要像
+track A/B 一樣連例句處理；或轉非 cheap-bucket 的 jmdict legacy／未驗證 legacy（風險較高）。
+
+省成本反省：
+
+- 小批（<~15）且詞彙常見時，Sonnet 自起草比開 Haiku 更省（無 agent 往返、無讀音/簡體風險），
+  品質也夠；大批仍走 Haiku 2×50。已可作為固定規則：batch≤15 且非生成例句 → 自起草。
+- cheap 純詞義已盡，後續是「詞義+例句」糾纏列或非 cheap 高風險列；roadmap step 4/5 邊界到了，
+  下一步要嘛延續 track A/B 式的「詞義+例句」批，要嘛進 low_value 真實例句（Tatoeba）大宗。
+- 地名（北京）一律排除；cheap 不碰專名/地名的硬規則持續生效。
