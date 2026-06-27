@@ -3288,3 +3288,21 @@ runtime/build 通過。
 - gate 只驗形式不驗讀音/語意，所以正確性必須來自「來源品質」（人工振假名 + 忠實翻譯），
   事後手修是錯誤的成本配置。
 - 已把「重複手工 >3 批就停下來重構」寫進 CLAUDE.md first-principles 教訓。
+
+### Iteration 079 — NEW_FLOW 大批驗證（checkpoint 032, 54 筆一次 checkpoint）
+
+2026-06-28。完全走新流程（enrich 人工讀音 + Haiku 批譯 + Sonnet 只抽審 + 大 checkpoint）。
+65 候選一次交 Haiku 翻譯 → 我抽審剔除 11（專名/列車名 つばさ/のぞみ/盛岡/伊豆/立花、
+substring 引きやすい/しり=知り合い/陰陽師、敏感 無理心中、botanical つくし）→ 54 筆套用 →
+**一次** db:import+build。**手修讀音 0、手翻 0。**
+
+品質：**low_value_example 3306→3252（-54）**、**badEntries 7766→7736**、issueCount
+19091→19025。DB import `e226fdfa-4905-446a-be4a-624a9cffb70e`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+省成本反省：
+
+- 新流程每句成本掉一個量級：Haiku 翻 65 句一次、我只抽審語意、54 筆共用一次 infra
+  （舊法要 ~2.5 批 × 22 + 各自 checkpoint）。
+- 也順手把 state next_actions 從過時雜訊改寫成 5 條反映現況的代辦（CLAUDE.md 指向它）。
+- 剩 ~3252 low_value（多 session）→ 之後 related vectors。新流程已寫進 skill/CLAUDE.md/state。
