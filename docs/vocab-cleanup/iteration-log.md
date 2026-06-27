@@ -3156,3 +3156,26 @@ runtime/build 通過。
 - 本 session real-example 十三批 286 筆；**badEntries 8208→7882（-326）、low_value
   3780→3472、issueCount ~20441→19276**。
 - iter067（1200 select）乾淨深序列抽乾；下批 select_real_examples.py target id 6400+。
+
+### Iteration 072 — looser Tatoeba 真實例句第十四批（22 筆，新 select id>6400）
+
+2026-06-28。select --limit 1800 → 1149 proposed。取 id≥6400 漢字名詞 22 筆：血圧/台所/騎手/
+苗字/曇り/反する/かばん/礼儀/獅子/集落/理屈/要する/花見/退学/終戦/金魚/表彰/長生き/喫茶/
+養子/侮辱/口調。修讀音 7726/6983/7092 私=わたし。**6434 口調 的 c 避開 placeholder regex
+字串「的語氣/的語調」改用「口吻」**（example c 也會被 placeholder 偵測，沿用 iter050 教訓）。
+排除敏感（痴女/性交/色気/弾薬）、專名（目黒）。scanner 3 sensitive（血圧誤判/終戦/金魚死）
+皆良性保留。
+
+apply gate resolvedLowValue 22、meaningChanges 0 → apply（chunk ×6）。逐 chunk 核對 22/22、
+0 stray。
+
+品質：**low_value_example 3472→3450（-22）**、**badEntries 7882→7870**、issueCount
+19276→19250。DB import `9b2d2890-7e71-46a8-bde3-c5051b030c9f`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+省成本反省：
+
+- **example 的 c 也受 placeholder regex 管制**：含「的語氣/的語調」會被判 placeholder；翻譯
+  口調/語氣類詞時用「口吻」等避開字面片段（同 iter050 教訓，現也適用於 real-example c）。
+- 本 session real-example 十四批 308 筆；**badEntries 8208→7870、low_value 3780→3450**。
+- iter072（1800 select）id>6400 段尚有大量乾淨漢字名詞，下批續用不必重跑 selector。

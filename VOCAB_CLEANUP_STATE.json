@@ -1,12 +1,12 @@
 {
   "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST. CLAUDE.md is a lean entry point; full history is docs/vocab-cleanup/iteration-log.md (do not read it to resume). Update this file at the end of every iteration. Keep it short.",
   "updated": "2026-06-26",
-  "head_commit": "8a78154",
-  "pipeline_stage": "content-cleanup; all safe cheap-meaning DONE; README step 5 = low_value real examples via LOOSER Tatoeba IN PROGRESS. iter059-071 applied 286 reviewed real sentences (checkpoints 012-024). ~3472 low_value_example remain. iter067 candidate file drained of clean rows; NEXT batch needs a fresh select_real_examples.py run (target deeper id 6400+).",
+  "head_commit": "26dde2d",
+  "pipeline_stage": "content-cleanup; all safe cheap-meaning DONE; README step 5 = low_value real examples via LOOSER Tatoeba IN PROGRESS. iter059-072 applied 308 reviewed real sentences (checkpoints 012-025). ~3450 low_value_example remain. iter072 candidate file (1800 selected, id<6400 done) has many clean id>6400 deep kanji-noun rows still unused.",
   "quality": {
     "entries": 13000,
-    "badEntries": 7882,
-    "issueCount": 19276,
+    "badEntries": 7870,
+    "issueCount": 19250,
     "note": "badEntries high because legacy_meaning_unreviewed is a provenance flag (unverified), not known-wrong; dual rows stay 'bad' after meaning fix because low_value_example is intentionally kept for Phase 2"
   },
   "verb_invariant": {
@@ -26,7 +26,7 @@
   },
   "top_issues": {
     "legacy_meaning_unreviewed": 6512,
-    "low_value_example": 3472,
+    "low_value_example": 3450,
     "meaning_latin": 2954,
     "chinese_latin": 2883,
     "stale_llm_source": 2724,
@@ -51,7 +51,7 @@
     "how_used": "Exporter adds gs (provenance) + gj (JMdict candidate senses). gs=jmdict_entry_matched proves the gloss belongs to the word's JMdict entry, but contextual sense selection is still reviewed. Other statuses must not be trusted blindly.",
     "active_bucket_impact": "cheap_model_candidate legacy_meaning: 1832/1935 (94.7%) entry-matched, 103 unreliable."
   },
-  "last_neon_import_run_id": "27d363c4-259c-47f3-b7ef-696414dd8b7b",
+  "last_neon_import_run_id": "9b2d2890-7e71-46a8-bde3-c5051b030c9f",
   "dual_phase1": {
     "strategy": "User chose phased (option 3). Phase 1 = fix the MEANING of the 437 dual (legacy_meaning + low_value_example) rows now, deliberately KEEPING the low-value example for a later unified low_value_example campaign (Phase 2).",
     "gate_flag": "NEW: apply_manifest_enrichment_patch.js --keep-low-value-example. Drops `e` from required, REQUIRES the example unchanged (changedExample must be 0), and treats low_value_example as an allowed residual. Meaning checks + reviewed:true still enforced. Use this flag (dry-run AND apply) for every dual batch.",
@@ -196,7 +196,7 @@
     "status": "candidate generator, artifact validator and example-only apply gate built; translation/reading review remains",
     "source": "Tatoeba/Tanaka CC-BY (scratch/tatoeba, gitignored); NOT NHK (copyright/register)",
     "INFLECTION": "iter035 DRAINED the cheap_model_candidate real-example pool that has a PROPOSED Tatoeba candidate. prepare_real_example_review --risk cheap_model_candidate now returns 0 rows after excluding packets 005-011. The 2084 cheap_model_candidate bucket rows that remain are bad for OTHER reasons (meaning_latin / legacy_meaning / placeholder), NOT low_value_example-with-candidate. Remaining low_value_example rows (3780) are mostly FALLBACK (no natural Tatoeba sentence) or live in non-cheap risk buckets.",
-    "coverage": "queue 3472 after iter071. LOOSER Tatoeba (user-chosen): select_real_examples.py --top-k 6 ~67-72% proposed. Packets used: 005-011 + checkpoint_012-017 (iter059-064, 137 applied). NEXT batch: real_example_candidates.iter064.jsonl (700 selected) still has ~190 clean proposed rows — reuse it (glob-exclude all real_example_review_checkpoint_*.jsonl ids). Deeper rows (id 5xxx, cheap_model_candidate/semantic kanji nouns) are MORE reliable than the early 4xxx katakana loanwords (fewer substring/proper-noun false matches). KATAKANA-in-r check uses [ァ-ヶ] (ー is valid). STILL hand-verify every reading: fugashi errs on 私=わたくし->わたし and compounds like 何日間=なんにちかん (not なんかかん).",
+    "coverage": "queue 3450 after iter072. LOOSER Tatoeba (user-chosen): select_real_examples.py --top-k 6 ~67-72% proposed. Packets used: 005-011 + checkpoint_012-017 (iter059-064, 137 applied). NEXT batch: real_example_candidates.iter064.jsonl (700 selected) still has ~190 clean proposed rows — reuse it (glob-exclude all real_example_review_checkpoint_*.jsonl ids). Deeper rows (id 5xxx, cheap_model_candidate/semantic kanji nouns) are MORE reliable than the early 4xxx katakana loanwords (fewer substring/proper-noun false matches). KATAKANA-in-r check uses [ァ-ヶ] (ー is valid). STILL hand-verify every reading: fugashi errs on 私=わたくし->わたし and compounds like 何日間=なんにちかん (not なんかかん).",
     "LOOSER_FLOW": "1) .venv/bin/python scripts/select_real_examples.py --top-k 6 --limit N --out <cand.jsonl> (slow: tokenizes 248k sentences). 2) pick best candidate per row; MANUALLY filter: reject substring matches (クリーム⊂アイスクリーム, いかに⊂いかにも, スリー⊂スリーサイズ), reading mismatches, sexual/violent, proper-noun rows whose example uses it as a name. 3) FIX fugashi reading errors: 私->わたくし should be わたし; rendaku 沿い そい->ぞい. 4) translate j->TW Chinese. 5) write checkpoint rows {id,sentence_id,j,r,c,reading_reviewed,translation_reviewed,reviewed:true}. 6) scan_real_example_checkpoint.py (drop fullwidth-digit readings). 7) apply_real_example_patch.js <ckpt> --candidates <cand.jsonl> (gate: meaning/quality untouched, keeps sentence_id+CC-BY). NOTE: resolving low_value often drops badEntries little (rows carry other issues) but low_value_example count falls 1:1.",
     "tools": "selector uses exact surface/lemma plus coarse POS, difficulty gates and attribution; enrichment adds direct cmn links and Tatoeba human transcriptions; validator/apply gate require explicit reading and translation review. scripts/scan_real_example_checkpoint.py = advisory QA scanner (non-kana-in-r, english-in-c, simplified, sensitive/morbid w/ benign-compound allowlist).",
     "next_strategy_choice": "Real-example cheap track is done. PIVOT options: (A) switch to meaning cleanup on the cheap_model_candidate bucket (latin/legacy/placeholder) via the meaning loop (Haiku draft + Sonnet review) - 2084 rows available; (B) handle low_value_example FALLBACK rows (need a sourcing strategy beyond current Tatoeba exact-match, e.g. looser retrieval or accept 1402 fallbacks stay); (C) widen real-example candidates to other low-risk buckets. Recommend (A): biggest clean, lowest risk.",
