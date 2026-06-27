@@ -2747,3 +2747,42 @@ chinese_placeholder 441→419、legacy 6553→6535、low_value 3780 不變。DB 
 - Track A 兩批合計 122 筆讓 badEntries 降 122，是目前對 badEntries CP 值最高的 track
   （完全清乾淨、無殘留）。Track B（chinese_latin dual）因例句是 low-value，可能無法完全清，
   下批先 Counter(issues) 確認 shape 再決定 keep-low-value 或升級例句。
+
+### Iteration 056 — TRACK B（chinese_latin）安全子集：生成真實例句 + 詞義
+
+2026-06-27。承使用者 goal「A then B」與後續「更新 README 後照著完成」。先更新 README.md
+（修正「app 讀 vocab_13000.json」的錯誤、補上 chunks/Neon 雙源、cleanup 現況與 roadmap）。
+
+TRACK B = cheap chinese_latin 列。分析後發現 45 筆全部的例句是壞掉的 meta/模板，要清
+chinese_latin 必須**換掉日文例句**（gate 無法在保留 meta 日文下清掉 chinese_latin）。
+這撞上硬規則「low_value 例句要 Tatoeba sourced，不可 LLM 生成」。**使用者裁示放寬此規則**
+（僅限這批壞列；Tatoeba exact-match 早已抽乾）。安全子集：排除 proper/place/人名/學名
+（青山/白石/大輔/上海/初音/二宮/荒木/本間/天草/南京）與性／兒童敏感（爆乳/幼女/愛人），
+得 26 筆，全 jmdict-verified 常見詞。
+
+Haiku 生成 m + 全新中性例句（j 含詞、非模板；r 全平假名；c 自然繁中）。**reading 是最高風險**：
+gate 只檢查 r 無漢字，不檢查讀音正確性，故逐字人工複查。抓到 3 個 gate 抓不到的讀音錯：
+- 6215 着きます 寫成「についます」→ 應「につきます」。
+- 7078 説きます 寫成「といます」→ 應「ときます」。
+- 7101 右 寫成「もぎ」→ 應「みぎ」。
+另 deferred 1 筆：5878 下し（gloss「purgation/evacuation」語意含糊，Haiku 寫成「疏散居民」
+是錯義；詞冷僻）→ 退回 real-example pass。
+
+修好 3 個讀音、去掉 5878 後，重匯出 25-id expected → candidate gate issueDelta 97→0、
+changedMeaning/Example 25 → review-merge（全 approve，修正已 baked-in）→ full gate 97→0 →
+apply 25（chunk 18-34）。逐 chunk 核對 25/25、0 stray。
+
+品質：**badEntries 8086→8061**、issueCount 約 19838→19741、chinese_latin 2908→2883、
+meaning_latin 2982→2957、legacy 6535→6512、**low_value_example 3780→3758**（因 meta 例句
+被真句取代而一起降）。DB import `62ffa998-79e2-4cd1-97c7-2a11e87472c6`、api_parity match、
+verb 0/0、runtime/build 通過。
+
+省成本反省：
+
+- **gate 不驗讀音**：example 生成的 e.r 正確性無 deterministic 保護，必須人工逐字看。已把
+  這條與 3 個實例寫進 state track_B_chinese_latin.READING_RISK，未來生成例句批必照做。
+- 放寬規則要「最小範圍 + 使用者同意 + 留紀錄」：只對這批壞列、排除 proper/敏感、且記在
+  state USER_DECISION，不擴散成「以後都能生成例句」。
+- 生成例句能讓 badEntries 與 low_value 同時降（比只修 c 的 keep-low-value 更徹底），但成本/風險
+  高於純詞義；僅在例句本就壞掉、且無 Tatoeba 來源時採用。
+- 冷僻/多義詞（下し）寧可 defer 也不硬生例句：錯義例句比缺例句更糟。
