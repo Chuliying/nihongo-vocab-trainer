@@ -3116,3 +3116,24 @@ runtime/build 通過。
 - 本 session real-example 十一批 242 筆；**badEntries 8208→7919、low_value 3780→3516、
   issueCount ~20441→19325**。
 - fugashi 讀音錯型態又添：連濁（線路沿い=せんろぞい）、何＋を=なに（非 なん）。逐字看續抓。
+
+### Iteration 070 — looser Tatoeba 真實例句第十二批（22 筆）
+
+2026-06-28。續用 iter067 候選深序列 22 筆：経費/受注/点検/納税/巡回/監禁/清掃/西部/様式/
+雑貨/進展/演習/選抜/結晶/体系/小学/指数/待遇/風味/創設/講習/連想。修讀音 6021 何本
+なんぽん→なんぼん、6300/5829 私=わたし。排除敏感（克服 死、わら 讀音錯 いちぽん）。
+scanner 5819 監禁/刑務所良性保留。
+
+apply gate resolvedLowValue 22、meaningChanges 0 → apply（chunk ×5）。逐 chunk 核對 22/22、
+0 stray。
+
+品質：**low_value_example 3516→3494（-22）**、**badEntries 7919→7899**、issueCount
+19325→19302。DB import `d470dea5-65bf-4123-a4ec-1c18510c6de8`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+省成本反省：
+
+- 本 session real-example 十二批 264 筆；**badEntries 8208→7899（-309）、low_value 3780→3494、
+  issueCount ~20441→19302**。
+- iter067 候選（1200 select）的乾淨深序列名詞快用完（剩 ~60）；下批重跑 selector 並 target
+  id 6400+（更深、更多新漢字名詞）。
