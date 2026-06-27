@@ -2961,3 +2961,26 @@ iter062 候選檔（400 select）尚餘 ~90 clean proposed，下一批可重用�
 - select 一次 400、預留多批用量；下批重用候選檔。selector 是這條 track 的最大固定成本。
 - 排除已套用 id 用 glob over checkpoint_*.jsonl（654 個）自動化，避免重複選到已修的列。
 - 過濾/讀音 SOP 持續 0 返工；本 session real-example 累計四批 89 筆。
+
+### Iteration 063 — looser Tatoeba 真實例句第五批（24 筆，重用 iter062 候選）
+
+2026-06-27。goal「繼續把 CLAUDE.md 待辦做完，用中文回應」。重用 iter062 候選檔（剩 92 clean）
+嚴選 24 筆。涵蓋：系統/主体/エンディング/プリント/取り扱い/ボーカル/共産/潜水/了承/古典/炭酸/
+エントリー/オーディション/軍団/アニメーション/ビジョン/潜在/ミュージカル/トレード/アンテナ/
+復旧/デスク/入門/マニュアル。修讀音 4711/4528 私=わたし。
+
+掃描修正：建檢核時誤把長音 ー（U+30FC）當片假名擋下（4820 ぼーかる）；改用 [ァ-ヶ] 排除 ー，
+已記入 state coverage。scanner：4567 軍団「戦闘中」良性軍事描述保留。
+
+apply gate resolvedLowValue 24、meaningChanges 0 → apply（chunk ×4）。逐 chunk 核對 24/24、
+0 stray。
+
+品質：**low_value_example 3669→3645（-24）**、badEntries 8027→8015、issueCount 約
+19522→19480。DB import `e0d68c77-4910-4efe-af25-914523127970`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+省成本反省：
+
+- 讀音檢核字集要精確：長音 ー 屬合法平假名讀音元件，勿用 [ァ-ヿ] 一刀切；已修為 [ァ-ヶ]。
+- 本 session real-example 累計五批 113 筆（checkpoint 012-016）；low_value 3780→3645。
+- iter062 候選抽乾，下批重跑 selector。selector 是固定大成本，每次 select 400 攤平。
