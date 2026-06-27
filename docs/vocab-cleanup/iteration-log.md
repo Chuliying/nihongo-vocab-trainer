@@ -2913,3 +2913,28 @@ runtime/build 通過。
 - 過濾規則已穩定（substring / 數字 / 符號 / 敏感 / 專名 / ambiguous / 讀音），本批照表操課 0 返工；
   下批續用。
 - 真句的價值在自然例句；badEntries 降幅小但 low_value 1:1 降，且這些是學習者最常看到的卡片內容。
+
+### Iteration 061 — looser Tatoeba 真實例句第三批（24 筆，抽乾 iter059 候選）
+
+2026-06-27。再從 iter059 候選檔嚴選 24 筆乾淨真句（排除 substring/數字/符號/敏感/專名後），
+修 fugashi 私=わたくし→わたし（4016/4071/4130/4397）。涵蓋：ボーイ/信者/魔王/クリスタル/
+パチンコ/カレンダー/仏教/はめ/ストップ/シール/ディスク/耐久/ゆえ/遠征/サラリーマン/震災/
+ハム/エラー/おば/あんま/スイーツ/タブレット/地帯/グラフ。
+
+scanner 0 flag → apply gate resolvedLowValue 24、meaningChanges 0 → apply（chunk ×4）。
+逐 chunk 核對 24/24、0 stray。
+
+品質：**low_value_example 3714→3690（-24）**、badEntries 8038→8030、issueCount 約
+19614→19565。DB import `08fe8764-136f-4f77-b6a0-5044af9cd006`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+iter059 候選檔（300 select）clean proposed 已抽乾；下一批需重跑 select_real_examples.py
+（慢，--top-k 6 --limit 300 → 新 iter 檔，並排除已 apply 的 id）。
+
+省成本反省：
+
+- 一次 select 300、分三批（012/013/014 共 68 筆）審完，把 selector 的固定成本攤到最低。
+- 過濾 + 讀音修正規則已完全穩定，三批 0 返工；real_examples.LOOSER_FLOW 即 SOP。
+- **本 session 總結（iter051-061 + README）：badEntries 8208→8030（-178）、low_value_example
+  3780→3690、issueCount ~20441→19565。完成 dual-clean(437)、track A(126)、track B-safe(25)、
+  cheap 純詞義(11)、deferred(4)、real-example 三批(68)。verb invariant 全程 0/0。**
