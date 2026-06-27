@@ -3076,3 +3076,23 @@ runtime/build 通過。
   是目前 yield/品質最佳的取樣段；下批續取此段，iter067 候選尚餘 ~120 clean。
 - 本 session real-example 九批 198 筆；**badEntries 8208→7955、low_value 3780→3560、
   issueCount ~20441→19375**。
+
+### Iteration 068 — looser Tatoeba 真實例句第十批（22 筆）
+
+2026-06-28。續用 iter067 候選深序列漢字名詞 22 筆：いとこ/宴会/集結/登校/直面/世論/選出/
+持続/電撃/下部/下旬/領主/飲酒/入居/名付け/北米/闘争/横断/振興/排水/断念/参拝。修讀音
+6155/6298 私=わたし。排除敏感（大麻/売春/出血/拳銃/狙撃）、專名（神田/松山/水戸/北斗）、
+ambiguous（ひとみ 名/瞳）。scanner 6029 将軍/兵士良性保留。
+
+apply gate resolvedLowValue 22、meaningChanges 0 → apply（chunk ×4）。逐 chunk 核對 22/22、
+0 stray。
+
+品質：**low_value_example 3560→3538（-22）**、**badEntries 7955→7939**、issueCount
+19375→19349。DB import `ea2c50f5-862c-4952-9b0f-3f2017be120b`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+省成本反省：
+
+- 本 session real-example 十批 220 筆；**badEntries 8208→7939、low_value 3780→3538、
+  issueCount ~20441→19349**。
+- 深序列漢字名詞段（5440-6400）持續是最佳取樣；iter067 候選尚餘 ~100，下批續用。
