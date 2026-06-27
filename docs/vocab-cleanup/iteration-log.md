@@ -2846,3 +2846,41 @@ DB import `0ddf9314-f374-413e-810d-b33d783ac1b6`、api_parity match、verb 0/0�
   約 20441→19713。dual clean 437 + track A 122 + track B-safe 25 + 純詞義 11 + deferred 4。
 - 下一步是大宗 low_value_example 真實例句（Tatoeba，~3754）或非驗證 legacy：屬不同/較重的
   pipeline，需另立 setup，不在「安全 cheap 詞義」範圍。README roadmap step 5。
+
+### Iteration 059 — README step 5 起步：looser Tatoeba 真實例句（24 筆）
+
+2026-06-27。使用者裁示 step 5 用「looser Tatoeba sourcing」。先讀 references/real-examples.md
+與既有 pipeline（select_real_examples.py / prepare_real_example_review.py /
+apply_real_example_patch.js / scan_real_example_checkpoint.py），Tatoeba 資料已在
+scratch/tatoeba。
+
+select_real_examples.py --top-k 6 --limit 300 → 216 proposed（72%）、84 fallback。
+proposed 多落在 katakana_review/semantic_review（外來語、名詞），少數 cheap。
+
+人工嚴選 25→24 筆乾淨候選並逐筆審：
+- **排除**：substring 假匹配（クリーム⊂アイスクリーム、いかに⊂いかにも、スリー⊂スリーサイズ、
+  デー⊂バレンタインデー）、讀音不符（尽くし づくし vs 句中 つくし）、性內容（勃起）、
+  專名當人名（青山さん/鳥取/ボブ）、不自然（コマンド）。
+- **修 fugashi 讀音錯**（gate 不驗讀音）：私→わたくし 全改 わたし（4007/4003/4392/4072/4217）；
+  連濁 沿い そい→ぞい（4430 海岸沿い＝かいがんぞい）。
+- 逐筆把日文真句翻成繁中。
+- scanner 抓到 4406 ポンド 讀音含全形數字 ２００ → 丟棄該列（24 筆）。4170 射撃「名手」屬
+  良性（射擊運動）保留。
+
+apply gate：resolvedLowValue 24、meaningChanges 0、qualityScoreChanges 0（gate 保證不動詞義、
+保留 sentence_id + CC-BY 出處）→ apply（chunk 16/17）。逐 chunk 核對 24/24、0 stray
+（變動鍵 example/source/_quality，皆 real-example apply 預期）。
+
+品質：**low_value_example 3758→3734（-24）**、badEntries 8046→8044（只 -2，因這些列多半還帶
+其他 issue，例句修好但未完全乾淨）、issueCount 約 19713→19689。DB import
+`1c9fd2f4-d616-46ac-873d-2c1baa7c389a`、api_parity match、verb 0/0、runtime/build 通過。
+
+省成本反省：
+
+- looser Tatoeba 的工作是「過濾與審查」不是「檢索」：substring 假匹配、fugashi 讀音錯
+  （私=わたくし、連濁）、appropriateness 都要人工逐筆看；已把這些固定檢查寫進 state
+  real_examples.LOOSER_FLOW，下批照表操課。
+- 真實例句讓 low_value 1:1 下降，但對 badEntries 影響小（列常另帶 meaning issue，且那些
+  bucket 是 katakana/semantic，cheap 不能動詞義）→ 真實例句的價值在「自然例句」本身，不是
+  清 badEntries。
+- selector 慢（每次 tokenize 248k 句）；一次多 select（limit 300）攤平固定成本，分多批審。
