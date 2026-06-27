@@ -24,7 +24,20 @@
 把 13,000 筆 vocab corpus 的內容品質清乾淨：自然可教學的真實例句、正確讀音、
 正確繁中詞義、安全的動詞變化；最後才做 related 向量。**live 進度與下一個動作以
 `VOCAB_CLEANUP_STATE.json` 為準**（meaning cleanup 與 example cleanup 是兩條可獨立
-推進的 track；目前在 dual-row meaning Phase 1）。
+推進的 track）。cheap-meaning 各 track 已完成；目前主力在 low_value 真實例句。
+
+### First-principles 教訓（2026-06-28，做任何重複工前先讀）
+
+別「類比推理」地手搖流程——先量測 ground truth，確認哪一段其實已有免費正解：
+
+- **真實例句的讀音不要自己生/手修**：`enrich_real_example_candidates.py` 會接上
+  Tatoeba 人工振假名（量測涵蓋 100%，且常比手審更準）。我曾連續 18 批用 fugashi
+  生讀音再手修 私=わたし/連濁，全是白工。
+- **翻譯交給 Haiku**（真句翻中是 Haiku 可靠工作），Sonnet/Opus 只做 orchestrate +
+  抽審語意/適切性。
+- **db:import + build 是每批固定大成本**：累積 ~100 筆再 checkpoint，別每 ~22 筆燒一次。
+- 通則：重複手工 > 3 批時，停下來問「這該是確定性腳本 / 便宜模型 / 既有資料源嗎？」
+  完整新流程見 `.claude/skills/vocab-cleanup/references/real-examples.md` 的「CORRECTED FLOW」。
 
 ## 硬限制（safety-critical，務必遵守）
 

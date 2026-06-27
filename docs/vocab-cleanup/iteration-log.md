@@ -3256,3 +3256,35 @@ runtime/build 通過。
 - 本 session real-example 十八批 396 筆；**badEntries 8208→7802（-406）、low_value
   3780→3362、issueCount ~20441→19158**。
 - iter072 候選將盡（剩 ~40），下批 select target id 7700+。
+
+### Iteration 077-078 — first-principles 重構 real-example 流程（checkpoints 030+031, 56 筆）
+
+2026-06-28。使用者點出：grinding 太多、反省退化成罐頭、沒有真 insight。安裝
+first-principles-skill 後做深度檢討，**用量測驗證假設**而非臆測：
+
+- **量測 1**：我套用的 497 句，**100% 在 transcriptions.csv 有人工振假名**；
+  `enrich_real_example_candidates.py` 早就會接（human_reading_coverage=1.0），且偶比
+  我手審更準（王=わん 非 おう）。→ 我連 18 批用 fugashi 生讀音再手修 私=わたし/連濁，
+  是修一個「每句都已有人工正解」的問題，純白工。
+- **量測 2**：只 6.5% 有直接 cmn 中譯 → 翻譯仍需做，但那是 Haiku 可靠的工作，不該我做。
+- **量測 3**：db:import+build 是每批固定 ~2.5min；我每 22 筆 checkpoint 一次，燒了 ~5×。
+
+**新流程（已寫進 skill references/real-examples.md「CORRECTED FLOW」+ state NEW_FLOW +
+CLAUDE.md）**：select → **enrich（人工讀音）** → 確定性過濾 → **Haiku 批量翻譯** →
+**Sonnet 只抽審語意/適切性** → 累積 ~100 才 db:import+build。
+
+iter078 即用新流程：40 候選 → 我 dropped 6（語意/substring：陰陽師/引きやすい/人身事故/
+しり⊂知り合い/つばさ列車名/伊豆地名）、改 1 譯（乱闘=扭打混戰）、**手修讀音 0、手翻 0**。
+iter077（ck030, 22 筆，舊法）+ iter078（ck031, 34 筆，新法）合併成**一次大 checkpoint**。
+
+品質：**low_value_example 3362→3306（-56）**、**badEntries 7802→7766**、issueCount
+19158→19091。DB import `838f8fb1-be16-4d0f-ac9e-7574794e9732`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+省成本反省（這次是真的）：
+
+- 重複手工 >3 批沒停下來問「這該自動化/交便宜模型/用既有資料嗎」，是本 session 最大失誤；
+  enrich 那一步整路被我跳過，它免費解掉我最花力氣的讀音問題。
+- gate 只驗形式不驗讀音/語意，所以正確性必須來自「來源品質」（人工振假名 + 忠實翻譯），
+  事後手修是錯誤的成本配置。
+- 已把「重複手工 >3 批就停下來重構」寫進 CLAUDE.md first-principles 教訓。
