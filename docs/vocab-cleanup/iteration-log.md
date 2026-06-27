@@ -3055,3 +3055,24 @@ runtime/build 通過。
 - 本 session real-example 八批 176 筆；**badEntries 8208→7974、low_value 3780→3582**。
 - iter064 候選的乾淨漢字名詞將盡，下批多為外來語或需重跑 selector（建議下次直接 select 深序列
   id 5xxx-12xxx 段，漢字名詞密度高、假匹配少）。
+
+### Iteration 067 — looser Tatoeba 真實例句第九批（22 筆，深序列 id 5440-6400）
+
+2026-06-28。select --limit 1200 → 829 proposed（69%）。取 id≥5440 的 cheap/semantic 漢字
+名詞 22 筆：通行/監査/結び/空軍/弁護/出世/拝見/破損/学期/辞職/学術/内定/徴収/産地/検察/
+郊外/情勢/除外/理性/奨学/役所/断言。修讀音 6370/5838 私=わたし。排除敏感（大麻/売春/出血/
+拳銃/精子）、讀音不符（神田 しんでん/かんだ、北斗七星 ななせい）、archaic（貴女 きじょ）。
+
+apply gate resolvedLowValue 22、meaningChanges 0 → apply（chunk ×5）。逐 chunk 核對 22/22、
+0 stray。scanner 6370 空軍良性保留。
+
+品質：**low_value_example 3582→3560（-22）**、**badEntries 7974→7955**、issueCount
+19398→19375。DB import `162e4fa7-24f4-4d62-8590-5b5bbd0f1d6b`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+省成本反省：
+
+- 深序列 id 5440-6400 漢字名詞密度高、句子自然、讀音好驗（本批 22 筆只 2 個 私=わたし 要修），
+  是目前 yield/品質最佳的取樣段；下批續取此段，iter067 候選尚餘 ~120 clean。
+- 本 session real-example 九批 198 筆；**badEntries 8208→7955、low_value 3780→3560、
+  issueCount ~20441→19375**。
