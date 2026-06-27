@@ -3034,3 +3034,24 @@ runtime/build 通過。
   （何日間）、訓讀多音（難し/応え）。逐字看不可省，但錯誤型態固定、可快速掃。
 - 本 session real-example 七批 158 筆；**badEntries 8208→7986、low_value 3780→3600**。
 - iter064 候選仍有 cleaned kanji-noun 可用；下批續重用。
+
+### Iteration 066 — looser Tatoeba 真實例句第八批（18 筆）
+
+2026-06-28。重用 iter064 候選漢字名詞 18 筆：あかり/本文/他社/発掘/工学/中東/開拓/察し/
+学歴/引け/心地/飼育/奉仕/海兵/疲労/意義/執筆/革新。修讀音 4767/5223 私=わたし
+（5079 他社「私ども」保留 わたくしども，商用謙稱讀法正確）。排除敏感（拉致/精子/侵害/爆破）、
+專名（読売/三菱/財団 ゴリラ財団）、latin（検定 ＳＴＥＰ）。scanner 5288 海兵隊良性保留。
+
+apply gate resolvedLowValue 18、meaningChanges 0 → apply（chunk ×3）。逐 chunk 核對 18/18、
+0 stray。
+
+品質：**low_value_example 3600→3582（-18）**、**badEntries 7986→7974**、issueCount 約
+19419→19398。DB import `75296d55-b6b1-4466-ab0b-32807974ac39`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+省成本反省：
+
+- 「私ども」在商用語境讀 わたくしども 是對的，不要一律把 私 改 わたし；要看語境（謙稱/口語）。
+- 本 session real-example 八批 176 筆；**badEntries 8208→7974、low_value 3780→3582**。
+- iter064 候選的乾淨漢字名詞將盡，下批多為外來語或需重跑 selector（建議下次直接 select 深序列
+  id 5xxx-12xxx 段，漢字名詞密度高、假匹配少）。
