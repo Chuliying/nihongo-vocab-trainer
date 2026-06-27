@@ -3179,3 +3179,22 @@ runtime/build 通過。
   口調/語氣類詞時用「口吻」等避開字面片段（同 iter050 教訓，現也適用於 real-example c）。
 - 本 session real-example 十四批 308 筆；**badEntries 8208→7870、low_value 3780→3450**。
 - iter072（1800 select）id>6400 段尚有大量乾淨漢字名詞，下批續用不必重跑 selector。
+
+### Iteration 073 — looser Tatoeba 真實例句第十五批（22 筆）
+
+2026-06-28。續用 iter072 候選 id>6400 段 22 筆：援護/白目/任命/海域/発作/井戸/視察/停車/観念/
+崇拝/反響/承諾/用紙/引き換え/雑魚/小鳥/啓発/開花/大国/賛同/愛国/国防。修讀音 7188/6587
+私=わたし。排除 substring（さつまいも）、reading 不符（水曜日 すいようひ、一味 ひとあじ）。
+
+apply gate resolvedLowValue 22、meaningChanges 0 → apply（chunk ×6）。逐 chunk 核對 22/22、
+0 stray。
+
+品質：**low_value_example 3450→3428（-22）**、**badEntries 7870→7852**、issueCount
+19250→19227。DB import `c2569471-f356-4962-a504-c8efacac9f75`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+省成本反省：
+
+- 本 session real-example 十五批 330 筆；**badEntries 8208→7852（-356）、low_value
+  3780→3428、issueCount ~20441→19227**。
+- iter072（1800 select）id>6400 段尚餘 ~100 乾淨列，下批續用。
