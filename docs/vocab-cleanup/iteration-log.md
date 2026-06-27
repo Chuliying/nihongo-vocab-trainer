@@ -2813,3 +2813,36 @@ track A/B 一樣連例句處理；或轉非 cheap-bucket 的 jmdict legacy／未
 - cheap 純詞義已盡，後續是「詞義+例句」糾纏列或非 cheap 高風險列；roadmap step 4/5 邊界到了，
   下一步要嘛延續 track A/B 式的「詞義+例句」批，要嘛進 low_value 真實例句（Tatoeba）大宗。
 - 地名（北京）一律排除；cheap 不碰專名/地名的硬規則持續生效。
+
+### Iteration 058 — 收尾 iter055 deferred 的 4 筆壞日文 chinese_placeholder
+
+2026-06-27。iter055 曾 defer 4 筆例句日文被硬插字弄壞的 chinese_placeholder 列
+（4637 絶賛／4646 途端／6005 曰く／7102 ちょうだい）。它們其實是常見詞，依使用者已批准的
+「生成例句」方針，可給合語法的新例句後清乾淨。
+
+Sonnet 自起草 m + 新例句（4 筆常見詞，自起草省 agent）：
+- 4637 絶賛「極力稱讚、盛讚」｜映画は批評家から絶賛されました。
+- 4646 途端「正當…的時候、剎那、一…就」｜家を出た途端、雨が降り始めた。（用對 〜た途端 句型）
+- 6005 曰く「緣故、來歷；某人說」｜この建物には曰くがあるそうだ。
+- 7102 ちょうだい「（請）給我；領受」｜お水を一杯ちょうだい。
+
+逐字複查讀音（gate 不驗讀音）：ぜっさん／とたん／いわく／ちょうだい 與整句假名皆正確。
+candidate gate issueDelta 12→0 → review-merge 全 approve → full gate 12→0 → apply 4
+（chunk 18/24/28）。逐 chunk 核對 4/4、0 stray。
+
+品質：**badEntries 8050→8046**、chinese_placeholder 419→415、meaning_placeholder 483→479。
+DB import `0ddf9314-f374-413e-810d-b33d783ac1b6`、api_parity match、verb 0/0、runtime/build 通過。
+
+**所有「安全的 cheap 詞義工作」到此盡數完成**（DUAL clean、TRACK A、TRACK B-safe、cheap
+純詞義、deferred 壞日文）。剩下的 cheap 糾纏列只剩 14 筆 chinese_latin，全是專名／地名／敏感
+（青山/白石/大輔/上海/初音/愛人/下し/幼女/爆乳/二宮/荒木/本間/天草/南京）→ 依硬規則排除，
+不由 cheap/生成處理。
+
+省成本反省：
+
+- deferred 列要回收：iter055 defer 的壞日文列，在「生成例句」獲准後就能用同法收掉；別讓
+  deferred 永遠擱置，每次有新方針就回頭掃一遍。
+- session 累計（iter051-058 + README）：**badEntries 8208→8046（-162）**、issueCount
+  約 20441→19713。dual clean 437 + track A 122 + track B-safe 25 + 純詞義 11 + deferred 4。
+- 下一步是大宗 low_value_example 真實例句（Tatoeba，~3754）或非驗證 legacy：屬不同/較重的
+  pipeline，需另立 setup，不在「安全 cheap 詞義」範圍。README roadmap step 5。
