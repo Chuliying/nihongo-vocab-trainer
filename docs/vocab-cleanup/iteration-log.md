@@ -2884,3 +2884,32 @@ apply gate：resolvedLowValue 24、meaningChanges 0、qualityScoreChanges 0（ga
   bucket 是 katakana/semantic，cheap 不能動詞義）→ 真實例句的價值在「自然例句」本身，不是
   清 badEntries。
 - selector 慢（每次 tokenize 248k 句）；一次多 select（limit 300）攤平固定成本，分多批審。
+
+### Iteration 060 — looser Tatoeba 真實例句第二批（20 筆，重用 iter059 候選）
+
+2026-06-27。重用 iter059 已 select 的候選檔（省去慢速 selector），從剩餘 proposed 再嚴選
+20 筆乾淨真句。沿用 LOOSER_FLOW 的人工過濾：
+
+- **排除**：substring（クリーム/スリー/デー）、全形或半形數字在句中（ポンド/ユーロ/エビ/ピース/
+  オランダ）、符號 ・／＆（ループ/オイル/ブルース）、性內容（勃起）、專名人名（青山/鳥取/ボブ/
+  ポチ/マリア）、ambiguous（マック Mac/麥當勞、フライ fly/炸物）、morbid（やがて…死に絶える）。
+- 本批 20 筆讀音皆正確（無 私=わたくし 之類），逐筆翻譯繁中。
+
+涵蓋詞例：アドレス/クオリティ/ベルリン/シカゴ/消防/ワクチン/カジノ/サル/いかに（真いかに非
+いかにも）/フラッシュ/メダル/ドロップ/ムービー/バグ/収容/買取/主導/ステップ/センサー/
+ダイヤモンド。
+
+scanner 0 flag → apply gate resolvedLowValue 20、meaningChanges 0、qualityScoreChanges 0 →
+apply（chunk 13/16/17/18）。逐 chunk 核對 20/20、0 stray。
+
+品質：**low_value_example 3734→3714（-20）**、badEntries 8044→8038、issueCount 約
+19689→19614。DB import `e64c67cb-b385-49b8-a3dc-55c13b120309`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+省成本反省：
+
+- selector 慢（tokenize 248k 句），故 iter059 一次 select 300，iter060 直接重用候選檔再審一批，
+  攤平固定成本；候選檔尚餘 ~70 proposed 可再做一批不必重跑 selector。
+- 過濾規則已穩定（substring / 數字 / 符號 / 敏感 / 專名 / ambiguous / 讀音），本批照表操課 0 返工；
+  下批續用。
+- 真句的價值在自然例句；badEntries 降幅小但 low_value 1:1 降，且這些是學習者最常看到的卡片內容。
