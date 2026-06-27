@@ -3010,3 +3010,27 @@ runtime/build 通過。
   讀音更可驗。已記入 state coverage 供下批優先。
 - fugashi 仍會錯複合詞讀音（何日間=なんにちかん），逐字看不可省。
 - 本 session real-example 六批 137 筆；low_value 3780→3621。iter064 候選尚餘 ~190，下批重用。
+
+### Iteration 065 — looser Tatoeba 真實例句第七批（21 筆，續漢字名詞）
+
+2026-06-28。重用 iter064 候選，續取漢字名詞（cheap/semantic）21 筆：落下/脅迫/まき/役者/
+いちご/行列/燃焼/前進/拍手/推理/偽装/降伏/犯行/捜索/人質/改修/終盤/手配/出店/大将/林檎。
+
+逐字複查抓 fugashi 錯：4949 私=わたし、4994 丸い まりい→まるい。排除敏感（勃起/暴行/痴漢/
+股間）、專名（鳥取/青山/金沢/鎌倉/青木/上海/小泉総裁）、讀音不符（難し かたし vs むずかし、
+応え ごたえ vs こたえ、漬け 連濁不定）。scanner 3 sensitive（降伏/人質/大将）皆良性
+（成語/文學/史）保留。
+
+apply gate resolvedLowValue 21、meaningChanges 0 → apply（chunk ×3）。逐 chunk 核對 21/21、
+0 stray。
+
+品質：**low_value_example 3621→3600（-21）**、**badEntries 8001→7986**、issueCount 約
+19442→19419。DB import `a940f84a-955c-4703-880c-3e80dbfc06e3`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+省成本反省：
+
+- 漢字名詞批持續穩定；fugashi 讀音錯集中在：私=わたくし、連濁（づけ/まる→まり）、複合詞
+  （何日間）、訓讀多音（難し/応え）。逐字看不可省，但錯誤型態固定、可快速掃。
+- 本 session real-example 七批 158 筆；**badEntries 8208→7986、low_value 3780→3600**。
+- iter064 候選仍有 cleaned kanji-noun 可用；下批續重用。
