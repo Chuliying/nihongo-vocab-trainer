@@ -3198,3 +3198,22 @@ runtime/build 通過。
 - 本 session real-example 十五批 330 筆；**badEntries 8208→7852（-356）、low_value
   3780→3428、issueCount ~20441→19227**。
 - iter072（1800 select）id>6400 段尚餘 ~100 乾淨列，下批續用。
+
+### Iteration 074 — looser Tatoeba 真實例句第十六批（22 筆）
+
+2026-06-28。續用 iter072 候選 id>6400 段 22 筆：交付/地名/値上げ/入会/遮断/消去/腐敗/周期/
+ひまわり/面会/水槽/辞典/聖人/友好/発散/遺言/処方/区間/廊下/換算/好感/当社。修讀音 6420/7251
+私=わたし。排除敏感（殺意/銃撃）、專名（高松）。
+
+apply gate resolvedLowValue 22、meaningChanges 0 → apply（chunk ×6）。逐 chunk 核對 22/22、
+0 stray。
+
+品質：**low_value_example 3428→3406（-22）**、**badEntries 7852→7836**、issueCount
+19227→19203。DB import `5805c78e-123d-4b39-8ead-04788f35323b`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+省成本反省：
+
+- 本 session real-example 十六批 352 筆；**badEntries 8208→7836（-372）、low_value
+  3780→3406、issueCount ~20441→19203**。
+- iter072 候選尚餘 ~80，下批續用。
