@@ -3217,3 +3217,22 @@ runtime/build 通過。
 - 本 session real-example 十六批 352 筆；**badEntries 8208→7836（-372）、low_value
   3780→3406、issueCount ~20441→19203**。
 - iter072 候選尚餘 ~80，下批續用。
+
+### Iteration 075 — looser Tatoeba 真實例句第十七批（22 筆）
+
+2026-06-28。續用 iter072 候選 22 筆：音響/添加/廃墟/療養/感性/支出/目玉/陣営/制裁/家出/圧倒/
+挫折/超人/飛躍/巡査/試作/持ち帰り/解任/賃貸/工芸/富豪/水面。修讀音 7720 私たち=わたしたち。
+排除 自民/小泉、伊勢、reading 不符（日曜日/語学力）。
+
+apply gate resolvedLowValue 22、meaningChanges 0 → apply（chunk ×4）。逐 chunk 核對 22/22、
+0 stray。
+
+品質：**low_value_example 3406→3384（-22）**、**badEntries 7836→7819**、issueCount
+19203→19180。DB import `566a4906-afcd-430e-80af-59ebe03e47b4`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+省成本反省：
+
+- 本 session real-example 十七批 374 筆；**badEntries 8208→7819（-389）、low_value
+  3780→3384、issueCount ~20441→19180**。
+- iter072 候選 id>6400 段將盡（剩 ~60），下批 select target id 7700+。
