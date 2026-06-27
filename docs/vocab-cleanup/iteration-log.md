@@ -3096,3 +3096,23 @@ runtime/build 通過。
 - 本 session real-example 十批 220 筆；**badEntries 8208→7939、low_value 3780→3538、
   issueCount ~20441→19349**。
 - 深序列漢字名詞段（5440-6400）持續是最佳取樣；iter067 候選尚餘 ~100，下批續用。
+
+### Iteration 069 — looser Tatoeba 真實例句第十一批（22 筆）
+
+2026-06-28。續用 iter067 候選深序列 22 筆：おでん/物件/指令/気象/商人/小遣い/祝福/入国/
+再発/返済/破棄/線路/記号/打撃/論争/おかず/洗浄/群れ/足し/降下/会館/小児。修讀音 6372
+線路沿い そい→ぞい、6376 何を なん→なに。排除敏感（射殺/独裁ヒトラー）。scanner 5544
+戦勝国/敗戦国良性保留。
+
+apply gate resolvedLowValue 22、meaningChanges 0 → apply（chunk ×5）。逐 chunk 核對 22/22、
+0 stray。
+
+品質：**low_value_example 3538→3516（-22）**、**badEntries 7939→7919**、issueCount
+19349→19325。DB import `0b8d1052-c22e-48ba-abfb-b8f05459b662`、api_parity match、verb 0/0、
+runtime/build 通過。
+
+省成本反省：
+
+- 本 session real-example 十一批 242 筆；**badEntries 8208→7919、low_value 3780→3516、
+  issueCount ~20441→19325**。
+- fugashi 讀音錯型態又添：連濁（線路沿い=せんろぞい）、何＋を=なに（非 なん）。逐字看續抓。
