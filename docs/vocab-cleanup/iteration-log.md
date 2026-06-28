@@ -3511,3 +3511,23 @@ runtime/build 通過。
   4. NEXT (iter089): re-run --loose select on the still-fallback ids, OR relax batch
      filters to recover the ~850 filtered-proposed, OR accept the ~926 no-candidate rows
      stay fallback. Grammar/verb remain off-limits per user.
+
+### Iteration 089 (2026-06-28) — Verb real examples (user relaxation, checkpoint_042)
+
+- **Context**: User approved opening VERB real examples (example-only; conjugations never
+  LLM-generated; verb_info untouched; deterministic apply gate enforces no meaning/quality change).
+- **What**: 155 verb low_value rows -> select_real_examples --loose = **96.8% coverage**
+  (verbs appear in many sentences) -> enrich (human furigana 100%) -> verb filter
+  (matched_lemma==word + appropriateness + length + no-latin + name-context) -> Haiku ×3.
+- **Result**: 118 clean -> spot-review dropped 11 -> **107 applied** (checkpoint_042) = 91% yield.
+  **withVerbInfo stayed 678, generatedSuspect/mechanicalError 0** (verb_info untouched, as designed).
+  low_value_example 2554->**2447**; badEntries 7572->**7566**. db:import `ccdf5b08`, runtime ok, build pass.
+- **省成本反省**:
+  1. Verb-specific risk CONFIRMED + handled: fugashi assigns a homophone lemma sometimes
+     (ほこり臭い lemma'd as 誇る; 指をくわえて as 加える; 明日発つ as 経つ). The lemma==word
+     filter reduced but didn't eliminate it; SPOT-REVIEW is required for verbs. Recorded.
+  2. Verbs are HIGH coverage (96.8%) and high yield (91%) — easiest seam, should have been
+     done earlier if not for the (correct) safety caution; user relaxation unlocked it safely.
+  3. **SESSION TOTAL iter080-089: 805 real examples; low_value_example 3252->2447 (-805, -25%);
+     badEntries 7736->7566.** Remaining needs a new direction (noun no-candidate / grammar /
+     source change) — only noun+katakana+loose+verb authorized so far.
