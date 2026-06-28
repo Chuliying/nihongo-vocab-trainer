@@ -3450,3 +3450,22 @@ runtime/build 通過。
   2. iter082.enriched pool now drained (iter084-085 took 247 katakana). iter086 = FRESH
      select (katakana not yet covered + looser-Tatoeba kanji fallback).
   3. Session total iter080-085: 530 real examples applied; low_value_example 3252->2722.
+
+### Iteration 086 (2026-06-28) — Drain iter082 pool, deep-id katakana (checkpoint_039)
+
+- **What**: Last batch from iter082.enriched (9 kanji + 62 katakana clean remaining,
+  incl deep ids 10000-12960). Haiku ×2 → spot-review.
+- **Result**: dropped 24 (resurfacing rejects Bob/レズ/ジーン/フィル/イブ/ナポレオン +
+  katakana names メリー/サリー/バージニア + vulgar フリーター + simplified) → **43 applied**
+  (checkpoint_039). low_value_example 2722→**2679**; badEntries 7622→**7618**.
+  Verb invariant 0/0. db:import `2416d6eb`, runtime ok, build pass.
+- **省成本反省**:
+  1. Expanded `real_example_rejected_ids.txt` to 22 ids — same word-level rejects kept
+     resurfacing across iter082/084/085/086 because the selector didn't exclude them.
+     The ledger now does; future selects MUST load it.
+  2. iter082.enriched FULLY DRAINED (488 applied iter082-086). Session total iter080-086:
+     **573 real examples**, low_value_example 3252→2679, badEntries 7736->7618.
+  3. NEXT (iter087): the remaining noun low_value rows are FALLBACK (no exact Tatoeba) —
+     needs the user-approved LOOSER Tatoeba retrieval (broaden select_real_examples.py
+     matching: substring-with-boundary / wider POS / lower score threshold). That is a
+     script enhancement, the clean next work unit. Verbs/grammar remain off-limits.
