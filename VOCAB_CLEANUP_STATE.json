@@ -1,12 +1,12 @@
 {
   "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST. CLAUDE.md is a lean entry point; full history is docs/vocab-cleanup/iteration-log.md (do not read it to resume). Update this file at the end of every iteration. Keep it short.",
   "updated": "2026-06-28",
-  "head_commit": "5b15ca9",
+  "head_commit": "ef3f2fa",
   "KATAKANA_RELAXATION_2026-06-28": "USER APPROVED relaxing two hard_constraints for the real-example flow: (1) looser Tatoeba for kanji-noun fallback rows; (2) cheap model MAY process katakana_review NOUNS' real examples (NOT verbs/grammar — those stay off-limits). Safety kept: real-example attachment never generates verb_info/meaning; katakana selection uses a TOKEN-BOUNDARY rule (word present AND char before/after not katakana) to avoid substring traps (ト⊂バーラト, おん⊂オンライン). iter084 = first katakana batch, 94% yield (127/135).",
-  "pipeline_stage": "content-cleanup; cheap-meaning DONE; low_value real examples via NEW_FLOW + filter stack + LOOSE Tatoeba (user relaxation). iter059-087 applied 1182 sentences (checkpoints 012-040). ~2576 low_value_example remain. iter087 = select_real_examples.py --loose (relaxed length<=42/outside_n45<=5/tokens<=18/2 commas) recovered 987 candidates from previously-ALL-fallback noun rows (74% apply yield). Re-run --loose select on remaining noun fallback ids for iter088+. Verbs(155)/grammar(513) stay off-limits. EXCLUDE real_example_rejected_ids.txt (49 ids). 常用名詞500 tag shipped.",
+  "pipeline_stage": "content-cleanup; cheap-meaning DONE; low_value real examples via NEW_FLOW + filter stack + LOOSE Tatoeba. iter059-088 applied 1204 sentences (checkpoints 012-041). ~2554 low_value_example remain. The --loose select on the 1913 noun fallback ids is now ~drained (~140 clean applied; rest filtered as proper/name/latin-in-sentence or still no candidate). REMAINING noun low_value = (a) ~850 that got a loose candidate but failed strict batch filters (latin-in-sentence/proper/length) - partly salvageable with relaxed batch filters or manual, (b) ~926 with NO Tatoeba candidate even loose (need a different source or accept fallback). Plus grammar 513 + verb 155 (user kept off-limits). EXCLUDE real_example_rejected_ids.txt (59 ids). 常用名詞500 tag shipped.",
   "quality": {
     "entries": 13000,
-    "badEntries": 7574,
+    "badEntries": 7572,
     "issueCount": 19025,
     "note": "badEntries high because legacy_meaning_unreviewed is a provenance flag (unverified), not known-wrong; dual rows stay 'bad' after meaning fix because low_value_example is intentionally kept for Phase 2"
   },
@@ -52,7 +52,7 @@
     "how_used": "Exporter adds gs (provenance) + gj (JMdict candidate senses). gs=jmdict_entry_matched proves the gloss belongs to the word's JMdict entry, but contextual sense selection is still reviewed. Other statuses must not be trusted blindly.",
     "active_bucket_impact": "cheap_model_candidate legacy_meaning: 1832/1935 (94.7%) entry-matched, 103 unreliable."
   },
-  "last_neon_import_run_id": "532f165e-6d22-467b-8d5c-327e5b1d1acc",
+  "last_neon_import_run_id": "bd03b89c-6c76-4f41-b4e4-a36427334e38",
   "dual_phase1": {
     "strategy": "User chose phased (option 3). Phase 1 = fix the MEANING of the 437 dual (legacy_meaning + low_value_example) rows now, deliberately KEEPING the low-value example for a later unified low_value_example campaign (Phase 2).",
     "gate_flag": "NEW: apply_manifest_enrichment_patch.js --keep-low-value-example. Drops `e` from required, REQUIRES the example unchanged (changedExample must be 0), and treats low_value_example as an allowed residual. Meaning checks + reviewed:true still enforced. Use this flag (dry-run AND apply) for every dual batch.",

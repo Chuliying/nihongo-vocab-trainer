@@ -3491,3 +3491,23 @@ runtime/build 通過。
      caught all; reject ledger now 49 ids.
   3. Session total iter080-087: 676 real examples; low_value_example 3252→2576;
      badEntries 7736→7574. iter088 = re-run --loose select on remaining fallback ids.
+
+### Iteration 088 (2026-06-28) — Drain loose pool + hand-fix slips (checkpoint_041)
+
+- **What**: Last clean candidates from iter087.enriched loose pool (32 remaining).
+  Hand-fixed 5 simplified-char slips on otherwise-clean sentences (アスリート/日報/胃腸/
+  バレンタイン/シューズ); dropped 10 (latin/mainland-vocab/names/placeholder).
+- **Result**: **22 applied** (checkpoint_041). low_value_example 2576→**2554**;
+  badEntries 7574→**7572**. Verb invariant 0/0. db:import `bd03b89c`, runtime ok, build pass.
+- **省成本反省**:
+  1. The --loose select of 1913 ids is ~drained of clean (≈140 applied iter087-088).
+     The 987 proposed lost ~850 to strict batch filters (latin-in-sentence, proper, name,
+     length) — those are partly real rejections, partly salvageable.
+  2. 22 rows is an inefficient checkpoint (db:import+build fixed cost) but banks the pool
+     drain at a clean session boundary.
+  3. **SESSION TOTAL iter080-088: 698 real examples applied; low_value_example 3252→2554
+     (-698, -21%); badEntries 7736→7572.** Plus: 常用名詞500 tag (schema+frontend),
+     audit_propernoun.py, --loose retrieval, reject ledger (59 ids).
+  4. NEXT (iter089): re-run --loose select on the still-fallback ids, OR relax batch
+     filters to recover the ~850 filtered-proposed, OR accept the ~926 no-candidate rows
+     stay fallback. Grammar/verb remain off-limits per user.
