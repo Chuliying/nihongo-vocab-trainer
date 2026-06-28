@@ -3,6 +3,7 @@
 import { memo } from "react";
 import { Check } from "lucide-react";
 import type { VocabEntry } from "@/lib/types";
+import { isExampleOptimized } from "@/lib/example-quality";
 import { RelatedWords } from "@/components/RelatedWords";
 import { VerbInfoPanel } from "@/components/VerbInfoPanel";
 import { Badge } from "@/components/ui/badge";
@@ -76,17 +77,19 @@ export const VocabCard = memo(function VocabCard({
           </span>
         </summary>
         <div className="mt-3 space-y-4">
-          <blockquote className="space-y-1 border-l-2 border-primary/40 pl-3">
-            <p className="font-serif leading-relaxed">
-              {entry.example.japanese}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {entry.example.reading}
-            </p>
-            <p className="text-sm text-foreground/80">
-              {entry.example.chinese}
-            </p>
-          </blockquote>
+          {isExampleOptimized(entry) && (
+            <blockquote className="space-y-1 border-l-2 border-primary/40 pl-3">
+              <p className="font-serif leading-relaxed">
+                {entry.example.japanese}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {entry.example.reading}
+              </p>
+              <p className="text-sm text-foreground/80">
+                {entry.example.chinese}
+              </p>
+            </blockquote>
+          )}
           <VerbInfoPanel verbInfo={entry.verb_info} />
           <RelatedWords related={entry.related} onSelect={onRelatedSelect} />
         </div>

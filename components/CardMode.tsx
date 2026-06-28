@@ -6,6 +6,7 @@ import { AppShell } from "@/components/AppShell";
 import { DraggableProgress } from "@/components/ui/DraggableProgress";
 import { FilterSheet } from "@/components/FilterSheet";
 import { RelatedWords } from "@/components/RelatedWords";
+import { isExampleOptimized } from "@/lib/example-quality";
 import { SessionEndSummary } from "@/components/SessionEndSummary";
 import { VerbInfoPanel } from "@/components/VerbInfoPanel";
 import { Badge } from "@/components/ui/badge";
@@ -365,17 +366,19 @@ export function CardMode({
                     <p className="text-lg font-medium leading-relaxed text-primary">
                       {current.meaning}
                     </p>
-                    <blockquote className="space-y-1 border-l-2 border-primary/40 pl-3">
-                      <p className="font-serif leading-relaxed">
-                        {current.example.japanese}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {current.example.reading}
-                      </p>
-                      <p className="text-sm text-foreground/80">
-                        {current.example.chinese}
-                      </p>
-                    </blockquote>
+                    {isExampleOptimized(current) && (
+                      <blockquote className="space-y-1 border-l-2 border-primary/40 pl-3">
+                        <p className="font-serif leading-relaxed">
+                          {current.example.japanese}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {current.example.reading}
+                        </p>
+                        <p className="text-sm text-foreground/80">
+                          {current.example.chinese}
+                        </p>
+                      </blockquote>
+                    )}
                     <VerbInfoPanel verbInfo={current.verb_info} />
                     <RelatedWords related={current.related} onSelect={onRelatedSelect} />
                   </div>
