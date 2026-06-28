@@ -3336,3 +3336,36 @@ runtime/build 通過。
   4. Checkpointed at 70 (not 100) because the clean remainder of this pool is ~exhausted;
      one db:import+build for 70 beats spinning a fresh select+enrich+Haiku cycle just to
      reach 100. Single db:import (no redundant re-run), log tee'd.
+
+### Iteration 081 (2026-06-28) — Improved filter + drained residual pool (checkpoint_034)
+
+- **What**: Applied the iter080-lesson deterministic filter (word-has-kanji AND
+  matched-is-pure-kana ⇒ drop; matched word + name honorific ⇒ drop; expanded
+  appropriateness blocklist) to the remaining iter077.enriched pool. It cut 67/125
+  eligible rows automatically, leaving 58 candidates → Haiku-translated → spot-review.
+- **Result**: spot-review kept only **15/58** (fixed 1 simplified-char slip 动→動).
+  Applied 15 (checkpoint_034). low_value_example 3182→**3167**; badEntries 7693→**7682**.
+  Verb invariant 0/0. db:import `7c7fd1af-bf71-4d69-b642-f6a3b167c4b2`, runtime ok, build pass.
+- **省成本反省**:
+  1. The improved filter worked on its target class (kana-homophone/name mismatches
+     are GONE this batch), but the residual is now dominated by **kanji-form proper
+     nouns** (鳥取/金沢/上海/青木/函館/盛岡/伊豆/立花…) and katakana-loanword
+     substrings (おん⊂オンライン) that no current heuristic flags — the corpus has no
+     固有名詞 POS nor proper-noun _quality flag (re-confirmed via the 常用名詞500 pass).
+  2. **iter077.enriched is now exhausted of clean rows.** Continuing to mine it is
+     low-yield (15/58 = 26%). STOP mining it.
+  3. **Next lever (do this before more example batches)**: add a JMnedict proper-noun
+     filter to `select_real_examples.py` — the repo already has jamdict (.venv), and
+     JMnedict carries place/surname entries; exclude candidates whose target token
+     matches a JMnedict proper-noun reading. Then fresh-select deep kanji-noun id
+     ranges. This converts the dominant remaining waste from eyeballs to a script.
+  4. Combined the iter081 db:import+build with the frontend collection build (one
+     infra cycle for both) instead of two.
+
+### Frontend: 常用名詞500 tag collection (same session)
+
+- vocab_tags join table (schema + import + runtime) shipped earlier this session;
+  a sub-agent then added the **popular-nouns-500** collection: `CollectionConfig.tag`,
+  `getEntriesByTag` in both DB + JSON data sources, API route branch, auto-rendered
+  FilterSheet chip + shareable `?collection=popular-nouns-500`. tsc + build pass;
+  endpoint returns exactly 500 tagged entries.
