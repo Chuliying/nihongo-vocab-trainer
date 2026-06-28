@@ -3433,3 +3433,20 @@ runtime/build 通過。
      timeout (240s) or separately from db:import.
   3. NEXT: iter085 = remaining katakana from iter082.enriched; then fresh select for
      more katakana + looser-Tatoeba kanji fallback. Verbs/grammar remain off-limits.
+
+### Iteration 085 (2026-06-28) — More katakana (checkpoint_038)
+
+- **What**: Mined remaining katakana candidates in iter082.enriched (token-boundary
+  filter + fullwidth-latin exclusion). 182 → batch 135 → Haiku ×3 → spot-review.
+- **Result**: dropped 15 (latin Bob, simplified ×7, sensitive レズ, proper-name katakana
+  フィル/ジーン/イブ/ナポレオン/マーチ) → **120 applied** (checkpoint_038) = 89% yield.
+  low_value_example 2842→**2722**; badEntries 7633→**7622**. Verb invariant 0/0.
+  db:import `3a31afdd`, runtime ok, build pass.
+- **省成本反省**:
+  1. New katakana failure mode: loanword surnames/given-names (フィル=Phil, ジーン=Gene/Jean,
+     イブ=Eve, ナポレオン, マーチ=March) used AS names — audit_propernoun (JMnedict) is
+     kanji-oriented and misses katakana names. Could add a katakana-name list, but volume
+     is small; spot-review handles it.
+  2. iter082.enriched pool now drained (iter084-085 took 247 katakana). iter086 = FRESH
+     select (katakana not yet covered + looser-Tatoeba kanji fallback).
+  3. Session total iter080-085: 530 real examples applied; low_value_example 3252->2722.
