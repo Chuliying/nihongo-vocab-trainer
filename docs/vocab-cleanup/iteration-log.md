@@ -3411,3 +3411,25 @@ runtime/build 通過。
   3. Pipeline is stable at ~80-86% yield; spot-review is the remaining manual cost
      (sense mismatch + simplified-char slips the scanner misses). Could add a broader
      simplified-char check to the scanner to cut that too.
+
+### Iteration 084 (2026-06-28) — Katakana real examples (user relaxation, checkpoint_037)
+
+- **Context**: Measured remaining low_value_example (2969): kanji-noun exact-Tatoeba
+  seam ~drained; remainder = katakana nouns 1286, grammar 513, verb 155, kanji
+  fallback (no exact Tatoeba) ~825. User APPROVED relaxing the katakana_review +
+  kanji-fallback constraints (verbs/grammar stay off-limits).
+- **What**: Mined the 715 katakana candidates already in iter082.enriched (excluded
+  before). Added a TOKEN-BOUNDARY filter (word present AND neighbors not katakana) to
+  kill substring traps. 476 clean → batch 135 → Haiku ×3 → spot-review.
+- **Result**: dropped 8 (latin brand/simplified/drug/sexual) → **127 applied**
+  (checkpoint_037) = **94% yield** (highest yet — katakana is clean once boundary-filtered).
+  low_value_example 2969→**2842**; badEntries 7650→**7633**. Verb invariant 0/0.
+  db:import `61eb30cc`, runtime ok, build pass.
+- **省成本反省**:
+  1. Katakana, once token-boundary-filtered, is the cleanest seam (94%) — Haiku
+     translates loanword sentences reliably. ~349 katakana candidates remain in
+     iter082.enriched for iter085 (no re-select needed).
+  2. db:import+build together exceeded a 2min tool timeout; run build with a longer
+     timeout (240s) or separately from db:import.
+  3. NEXT: iter085 = remaining katakana from iter082.enriched; then fresh select for
+     more katakana + looser-Tatoeba kanji fallback. Verbs/grammar remain off-limits.
