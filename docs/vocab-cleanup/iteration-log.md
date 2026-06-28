@@ -3369,3 +3369,26 @@ runtime/build 通過。
   `getEntriesByTag` in both DB + JSON data sources, API route branch, auto-rendered
   FilterSheet chip + shareable `?collection=popular-nouns-500`. tsc + build pass;
   endpoint returns exactly 500 tagged entries.
+
+### Iteration 082 (2026-06-28) — Fresh select + full deterministic filter stack (checkpoint_035)
+
+- **What**: First fresh select_real_examples.py since the iter077.enriched pool drained.
+  Pipeline: low_value_example + pure-noun + unapplied (2423) → **audit_propernoun.py**
+  dropped 299 proper nouns → 2124 survivors → select (1085 proposed) → enrich (human
+  furigana 100%) → filters. KEY FIX mid-iteration: first batch was katakana-loanword
+  dominated (715/1085 pure katakana = katakana_review, an off-limits bucket); added a
+  **kanji-only filter** (word must contain kanji) — only 340 kanji nouns in the pool.
+- **Result**: batch 140 from deep kanji-noun ids (4174–9597), Haiku ×3, spot-review
+  dropped 19 → **121 applied** (checkpoint_035) = **86% yield** (vs iter081 26%).
+  low_value_example 3167→**3046**; badEntries 7682→**7664**. Verb invariant 0/0.
+  db:import `f3bd4e58`, runtime ok, build pass.
+- **省成本反省**:
+  1. WIN: the deterministic stack (proper-noun JMnedict + kana-homophone + appropriateness
+     + latin-in-j + kanji-only) lifted yield 26%→86%. Spot-review is now light.
+  2. WASTE: I first ran Haiku on a 130-row batch that was ~80% katakana loanwords before
+     realizing katakana_review is off-limits — ~130K Haiku tokens mostly wasted. ROOT
+     CAUSE: dropped the risk_bucket guard when switching to a fresh id-based select.
+     FIX (now in the iter082b selector + must persist): ALWAYS require word contains
+     kanji (excludes katakana loanwords) on top of pure-noun POS. Deep kanji-noun id
+     ranges (>9000) are the cleanest seam.
+  3. The deep-id (9000+) kanji compounds are clean and plentiful — keep mining upward.
