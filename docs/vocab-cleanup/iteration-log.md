@@ -3392,3 +3392,22 @@ runtime/build 通過。
      kanji (excludes katakana loanwords) on top of pure-noun POS. Deep kanji-noun id
      ranges (>9000) are the cleanest seam.
   3. The deep-id (9000+) kanji compounds are clean and plentiful — keep mining upward.
+
+### Iteration 083 (2026-06-28) — Mine remaining kanji pool (checkpoint_036)
+
+- **What**: Mined the rest of the iter082.enriched kanji-noun pool (added a
+  word-surface-must-be-present rule). 95 candidates, Haiku ×3, spot-review.
+- **Result**: dropped 18 (13 were resurfacing word-level rejects from iter082 +
+  軍艦/水木/留置/就業/simplified) → **77 applied** (checkpoint_036) = 81% yield.
+  low_value_example 3046→**2969**; badEntries 7664→**7650**. Verb invariant 0/0.
+  db:import `708f915e`, runtime ok, build pass.
+- **省成本反省**:
+  1. Same word-level rejects (上海/鎌倉/日産/検定-STEP/色気/細工/陽子/差し/吹き)
+     kept resurfacing across batches → created `real_example_rejected_ids.txt`; the
+     selector MUST exclude it so I stop re-reviewing known-bad ids.
+  2. iter082.enriched pool now fully mined (216 applied across iter082-083). iter084
+     needs a FRESH select_real_examples.py (deep kanji-noun ids), reusing the proven
+     filter stack + the reject ledger.
+  3. Pipeline is stable at ~80-86% yield; spot-review is the remaining manual cost
+     (sense mismatch + simplified-char slips the scanner misses). Could add a broader
+     simplified-char check to the scanner to cut that too.
