@@ -3306,3 +3306,33 @@ runtime/build 通過。
   （舊法要 ~2.5 批 × 22 + 各自 checkpoint）。
 - 也順手把 state next_actions 從過時雜訊改寫成 5 條反映現況的代辦（CLAUDE.md 指向它）。
 - 剩 ~3252 low_value（多 session）→ 之後 related vectors。新流程已寫進 skill/CLAUDE.md/state。
+
+### Iteration 080 (2026-06-28) — Real examples, low-id residual pool (checkpoint_033)
+
+- **What**: Mined the low-id residual of `real_example_candidates.iter077.enriched.jsonl`
+  (id 4036–7373, buckets semantic_review + cheap_model_candidate, **nouns only** per
+  established practice — prior 1058/1092 applied rows are 名詞, verb/grammar/katakana
+  buckets deliberately avoided). Selected 120, Haiku-translated 116 (2×58 parallel),
+  spot-reviewed all 120.
+- **Result**: dropped **50 (42%)**, applied **70** (checkpoint_033). Scanner all-clear;
+  apply gate `resolvedLowValue:70, meaningChanges:0, qualityScoreChanges:0`.
+  low_value_example 3252→**3182**; badEntries 7736→**7693**.
+- **Verb invariant**: generatedSuspect 0, mechanicalError 0 (intact).
+- **DB/build**: db:import run `76815b2b-c2d4-456e-9bb1-6c340292e0f9`, runtime validate ok
+  (13000 / 300), build passed.
+- **省成本反省**:
+  1. The 42% drop rate is the headline waste: the low-id pool is contaminated with
+     proper nouns (青山/金沢/上海/三菱/日産/函館…), kana-homophone substring mismatches
+     (灰汁⇄あく=悪, 減り⇄メリ-name, 稽古⇄ケイコ-name, おん⊂オンライン, がい⊂タフガイ),
+     and adult/crime content (勃起/ちんこ/股間/拉致/懲役/脱走). I eyeballed these instead
+     of filtering them — exactly the manual-work-that-should-be-a-script trap.
+  2. **Next-cheaper action**: add a deterministic pre-filter — (a) proper-noun list/heuristic
+     (the corpus has NO 固有名詞 POS nor a proper-noun _quality flag, confirmed by the
+     常用名詞500 pass), (b) `word has kanji AND matched_surface is pure kana ⇒ drop`
+     (kills homophone/name mismatches), (c) expand the appropriateness blocklist. Apply
+     BEFORE spending Haiku tokens on doomed rows.
+  3. High-id (>7700) kanji-noun ranges were far cleaner historically; prefer a fresh
+     `select_real_examples.py` over deep kanji-noun id ranges instead of grinding this pool.
+  4. Checkpointed at 70 (not 100) because the clean remainder of this pool is ~exhausted;
+     one db:import+build for 70 beats spinning a fresh select+enrich+Haiku cycle just to
+     reach 100. Single db:import (no redundant re-run), log tee'd.

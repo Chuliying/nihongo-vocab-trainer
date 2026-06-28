@@ -1,11 +1,11 @@
 {
   "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST. CLAUDE.md is a lean entry point; full history is docs/vocab-cleanup/iteration-log.md (do not read it to resume). Update this file at the end of every iteration. Keep it short.",
-  "updated": "2026-06-26",
-  "head_commit": "af05150",
-  "pipeline_stage": "content-cleanup; cheap-meaning DONE; low_value real examples via NEW_FLOW (enrich human readings + Haiku translate + spot-review + big checkpoint). iter059-079 applied 506 sentences (checkpoints 012-032). ~3252 low_value_example remain.",
+  "updated": "2026-06-28",
+  "head_commit": "ba5b2cd",
+  "pipeline_stage": "content-cleanup; cheap-meaning DONE; low_value real examples via NEW_FLOW (enrich human readings + Haiku translate + spot-review + big checkpoint). iter059-080 applied 576 sentences (checkpoints 012-033). ~3182 low_value_example remain.",
   "quality": {
     "entries": 13000,
-    "badEntries": 7736,
+    "badEntries": 7693,
     "issueCount": 19025,
     "note": "badEntries high because legacy_meaning_unreviewed is a provenance flag (unverified), not known-wrong; dual rows stay 'bad' after meaning fix because low_value_example is intentionally kept for Phase 2"
   },
@@ -51,7 +51,7 @@
     "how_used": "Exporter adds gs (provenance) + gj (JMdict candidate senses). gs=jmdict_entry_matched proves the gloss belongs to the word's JMdict entry, but contextual sense selection is still reviewed. Other statuses must not be trusted blindly.",
     "active_bucket_impact": "cheap_model_candidate legacy_meaning: 1832/1935 (94.7%) entry-matched, 103 unreliable."
   },
-  "last_neon_import_run_id": "e226fdfa-4905-446a-be4a-624a9cffb70e",
+  "last_neon_import_run_id": "76815b2b-c2d4-456e-9bb1-6c340292e0f9",
   "dual_phase1": {
     "strategy": "User chose phased (option 3). Phase 1 = fix the MEANING of the 437 dual (legacy_meaning + low_value_example) rows now, deliberately KEEPING the low-value example for a later unified low_value_example campaign (Phase 2).",
     "gate_flag": "NEW: apply_manifest_enrichment_patch.js --keep-low-value-example. Drops `e` from required, REQUIRES the example unchanged (changedExample must be 0), and treats low_value_example as an allowed residual. Meaning checks + reviewed:true still enforced. Use this flag (dry-run AND apply) for every dual batch.",
@@ -283,7 +283,7 @@
     "status": "candidate generator, artifact validator and example-only apply gate built; translation/reading review remains",
     "source": "Tatoeba/Tanaka CC-BY (scratch/tatoeba, gitignored); NOT NHK (copyright/register)",
     "INFLECTION": "iter035 DRAINED the cheap_model_candidate real-example pool that has a PROPOSED Tatoeba candidate. prepare_real_example_review --risk cheap_model_candidate now returns 0 rows after excluding packets 005-011. The 2084 cheap_model_candidate bucket rows that remain are bad for OTHER reasons (meaning_latin / legacy_meaning / placeholder), NOT low_value_example-with-candidate. Remaining low_value_example rows (3780) are mostly FALLBACK (no natural Tatoeba sentence) or live in non-cheap risk buckets.",
-    "coverage": "queue 3252 after iter079. NEW_FLOW running well: iter079 = 65 Haiku-translated, I dropped 11 on sense, applied 54 in ONE checkpoint, hand-fixed 0 readings, hand-translated 0. Reusable enriched pools drained for id>7700; next: fresh select_real_examples.py (deep id) -> enrich -> Haiku -> spot-review.",
+    "coverage": "queue 3182 after iter080 (checkpoint_033, 70 applied). iter080 mined the LOW-id residual of iter077.enriched (id 4036-7373, buckets semantic_review+cheap_model_candidate, nouns only): selected 120, Haiku-translated 116, SPOT-REVIEW DROPPED 50 (42%) -> 70 applied. CONTAMINATION LESSON: the low-id pool is full of (a) proper nouns/place/surname/company (青山/金沢/上海/三菱/日産/函館... corpus has NO proper-noun POS flag so the selector can't auto-exclude them), (b) homophone/kana substring mismatches (灰汁 matched あく=悪, 減り matched メリ=name, 稽古 matched ケイコ=name, おん⊂オンライン, がい⊂タフガイ), (c) adult/crime (勃起/ちんこ/股間/拉致/懲役/脱走). The high-id (>7700) kanji-noun ranges were far cleaner. NEXT: build a deterministic proper-noun + kana-homophone-mismatch filter (word-has-kanji AND matched-is-pure-kana => drop) BEFORE Haiku, instead of eyeballing 42% waste. Reusable: ~28 more noun rows remain in iter077.enriched but same contamination; better to fresh-select deep kanji-noun id ranges.",
     "FIRST_PRINCIPLES_FIX_2026-06-28": "iter059-077 (checkpoints 012-030, 419 rows) HAND-FIXED fugashi readings + HAND-TRANSLATED every sentence + checkpointed every ~22 rows. MEASURED ground truths that make most of that waste: (1) 497/497 applied sentences had a HUMAN furigana in scratch/tatoeba/transcriptions.csv; scripts/enrich_real_example_candidates.py converts it (human_reading_coverage=1.0) and is sometimes MORE correct than my hand-read (王=わん not おう). I was regenerating readings via fugashi and hand-patching a problem that was already solved for free. (2) only ~6.5% have a direct cmn(Chinese) link, so translation still needed but is the Haiku-reliable 'translate a real sentence' task, not Sonnet work. (3) db:import+build is fixed cost PER BATCH (~2.5min); playbook says checkpoint at ~100/300 rows, I did every 22 (~5x infra waste).",
     "NEW_FLOW (use this, not the old hand flow)": "1) select_real_examples.py --top-k 6 --limit N --out cand.jsonl (slow, do big: limit 2000+). 2) **enrich_real_example_candidates.py --candidates cand.jsonl --out cand.enriched.jsonl** (adds HUMAN reading from transcriptions.csv = 100% coverage; use candidate['reading'] directly, status tatoeba_human_transcription_requires_review — trust it, spot-check only). 3) deterministic filter (token boundary / substring / proper-noun / appropriateness) — keep refining the script not the eyeballs. 4) Haiku BATCH-translates j->TW Chinese (real sentence translation is reliable for Haiku); use the ~6.5% cmn links where present. 5) Sonnet ONLY spot-reviews sense + appropriateness + that c has no latin/placeholder/simplified. 6) ACCUMULATE ~100 applied rows across several review passes, THEN one db:import+build+commit. apply_real_example_patch.js still per-checkpoint is fine (no DB), but db:import/build only at ~100.",
     "tools": "selector uses exact surface/lemma plus coarse POS, difficulty gates and attribution; enrichment adds direct cmn links and Tatoeba human transcriptions; validator/apply gate require explicit reading and translation review. scripts/scan_real_example_checkpoint.py = advisory QA scanner (non-kana-in-r, english-in-c, simplified, sensitive/morbid w/ benign-compound allowlist).",
