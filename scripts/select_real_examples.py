@@ -189,15 +189,22 @@ def sentence_reading(tokens):
     return "".join(output), unknown
 
 
+# Optional ultra-loose overrides (0/None => use the default loose values). Set via CLI.
+LOOSE_MAX_LEN = 0
+LOOSE_MAX_OUTSIDE_N45 = 0
+LOOSE_MAX_TOKENS = 0
+LOOSE_MAX_COMMAS = 0
+
+
 def candidate_score(sentence, tokens, target, n45_kanji, n3_kanji, loose=False):
     # loose mode (user-approved, 2026-06-28): for FALLBACK rows with no exact-level
     # Tatoeba match, relax length/difficulty/clause caps. Reading is still 100% human
     # furigana (enrich step) and a Chinese translation is supplied, so a slightly
     # longer/harder real sentence stays usable; SENSITIVE/ADVANCED/punct gates KEPT.
-    max_len = 42 if loose else 28
-    max_outside_n45 = 5 if loose else 2
-    max_tokens = 18 if loose else 14
-    max_commas = 2 if loose else 1
+    max_len = (LOOSE_MAX_LEN if LOOSE_MAX_LEN else 42) if loose else 28
+    max_outside_n45 = (LOOSE_MAX_OUTSIDE_N45 if LOOSE_MAX_OUTSIDE_N45 else 5) if loose else 2
+    max_tokens = (LOOSE_MAX_TOKENS if LOOSE_MAX_TOKENS else 18) if loose else 14
+    max_commas = (LOOSE_MAX_COMMAS if LOOSE_MAX_COMMAS else 2) if loose else 1
     if SENSITIVE.search(sentence) or ADVANCED_OR_ARCHAIC.search(sentence):
         return None
     if not sentence.endswith(("。", "！", "？")):
@@ -254,7 +261,8 @@ def generate_candidates(targets, rows, top_k, loose=False):
             if not parsed:
                 continue
             sentence = parsed["sentence"]
-            if len(sentence) > (42 if loose else 28) or SENSITIVE.search(sentence):
+            loose_cap = LOOSE_MAX_LEN if LOOSE_MAX_LEN else 42
+            if len(sentence) > (loose_cap if loose else 28) or SENSITIVE.search(sentence):
                 continue
             tokens = list(tagger(sentence))
             matched_ids = set()
@@ -329,12 +337,20 @@ def parse_args():
     parser.add_argument("--top-k", type=int, default=3)
     parser.add_argument("--ids", help="comma-separated vocab IDs")
     parser.add_argument("--loose", action="store_true", help="relax length/difficulty/clause caps for fallback rows")
+    parser.add_argument("--max-len", type=int, default=0, help="ultra-loose: override loose max sentence length")
+    parser.add_argument("--max-outside-n45", type=int, default=0, help="ultra-loose: override loose out-of-level kanji cap")
+    parser.add_argument("--max-tokens", type=int, default=0, help="ultra-loose: override loose token cap")
+    parser.add_argument("--max-commas", type=int, default=0, help="ultra-loose: override loose comma cap")
     return parser.parse_args()
 
 
 def main():
-    global MANIFEST, TATOEBA
+    global MANIFEST, TATOEBA, LOOSE_MAX_LEN, LOOSE_MAX_OUTSIDE_N45, LOOSE_MAX_TOKENS, LOOSE_MAX_COMMAS
     args = parse_args()
+    LOOSE_MAX_LEN = args.max_len
+    LOOSE_MAX_OUTSIDE_N45 = args.max_outside_n45
+    LOOSE_MAX_TOKENS = args.max_tokens
+    LOOSE_MAX_COMMAS = args.max_commas
     if args.limit is not None and args.limit <= 0:
         raise ValueError("--limit must be positive")
     if args.top_k <= 0:

@@ -1,7 +1,7 @@
 {
   "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST. CLAUDE.md is a lean entry point; full history is docs/vocab-cleanup/iteration-log.md (do not read it to resume). Update this file at the end of every iteration. Keep it short.",
   "updated": "2026-06-28",
-  "head_commit": "e519dad",
+  "head_commit": "039c022",
   "KATAKANA_RELAXATION_2026-06-28": "USER APPROVED relaxing two hard_constraints for the real-example flow: (1) looser Tatoeba for kanji-noun fallback rows; (2) cheap model MAY process katakana_review NOUNS' real examples (NOT verbs/grammar — those stay off-limits). Safety kept: real-example attachment never generates verb_info/meaning; katakana selection uses a TOKEN-BOUNDARY rule (word present AND char before/after not katakana) to avoid substring traps (ト⊂バーラト, おん⊂オンライン). iter084 = first katakana batch, 94% yield (127/135).",
   "pipeline_stage": "content-cleanup; cheap-meaning DONE; low_value real examples (NOUNS done to Tatoeba ceiling + VERBS per user relaxation). iter059-089 applied 1311 sentences (checkpoints 012-042). ~2447 low_value_example remain. VERB real examples (user-approved 2026-06-28, example-only, verb_info UNTOUCHED, withVerbInfo stayed 678): 155 verbs -> 96.8% Tatoeba coverage -> 107 applied (iter089). Verb risk seen: fugashi homophone mis-lemma (誇る<-ほこり, 加える<-くわえる, 経つ<-発つ) caught in spot-review. REMAINING low_value = ~926 noun no-Tatoeba-candidate + 513 grammar (still off-limits) + ~11 verb leftovers + noun fallback. These need a NEW direction (corpus source / accept fallback / grammar relaxation) - user has only approved noun+katakana+loose+verb so far. EXCLUDE real_example_rejected_ids.txt (59 ids). 常用名詞500 tag shipped.",
   "quality": {
@@ -334,5 +334,6 @@
     "next": "Do NOT bulk-apply. Options for a future session: (a) restrict to a high-precision subset (content nouns/verbs only, exclude grammar/particles, score>0.97 AND shared-POS AND same-JLPT) then human-review each; (b) curated review with reason per link; ALWAYS keep run_id/score/reason/review/rollback artifact. apply path not yet built.",
     "existing_related_words": 25990,
     "zero_related_filled": "iter: hand-curated antonym/pair related links added to the 5 zero-related verbs (来る/行く/分かる/閉める/出る), rollback scratch/vocab-db-migration/related_curated_rollback_5verbs.json. related_words 25990->25999. ALL 13000 entries now have related coverage. Bulk vector apply still NOT done (would degrade)."
-  }
+  },
+  "real_examples_exhaustion_2026_06_29": "PROVEN exhaustion of ALL Tatoeba noun levers: ultra-loose (select_real_examples.py --max-len 60 --max-outside-n45 8 --max-tokens 22) on the 1751 remaining noun low_value ids -> 870 raw proposed but only 12 survive quality filters (rest too long/latin/messy for learner examples). ~881 nouns never appear in Tatoeba at any threshold. Tiers tried: exact(28) -> loose(42) -> ultra-loose(60) -> katakana(boundary) -> verbs(96.8%). Remaining low_value (~2447) = ~881 no-Tatoeba nouns + ~ filtered-messy + 513 grammar(off-limits) + scattered. NOT worth more select passes. Remaining bad examples are HIDDEN from users via lib/example-quality.ts (isExampleOptimized). To clear residual DATA needs: new CC example source (926 nouns) OR grammar authorization. select_real_examples.py now has configurable --max-* loose overrides."
 }
