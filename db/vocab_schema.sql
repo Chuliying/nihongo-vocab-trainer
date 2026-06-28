@@ -48,6 +48,14 @@ CREATE INDEX IF NOT EXISTS vocab_entries_jlpt_level_idx
 CREATE INDEX IF NOT EXISTS vocab_entries_part_of_speech_idx
   ON vocab_entries (part_of_speech);
 
+CREATE TABLE IF NOT EXISTS vocab_tags (
+  vocab_id integer NOT NULL REFERENCES vocab_entries(id) ON DELETE CASCADE,
+  tag text NOT NULL,
+  PRIMARY KEY (vocab_id, tag)
+);
+
+CREATE INDEX IF NOT EXISTS vocab_tags_tag_idx ON vocab_tags (tag);
+
 CREATE TABLE IF NOT EXISTS verb_info (
   vocab_id integer PRIMARY KEY REFERENCES vocab_entries(id) ON DELETE CASCADE,
   verb_type text NOT NULL,

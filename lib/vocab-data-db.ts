@@ -43,7 +43,8 @@ function orderedSource(source: VocabEntry["source"]): VocabEntry["source"] {
 function rowToEntry(
   row: VocabRow,
   verbInfo: VerbInfoRow | null,
-  related: VocabEntry["related"]
+  related: VocabEntry["related"],
+  tags: string[] = []
 ): VocabEntry {
   return {
     id: row.id,
@@ -75,7 +76,27 @@ function rowToEntry(
     related,
     source: orderedSource(row.source_json),
     quality_score: row.quality_score,
+    ...(tags.length ? { tags } : {}),
   };
+}
+
+async function fetchTagsByIds(
+  sql: ReturnType<typeof getSql>,
+  ids: number[]
+): Promise<Map<number, string[]>> {
+  const byId = new Map<number, string[]>();
+  if (!ids.length) return byId;
+  const rows = await sql<{ vocab_id: number; tag: string }[]>`
+    select vocab_id, tag from vocab_tags
+    where vocab_id in ${sql(ids)}
+    order by vocab_id asc, tag asc
+  `;
+  for (const row of rows) {
+    const current = byId.get(row.vocab_id) || [];
+    current.push(row.tag);
+    byId.set(row.vocab_id, current);
+  }
+  return byId;
 }
 
 export async function getTrancheIds(): Promise<number[]> {
@@ -131,8 +152,10 @@ export async function getTrancheEntries(trancheId: number): Promise<VocabEntry[]
     relatedById.set(row.vocab_id, current);
   }
 
+  const tagsById = await fetchTagsByIds(sql, ids);
+
   return rows.map((row) =>
-    rowToEntry(row, verbById.get(row.id) || null, relatedById.get(row.id) || [])
+    rowToEntry(row, verbById.get(row.id) || null, relatedById.get(row.id) || [], tagsById.get(row.id) || [])
   );
 }
 
@@ -189,8 +212,10 @@ export async function getEntriesByPos(
     relatedById.set(r.vocab_id, cur);
   }
 
+  const tagsById = await fetchTagsByIds(sql, ids);
+
   return rows.map((r) =>
-    rowToEntry(r, verbById.get(r.id) || null, relatedById.get(r.id) || [])
+    rowToEntry(r, verbById.get(r.id) || null, relatedById.get(r.id) || [], tagsById.get(r.id) || [])
   );
 }
 

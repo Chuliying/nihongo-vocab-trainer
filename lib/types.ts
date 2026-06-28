@@ -47,6 +47,7 @@ export type VocabEntry = {
     frequency?: string;
   };
   quality_score: "curated" | "verb_curated" | "rule_completed" | "needs_review" | string;
+  tags?: string[];
 };
 
 export type CollectionId =

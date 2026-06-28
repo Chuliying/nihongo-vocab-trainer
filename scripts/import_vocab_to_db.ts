@@ -44,6 +44,7 @@ type RawVocabEntry = {
   source: JsonObject;
   quality_score: string;
   _quality?: JsonObject;
+  tags?: string[];
 };
 
 type RawPopularVerb = {
@@ -113,9 +114,12 @@ function loadChunkEntries(): RawVocabEntry[] {
   return files.flatMap((file) => loadJson<RawVocabEntry[]>(path.join(CHUNKS_DIR, file)));
 }
 
-function slim(entry: RawVocabEntry): Omit<RawVocabEntry, "_quality"> {
-  const { _quality, ...rest } = entry;
+function slim(entry: RawVocabEntry): Omit<RawVocabEntry, "_quality" | "tags"> {
+  // tags are sidecar membership metadata (like _quality): stored in their own table,
+  // excluded from entry-shape parity so they never disturb runtime/canonical diffs.
+  const { _quality, tags, ...rest } = entry;
   void _quality;
+  void tags;
   return rest;
 }
 
@@ -191,6 +195,10 @@ function buildRows(vocab: RawVocabEntry[], tranches: RawTranche[], popular: RawP
     .filter((entry) => entry.verb_info)
     .map((entry) => ({ vocab_id: entry.id, ...entry.verb_info }));
 
+  const vocabTags = vocab.flatMap((entry) =>
+    (entry.tags ?? []).map((tag) => ({ vocab_id: entry.id, tag }))
+  );
+
   const relatedWords = vocab.flatMap((entry) =>
     entry.related.map((related, position) => ({
       vocab_id: entry.id,
@@ -221,6 +229,7 @@ function buildRows(vocab: RawVocabEntry[], tranches: RawTranche[], popular: RawP
     tranches,
     vocab_entries: vocabEntries,
     verb_info: verbInfo,
+    vocab_tags: vocabTags,
     related_words: relatedWords,
     popular_verbs: popularVerbs,
   };
@@ -283,6 +292,7 @@ async function writeRowsToDatabase(
       await tx`delete from related_words`;
       await tx`delete from popular_verbs`;
       await tx`delete from verb_info`;
+      await tx`delete from vocab_tags`;
       await tx`delete from vocab_embeddings`;
       await tx`delete from vocab_entries`;
       await tx`delete from tranches`;
@@ -316,6 +326,12 @@ async function writeRowsToDatabase(
             "source_json",
             "raw_quality_json"
           )}
+        `;
+      }
+
+      for (const batch of chunk(rows.vocab_tags, 1000)) {
+        await tx`
+          insert into vocab_tags ${tx(batch, "vocab_id", "tag")}
         `;
       }
 
@@ -383,6 +399,7 @@ async function writeRowsToDatabase(
     const counts = {
       tranches: Number((await sql<{ count: string }[]>`select count(*)::text as count from tranches`)[0].count),
       vocab_entries: Number((await sql<{ count: string }[]>`select count(*)::text as count from vocab_entries`)[0].count),
+      vocab_tags: Number((await sql<{ count: string }[]>`select count(*)::text as count from vocab_tags`)[0].count),
       verb_info: Number((await sql<{ count: string }[]>`select count(*)::text as count from verb_info`)[0].count),
       related_words: Number((await sql<{ count: string }[]>`select count(*)::text as count from related_words`)[0].count),
       popular_verbs: Number((await sql<{ count: string }[]>`select count(*)::text as count from popular_verbs`)[0].count),
@@ -526,6 +543,7 @@ async function main(): Promise<void> {
     counts: {
       tranches: rows.tranches.length,
       vocab_entries: rows.vocab_entries.length,
+      vocab_tags: rows.vocab_tags.length,
       verb_info: rows.verb_info.length,
       related_words: rows.related_words.length,
       popular_verbs: rows.popular_verbs.length,
