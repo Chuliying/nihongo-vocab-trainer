@@ -1,7 +1,7 @@
 {
   "schema_note": "Live resumption state for the vocab-cleanup skill. Read this FIRST. CLAUDE.md is a lean entry point; full history is docs/vocab-cleanup/iteration-log.md (do not read it to resume). Update this file at the end of every iteration. Keep it short.",
   "updated": "2026-06-28",
-  "head_commit": "a17fef1",
+  "head_commit": "2ab2549",
   "KATAKANA_RELAXATION_2026-06-28": "USER APPROVED relaxing two hard_constraints for the real-example flow: (1) looser Tatoeba for kanji-noun fallback rows; (2) cheap model MAY process katakana_review NOUNS' real examples (NOT verbs/grammar — those stay off-limits). Safety kept: real-example attachment never generates verb_info/meaning; katakana selection uses a TOKEN-BOUNDARY rule (word present AND char before/after not katakana) to avoid substring traps (ト⊂バーラト, おん⊂オンライン). iter084 = first katakana batch, 94% yield (127/135).",
   "pipeline_stage": "content-cleanup; cheap-meaning DONE; low_value real examples (NOUNS done to Tatoeba ceiling + VERBS per user relaxation). iter059-089 applied 1311 sentences (checkpoints 012-042). ~2447 low_value_example remain. VERB real examples (user-approved 2026-06-28, example-only, verb_info UNTOUCHED, withVerbInfo stayed 678): 155 verbs -> 96.8% Tatoeba coverage -> 107 applied (iter089). Verb risk seen: fugashi homophone mis-lemma (誇る<-ほこり, 加える<-くわえる, 経つ<-発つ) caught in spot-review. REMAINING low_value = ~926 noun no-Tatoeba-candidate + 513 grammar (still off-limits) + ~11 verb leftovers + noun fallback. These need a NEW direction (corpus source / accept fallback / grammar relaxation) - user has only approved noun+katakana+loose+verb so far. EXCLUDE real_example_rejected_ids.txt (59 ids). 常用名詞500 tag shipped.",
   "quality": {
@@ -324,5 +324,14 @@
     "runtime_repository": "passed",
     "build": "passed",
     "scanner_added": "scripts/scan_real_example_checkpoint.py replaces the per-batch inline scans"
+  },
+  "related_vectors": {
+    "status": "candidates GENERATED + VALIDATED (read-only); APPLY remains gated by hard constraint",
+    "run_id": "f873398b-59eb-4eee-9591-70e54f47cc77",
+    "artifact": "scratch/vocab-db-migration/related_candidates.full.jsonl (6000 candidates, top-6, same-POS pool 1000); gitignored",
+    "validate": "scripts/validate_related_candidates.py -> ok, 6000 candidates (structural integrity only, NOT semantic)",
+    "EMPIRICAL_FINDING": "Re-confirmed the hard constraint: rank-1 cosine candidates are semantically WEAK (に->通常, は->も, で->へ, か->その後; median cosine 0.958 but meaningless for relatedness, esp. grammar/particles). Auto-applying would DEGRADE the 25990 existing curated related_words. fastembed-cosine is a router, not a verifier.",
+    "next": "Do NOT bulk-apply. Options for a future session: (a) restrict to a high-precision subset (content nouns/verbs only, exclude grammar/particles, score>0.97 AND shared-POS AND same-JLPT) then human-review each; (b) curated review with reason per link; ALWAYS keep run_id/score/reason/review/rollback artifact. apply path not yet built.",
+    "existing_related_words": 25990
   }
 }

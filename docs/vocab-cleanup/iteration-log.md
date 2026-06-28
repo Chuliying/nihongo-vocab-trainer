@@ -3531,3 +3531,17 @@ runtime/build 通過。
   3. **SESSION TOTAL iter080-089: 805 real examples; low_value_example 3252->2447 (-805, -25%);
      badEntries 7736->7566.** Remaining needs a new direction (noun no-candidate / grammar /
      source change) — only noun+katakana+loose+verb authorized so far.
+
+### Related-word vectors — candidates generated + validated (2026-06-29)
+
+- **What**: Ran scripts/generate_related_candidates.py --limit 0 --top-k 6 (local FastEmbed,
+  offline, non-mutating). run_id f873398b, 6000 candidates, validated structurally
+  (validate_related_candidates.py -> ok).
+- **EMPIRICAL FINDING (re-measured ground truth)**: rank-1 cosine candidates are
+  semantically weak — に->通常, は->も, で->へ, か->その後 (median cosine 0.958 but not
+  meaningful relatedness; grammar/particles especially noisy). This re-confirms the hard
+  constraint "cosine is a router/filter NOT a verifier (~63% directional)". Auto-applying
+  would DEGRADE the 25,990 existing curated related_words.
+- **Decision**: do NOT bulk-apply. Apply path intentionally NOT built. Future: high-precision
+  subset (content words only, score>0.97 + shared-POS + same-JLPT) + human review with reason
+  per link + rollback artifact. Generation/validation is the safe, completed part.
