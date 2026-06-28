@@ -189,27 +189,38 @@ def sentence_reading(tokens):
     return "".join(output), unknown
 
 
-def candidate_score(sentence, tokens, target, n45_kanji, n3_kanji):
+def candidate_score(sentence, tokens, target, n45_kanji, n3_kanji, loose=False):
+    # loose mode (user-approved, 2026-06-28): for FALLBACK rows with no exact-level
+    # Tatoeba match, relax length/difficulty/clause caps. Reading is still 100% human
+    # furigana (enrich step) and a Chinese translation is supplied, so a slightly
+    # longer/harder real sentence stays usable; SENSITIVE/ADVANCED/punct gates KEPT.
+    max_len = 42 if loose else 28
+    max_outside_n45 = 5 if loose else 2
+    max_tokens = 18 if loose else 14
+    max_commas = 2 if loose else 1
     if SENSITIVE.search(sentence) or ADVANCED_OR_ARCHAIC.search(sentence):
         return None
     if not sentence.endswith(("。", "！", "？")):
         return None
-    if len(sentence) < 4 or len(sentence) > 28:
+    if len(sentence) < 4 or len(sentence) > max_len:
         return None
-    if sentence.count("、") + sentence.count("，") > 1:
+    if sentence.count("、") + sentence.count("，") > max_commas:
         return None
 
     target_kanji = {char for char in target["word"] if KANJI.match(char)}
     sentence_kanji = {char for char in sentence if KANJI.match(char)}
     outside_n45 = sentence_kanji - n45_kanji - target_kanji
     outside_n3 = outside_n45 - n3_kanji
-    if len(outside_n45) > 2 or outside_n3:
+    if loose:
+        if len(outside_n45) > max_outside_n45:
+            return None
+    elif len(outside_n45) > max_outside_n45 or outside_n3:
         return None
 
     lexical_tokens = [
         token for token in tokens if not PUNCT_ONLY.fullmatch(token.surface)
     ]
-    if len(lexical_tokens) > 14:
+    if len(lexical_tokens) > max_tokens:
         return None
 
     clause_penalty = (
@@ -226,7 +237,7 @@ def parse_tatoeba_line(line):
     return {"sentence_id": int(parts[0]), "sentence": parts[2]}
 
 
-def generate_candidates(targets, rows, top_k):
+def generate_candidates(targets, rows, top_k, loose=False):
     tagger = fugashi.Tagger()
     n45_kanji, n3_kanji = level_kanji_sets(rows)
     by_word = defaultdict(list)
@@ -243,7 +254,7 @@ def generate_candidates(targets, rows, top_k):
             if not parsed:
                 continue
             sentence = parsed["sentence"]
-            if len(sentence) > 28 or SENSITIVE.search(sentence):
+            if len(sentence) > (42 if loose else 28) or SENSITIVE.search(sentence):
                 continue
             tokens = list(tagger(sentence))
             matched_ids = set()
@@ -260,7 +271,7 @@ def generate_candidates(targets, rows, top_k):
                     if target["id"] in matched_ids or not token_matches_target(token, target):
                         continue
                     score = candidate_score(
-                        sentence, tokens, target, n45_kanji, n3_kanji
+                        sentence, tokens, target, n45_kanji, n3_kanji, loose=loose
                     )
                     if score is None:
                         continue
@@ -317,6 +328,7 @@ def parse_args():
     parser.add_argument("--limit", type=int)
     parser.add_argument("--top-k", type=int, default=3)
     parser.add_argument("--ids", help="comma-separated vocab IDs")
+    parser.add_argument("--loose", action="store_true", help="relax length/difficulty/clause caps for fallback rows")
     return parser.parse_args()
 
 
@@ -338,7 +350,7 @@ def main():
     rows = load_chunks()
     rows_by_id = {row["id"]: row for row in rows}
     targets = load_targets(rows_by_id, ids=ids, limit=args.limit)
-    candidates = generate_candidates(targets, rows, args.top_k)
+    candidates = generate_candidates(targets, rows, args.top_k, loose=args.loose)
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)

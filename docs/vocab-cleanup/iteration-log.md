@@ -3469,3 +3469,25 @@ runtime/build 通過。
      needs the user-approved LOOSER Tatoeba retrieval (broaden select_real_examples.py
      matching: substring-with-boundary / wider POS / lower score threshold). That is a
      script enhancement, the clean next work unit. Verbs/grammar remain off-limits.
+
+### Iteration 087 (2026-06-28) — LOOSE Tatoeba retrieval for fallback rows (checkpoint_040)
+
+- **What**: Added `select_real_examples.py --loose` (user-approved): relaxes the caps that
+  caused fallback — length 28→42, outside-N45 kanji 2→5 (drop the hard outside-N3 reject),
+  tokens 14→18, commas 1→2. SENSITIVE/ADVANCED/punctuation gates KEPT. Reading is still
+  100% human furigana (enrich) + a supplied Chinese translation, so a slightly longer/harder
+  real sentence stays usable.
+- **Result**: ran --loose on 1913 noun fallback ids → **987 proposed** (51.6%, from 0 before).
+  audit_propernoun dropped 32 kanji proper; filter→165 clean; batch 140 → Haiku ×3 →
+  spot-review dropped 37 (names/places/brands/sensitive/simplified) → **103 applied**
+  (checkpoint_040) = 74% yield. low_value_example 2679→**2576**; badEntries 7618→**7574**.
+  Verb invariant 0/0. db:import `532f165e`, runtime ok, build pass (1 transient
+  /api/tranche static-gen error, passed on retry).
+- **省成本反省**:
+  1. The --loose mode unlocks the FALLBACK pool (the dominant remaining noun seam) — 987
+     new candidates where exact-match found 0. This is the lever for the remaining ~2576.
+  2. New katakana failure modes in loose data: person names (マリー/ソフィア/ジル/メイ/スー),
+     mistranslations Haiku made on company names (ホンダ→豐田, オーストリア→澳洲). Spot-review
+     caught all; reject ledger now 49 ids.
+  3. Session total iter080-087: 676 real examples; low_value_example 3252→2576;
+     badEntries 7736→7574. iter088 = re-run --loose select on remaining fallback ids.
