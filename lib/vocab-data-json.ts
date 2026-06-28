@@ -93,3 +93,14 @@ export function getEntriesByPos(pos: string, limit: number): VocabEntry[] {
   results.sort((a, b) => a.frequency_rank - b.frequency_rank);
   return results.slice(0, limit);
 }
+
+export function getEntriesByTag(tag: string, limit: number): VocabEntry[] {
+  const results: VocabEntry[] = [];
+  for (let i = 0; i < NUM_CHUNKS; i++) {
+    for (const entry of loadChunk(i)) {
+      if (entry.tags?.includes(tag)) results.push(entry);
+    }
+  }
+  results.sort((a, b) => a.frequency_rank - b.frequency_rank);
+  return results.slice(0, limit);
+}

@@ -5,6 +5,7 @@ export type CollectionConfig = {
   label: string;
   limit: number;
   pos?: string;
+  tag?: string;
 };
 
 export const COLLECTIONS: CollectionConfig[] = [
@@ -15,6 +16,7 @@ export const COLLECTIONS: CollectionConfig[] = [
   { id: "popular-adj", label: "常用形容詞", limit: 200, pos: "形容詞" },
   { id: "popular-adv", label: "常用副詞", limit: 150, pos: "副詞" },
   { id: "popular-conj", label: "常用接続詞", limit: 100, pos: "接続詞" },
+  { id: "popular-nouns-500", label: "常用名詞500", limit: 500, tag: "常用名詞500" },
 ];
 
 export function getCollectionConfig(id: CollectionId): CollectionConfig {

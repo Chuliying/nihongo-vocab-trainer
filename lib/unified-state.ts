@@ -22,7 +22,7 @@ const DEFAULT_STATE: UnifiedState = {
 };
 
 const VALID_COLLECTIONS: CollectionId[] = [
-  "all", "popular-verbs", "popular-adj", "popular-adv", "popular-conj",
+  "all", "popular-verbs", "popular-adj", "popular-adv", "popular-conj", "popular-nouns-500",
 ];
 const VALID_JLPT: JlptLevel[] = ["全部", "N5", "N4", "N3", "N2", "N1"];
 

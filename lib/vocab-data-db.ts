@@ -219,6 +219,55 @@ export async function getEntriesByPos(
   );
 }
 
+export async function getEntriesByTag(
+  tag: string,
+  limit: number
+): Promise<VocabEntry[]> {
+  const sql = getSql();
+  const rows = await sql<VocabRow[]>`
+    select
+      ve.id, ve.word, ve.reading, ve.part_of_speech, ve.jlpt_level,
+      ve.tranche_id, ve.frequency_rank, ve.meaning, ve.quality_score,
+      ve.example_json, ve.source_json
+    from vocab_entries ve
+    join vocab_tags vt on vt.vocab_id = ve.id
+    where vt.tag = ${tag}
+    order by ve.frequency_rank asc
+    limit ${limit}
+  `;
+  if (rows.length === 0) return [];
+
+  const ids = rows.map((r) => r.id);
+  const verbRows = await sql<VerbInfoRow[]>`
+    select * from verb_info where vocab_id in ${sql(ids)} order by vocab_id asc
+  `;
+  const relatedRows = await sql<RelatedWordRow[]>`
+    select vocab_id, position, word, reading, meaning, target_id
+    from related_words
+    where vocab_id in ${sql(ids)}
+    order by vocab_id asc, position asc
+  `;
+
+  const verbById = new Map(verbRows.map((r) => [r.vocab_id, r]));
+  const relatedById = new Map<number, VocabEntry["related"]>();
+  for (const r of relatedRows) {
+    const cur = relatedById.get(r.vocab_id) || [];
+    cur.push({
+      word: r.word,
+      reading: r.reading,
+      meaning: r.meaning,
+      ...(r.target_id ? { target_id: r.target_id } : {}),
+    });
+    relatedById.set(r.vocab_id, cur);
+  }
+
+  const tagsById = await fetchTagsByIds(sql, ids);
+
+  return rows.map((r) =>
+    rowToEntry(r, verbById.get(r.id) || null, relatedById.get(r.id) || [], tagsById.get(r.id) || [])
+  );
+}
+
 export async function getPopularEntries(): Promise<VocabEntry[]> {
   const sql = getSql();
   const rows = await sql<{ tranche_id: number }[]>`

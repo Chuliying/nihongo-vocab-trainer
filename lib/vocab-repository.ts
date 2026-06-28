@@ -36,3 +36,10 @@ export async function getEntriesByPos(
 ): Promise<VocabEntry[]> {
   return repository().getEntriesByPos(pos, limit);
 }
+
+export async function getEntriesByTag(
+  tag: string,
+  limit: number
+): Promise<VocabEntry[]> {
+  return repository().getEntriesByTag(tag, limit);
+}

@@ -55,7 +55,8 @@ export type CollectionId =
   | "popular-verbs"
   | "popular-adj"
   | "popular-adv"
-  | "popular-conj";
+  | "popular-conj"
+  | "popular-nouns-500";
 
 export type JlptLevel = "全部" | "N5" | "N4" | "N3" | "N2" | "N1";
 

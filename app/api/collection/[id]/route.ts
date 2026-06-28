@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
-import { getEntriesByPos } from "@/lib/vocab-repository";
+import { getEntriesByPos, getEntriesByTag } from "@/lib/vocab-repository";
 import type { CollectionId } from "@/lib/types";
 import { getCollectionConfig } from "@/lib/collections";
 
-const COLLECTION_IDS: CollectionId[] = ["popular-adj", "popular-adv", "popular-conj"];
+const COLLECTION_IDS: CollectionId[] = [
+  "popular-adj",
+  "popular-adv",
+  "popular-conj",
+  "popular-nouns-500",
+];
 
 export const dynamic = "force-static";
 
@@ -21,8 +26,14 @@ export async function GET(
   }
 
   const config = getCollectionConfig(id as CollectionId);
+
+  if (config.tag) {
+    const entries = await getEntriesByTag(config.tag, config.limit);
+    return NextResponse.json(entries);
+  }
+
   if (!config.pos) {
-    return NextResponse.json({ error: "Collection has no pos filter" }, { status: 400 });
+    return NextResponse.json({ error: "Collection has no pos or tag filter" }, { status: 400 });
   }
 
   const entries = await getEntriesByPos(config.pos, config.limit);
