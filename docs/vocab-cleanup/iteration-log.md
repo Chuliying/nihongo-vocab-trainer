@@ -3545,3 +3545,21 @@ runtime/build 通過。
 - **Decision**: do NOT bulk-apply. Apply path intentionally NOT built. Future: high-precision
   subset (content words only, score>0.97 + shared-POS + same-JLPT) + human review with reason
   per link + rollback artifact. Generation/validation is the safe, completed part.
+
+### Example-gap first-principles analysis + A/B/C pilots (2026-06-29)
+
+- **First-principles re-examination** of the "blocked" backlog challenged the legacy
+  "no-LLM-generated-examples" constraint (it was a reaction to an OLD broken template
+  generator, not a ground truth; user already relaxed it once in track_B). Three options:
+  A=controlled LLM generation, B=grammar examples, C=redefine success metric.
+- **Measured pilots (Haiku, 30 rows each, read-only to scratch)**:
+  - A (no-Tatoeba nouns): 56.6k tok, ~20/30 verified usable (~2.8k tok/usable). Reading
+    errors slip the deterministic gate (総務->そうぶ) -> human reading-review mandatory.
+    Words are obscure; sentences trend to generic filler.
+  - B (grammar): 46k tok, 5/30 usable (~9.2k tok/usable). Bucket is 24/30 mislabeled
+    名詞・助詞 nouns; onomatopoeia/adverbs generate cleanly, true particles need 2-3 sentences.
+- **Frequency-gap map (decisive)**: TOP-2000 most-frequent words = 0 gap (100% covered).
+  All gaps are rarer: 2001-5000=562, 5001-8000=1150, 8001+=2521 (obscure tail).
+- **Verdict**: C is best ROI (0 cost, product's high-use content already perfect). Only
+  worthwhile generation = rank 2001-5000 content words (~432). Skip 8001+ tail + grammar.
+  Awaiting user decision (A relaxes the no-LLM-gen constraint).
