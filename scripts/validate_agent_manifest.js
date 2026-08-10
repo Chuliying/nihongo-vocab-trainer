@@ -55,6 +55,28 @@ if (!fs.existsSync(manifestPath)) {
     const skillPath = `.agent/skills/project/${skillName}/SKILL.md`;
     if (!exists(skillPath)) {
       fail(`domain skill missing: ${skillPath}`);
+      continue;
+    }
+
+    const skill = fs.readFileSync(path.join(root, skillPath), "utf8");
+    const referencesSection = skill.match(
+      /## Reference Implementations\s*\n([\s\S]*?)(?=\n## |$)/
+    );
+    if (!referencesSection) {
+      fail(`domain skill has no Reference Implementations section: ${skillPath}`);
+      continue;
+    }
+
+    const references = [
+      ...referencesSection[1].matchAll(/^\s*-\s+`([^`]+)`/gm),
+    ].map((match) => match[1]);
+    if (references.length === 0) {
+      fail(`domain skill has no reference paths: ${skillPath}`);
+    }
+    for (const reference of references) {
+      if (!exists(reference)) {
+        fail(`domain skill reference does not exist: ${skillPath} -> ${reference}`);
+      }
     }
   }
 }
