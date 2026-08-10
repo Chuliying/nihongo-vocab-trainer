@@ -10,6 +10,11 @@ public/data/generated
 
 certificates
 .claude/settings.local.json
+.claude/worktrees/
+
+# Playwright output
+test-results/
+playwright-report/
 
 # Temporary review extraction slices; keep enrichment batch JSONL and handoff docs.
 scratch/chunk_*_part*.txt
