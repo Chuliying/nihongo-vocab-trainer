@@ -110,13 +110,18 @@ Real smoke 不攔截 API，至少重跑 TC-L5-01、03、04、06 的 happy path�
 
 ## 8. 完成證據
 
-- [ ] G1：lint、typecheck、unit tests 命令與 exit code。
-- [ ] G2：真實 endpoints 的 request/response status。
-- [ ] G3：mock E2E 與 real smoke 結果、console error=0。
-- [ ] G4：copy audit 命令與零殘留／明確 allowlist。
-- [ ] build 成功。
-- [ ] 13,000 entries 與 300 popular verbs validation 成功。
-- [ ] 所有新增測試已實際執行，不接受只建立未執行的 test file。
+- [x] G1：`typecheck`、`lint` 與 22/22 unit tests 通過。
+- [x] G2：真實 `/api/search` 與 `/api/vocab/[id]` 驗證 200、400、404 契約。
+- [x] G3：fresh isolated server 上 8/8 Playwright E2E 通過；預期的 500／404 resource error 明確列入個別負向案例，其餘 console error 為 0。
+- [x] G4：copy audit 零產品殘留；僅排除歷史／需求紀錄與 vendored shared skills，理由已由 audit 輸出列明。
+- [x] production build 成功，兩個新 API 均列為 dynamic route。
+- [x] runtime repository 驗證 13,000 entries、13 tranches 與 300 popular verbs 成功。
+- [x] 所有新增 unit、API、repository、navigation 與 E2E 測試均已實際執行。
+
+### 已知既存資料風險
+
+- `validate:data` 的 schema gate 通過，但 strict corpus gate 仍有 16,716 個既存 `source.example=needs_review` 問題。
+- canonical corpus 與 runtime chunks 仍有 11,213 個既存 audit mismatch；本 Story 未修改 corpus，runtime/API parity 驗證仍通過。
 
 ## Gate 3 自檢
 
@@ -126,4 +131,3 @@ Real smoke 不攔截 API，至少重跑 TC-L5-01、03、04、06 的 happy path�
 - [x] L5 規定 console error 掃描且禁止 app internal import。
 - [x] Mock data 必須符合 `VocabEntry` 契約。
 - [x] 無 UI mockup，因此 TC-V 不適用。
-
