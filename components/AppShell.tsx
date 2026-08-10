@@ -72,7 +72,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
               )}
             >
               <Info className="size-4" />
-              <span className="hidden sm:inline">Sources</span>
+              <span className="hidden sm:inline">資料來源</span>
             </Link>
           </nav>
         </div>

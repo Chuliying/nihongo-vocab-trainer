@@ -37,6 +37,7 @@ type Props = {
   onGenerateRandom: () => void;
   onToggleLearned: (id: number) => void;
   onRelatedSelect: (targetId: number) => void;
+  relatedError: string | null;
   onBackToList: () => void;
   onCollectionChange: (id: CollectionId) => void;
   onJlptChange: (level: JlptLevel) => void;
@@ -67,6 +68,7 @@ export function CardMode({
   onGenerateRandom,
   onToggleLearned,
   onRelatedSelect,
+  relatedError,
   onBackToList,
   onCollectionChange,
   onJlptChange,
@@ -178,7 +180,7 @@ export function CardMode({
   const collectionLabel = collection === "all" ? "全部詞庫" : getCollectionLabel(collection);
   const progressLabel =
     activeSession === "random"
-      ? "Random Session"
+      ? "隨機練習"
       : `${collectionLabel}${jlpt !== "全部" ? ` · ${jlpt}` : ""}${partOfSpeech !== "全部" ? ` · ${partOfSpeech}` : ""}`;
 
   // Show skeleton while loading OR while we have no words but are expecting some (non-all collection still loading)
@@ -275,6 +277,12 @@ export function CardMode({
         />
       </div>
 
+      {relatedError && (
+        <p role="alert" className="mt-2 text-sm text-destructive">
+          {relatedError}
+        </p>
+      )}
+
       <DraggableProgress
         value={safeIndex}
         max={sessionWords.length}
@@ -317,7 +325,7 @@ export function CardMode({
                   {current?.word}
                 </span>
                 <span className="absolute bottom-6 font-display text-xs tracking-wide text-muted-foreground/70">
-                  tap to flip · swipe ↔
+                  點擊翻面・左右滑動
                 </span>
               </button>
 

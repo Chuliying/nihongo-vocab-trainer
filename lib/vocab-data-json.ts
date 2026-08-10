@@ -9,6 +9,12 @@ import fs from "fs";
 import path from "path";
 import rawPopular from "@/public/data/popular_verbs_300.json";
 import type { PopularVerb, VocabEntry } from "@/lib/types";
+import {
+  clampSearchLimit,
+  matchesVocabSearch,
+  normalizeSearchQuery,
+  sortVocabEntries,
+} from "@/lib/vocab-search";
 
 const CHUNK_SIZE = 250;
 const ENTRIES_PER_TRANCHE = 1000;
@@ -61,6 +67,27 @@ export function getTrancheIds(): number[] {
 
 export function getTrancheEntries(trancheId: number): VocabEntry[] {
   return chunksForTranche(trancheId).flatMap(loadChunk);
+}
+
+export function searchEntries(query: string, limit: number): VocabEntry[] {
+  if (!normalizeSearchQuery(query)) return [];
+
+  const matches: VocabEntry[] = [];
+  for (let i = 0; i < NUM_CHUNKS; i++) {
+    for (const entry of loadChunk(i)) {
+      if (matchesVocabSearch(entry, query)) matches.push(entry);
+    }
+  }
+
+  return sortVocabEntries(matches).slice(0, clampSearchLimit(limit));
+}
+
+export function getEntryById(id: number): VocabEntry | null {
+  if (!Number.isSafeInteger(id) || id < 1 || id > NUM_CHUNKS * CHUNK_SIZE) {
+    return null;
+  }
+
+  return loadChunk(chunkForId(id)).find((entry) => entry.id === id) ?? null;
 }
 
 export function getVocabIndex(): Record<number, number> {

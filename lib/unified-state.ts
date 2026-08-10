@@ -146,7 +146,7 @@ export function useUnifiedState() {
       writeStorage(next);
       return next;
     });
-  }, [searchParams, isHydrated]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchParams, isHydrated]);
 
   // state → URL: keep URL in sync after patch() calls
   useEffect(() => {

@@ -29,6 +29,16 @@
 
 ## Data Contracts
 - Shared vocabulary types are defined in `lib/types.ts`.
-- API responses preserve `VocabEntry` shape after repository-specific data is normalized.
+- API responses preserve `VocabEntry` shape after the selected repository removes internal fields such as `_quality`.
 - The active repository is selected with `VOCAB_DATA_SOURCE=json|db`; both implementations must preserve route response parity.
 - Tranche ids outside the repository's known set return `404 { "error": "unknown tranche" }`.
+
+## `GET /api/search?q=<query>&limit=<n>`
+- Searches `word`, `reading`, `meaning`, and `example.chinese` across all 13,000 entries.
+- An empty query returns `[]` without scanning the repository.
+- Missing `limit` defaults to 100; values above 200 are capped at 200; malformed or non-positive values return 400.
+- Data source: `searchEntries()` from `lib/vocab-repository.ts`.
+
+## `GET /api/vocab/[id]`
+- Returns one `VocabEntry` from `getEntryById()` for a positive integer id.
+- Malformed ids return 400; unknown ids return 404.

@@ -22,6 +22,17 @@ export async function getTrancheEntries(trancheId: number): Promise<VocabEntry[]
   return repository().getTrancheEntries(trancheId);
 }
 
+export async function searchEntries(
+  query: string,
+  limit: number
+): Promise<VocabEntry[]> {
+  return repository().searchEntries(query, limit);
+}
+
+export async function getEntryById(id: number): Promise<VocabEntry | null> {
+  return repository().getEntryById(id);
+}
+
 export async function getVocabIndex(): Promise<Record<number, number>> {
   return repository().getVocabIndex();
 }
