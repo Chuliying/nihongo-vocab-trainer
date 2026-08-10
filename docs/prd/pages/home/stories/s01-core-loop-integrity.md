@@ -2,7 +2,7 @@
 
 **Story ID**: S-HOME-01  
 **版本**: v1.0.0  
-**狀態**: Approved  
+**狀態**: 已完成
 **Sprint**: Sprint 1  
 **Tickets**: 不適用，因為本工作直接由 repository task 啟動
 
@@ -244,4 +244,3 @@ Mobile、Tablet、Desktop 皆沿用現有列表欄數與卡片寬度；本 Story
 - [x] Sprint、三項風險、官方 research、FR/Data source、4 ERR、5 AC 完整。
 - [x] 範圍外、NFR、UI states、microcopy、dependency 與 page flow 完整。
 - [x] 無阻擋型 FU；PM/RD/User/QA/UI 五視角可驗收。
-
