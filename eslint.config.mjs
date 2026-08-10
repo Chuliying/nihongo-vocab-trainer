@@ -8,6 +8,7 @@ const eslintConfig = [
   ...compat.config(nextVitals),
   globalIgnores([
     ".next/**",
+    ".claude/worktrees/**",
     "node_modules/**",
     "out/**",
     "dist/**",

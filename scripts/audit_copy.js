@@ -57,10 +57,11 @@ const currentDocPatterns = [
 ];
 
 const currentStateDocTargets = ["README.md", ".agent", "docs"];
-// These files are requirement/history records: they intentionally quote the
-// old strings as problem statements and audit targets, so they are not
-// learner-facing current-state claims.
-const excludedRequirementDocs = [
+// Requirement/history records intentionally quote old strings, while the
+// vendored shared skills describe generic thresholds unrelated to this app.
+// Neither group is a learner-facing current-state claim.
+const excludedNonCurrentStateDocs = [
+  ".agent/skills/_shared/",
   "docs/plans/",
   "docs/superpowers/",
   "docs/prd/pages/home/stories/s01-core-loop-integrity.md",
@@ -70,7 +71,7 @@ const excludedRequirementDocs = [
 
 const findings = [
   ...audit("UI", ["app", "components", "lib"], uiPatterns),
-  ...audit("current-state docs", currentStateDocTargets, currentDocPatterns, excludedRequirementDocs),
+  ...audit("current-state docs", currentStateDocTargets, currentDocPatterns, excludedNonCurrentStateDocs),
 ];
 
 if (findings.length > 0) {
@@ -82,5 +83,5 @@ if (findings.length > 0) {
   console.log(`UI patterns: ${uiPatterns.map(({ name }) => name).join(", ")}`);
   console.log("Current-state doc targets: README.md, .agent/, docs/");
   console.log(`Current-state doc patterns: ${currentDocPatterns.map(({ name }) => name).join(", ")}`);
-  console.log(`Excluded requirement/history docs: ${excludedRequirementDocs.join(", ")}`);
+  console.log(`Excluded non-current-state docs: ${excludedNonCurrentStateDocs.join(", ")}`);
 }
