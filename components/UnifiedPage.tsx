@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { CardMode } from "@/components/CardMode";
@@ -9,6 +9,9 @@ import { ListMode } from "@/components/ListMode";
 import { Input } from "@/components/ui/input";
 import { useUnifiedState } from "@/lib/unified-state";
 import { fetchCollection } from "@/lib/vocab-client";
+import { fetchVocabById } from "@/lib/vocab-search-client";
+import { useVocabSearch } from "@/lib/use-vocab-search";
+import { createRelatedNavigation } from "@/lib/related-navigation";
 import { getPartOfSpeechOptions, shuffle } from "@/lib/vocab";
 import { track } from "@vercel/analytics";
 import type { CollectionId, JlptLevel, SessionMode, VocabEntry } from "@/lib/types";
@@ -21,6 +24,12 @@ function UnifiedPageInner() {
   const [boundedEntries, setBoundedEntries] = useState<VocabEntry[]>([]);
   const [loadingEntries, setLoadingEntries] = useState(false);
   const [fetchError, setFetchError] = useState(false);
+  const [relatedError, setRelatedError] = useState<string | null>(null);
+  const [focusTargetId, setFocusTargetId] = useState<number | null>(null);
+  const relatedRequestRef = useRef(0);
+  const fullCorpusSearch = useVocabSearch(query, {
+    enabled: state.collection === "all",
+  });
 
   // Fix #4: use ignore flag to prevent stale async races on rapid collection switches
   useEffect(() => {
@@ -67,10 +76,34 @@ function UnifiedPageInner() {
     });
   }
 
-  const handleRelatedSelect = useCallback((targetId: number) => {
-    const found = boundedEntries.find((e) => e.id === targetId);
-    if (found) setQuery(found.word);
-  }, [boundedEntries]);
+  const handleQueryChange = useCallback((value: string) => {
+    relatedRequestRef.current += 1;
+    setQuery(value);
+    setRelatedError(null);
+    setFocusTargetId(null);
+  }, []);
+
+  const handleRelatedSelect = useCallback(async (targetId: number) => {
+    const requestId = ++relatedRequestRef.current;
+    setRelatedError(null);
+
+    try {
+      const entry = await fetchVocabById(targetId);
+      if (requestId !== relatedRequestRef.current) return;
+
+      const navigation = createRelatedNavigation(entry);
+      patch(navigation.state);
+      setQuery(navigation.query);
+      setFocusTargetId(navigation.focusTargetId);
+    } catch {
+      if (requestId !== relatedRequestRef.current) return;
+      setRelatedError("找不到這個相關詞。");
+    }
+  }, [patch]);
+
+  const handleTargetFocused = useCallback(() => {
+    setFocusTargetId(null);
+  }, []);
 
   if (!isHydrated) {
     return (
@@ -112,6 +145,7 @@ function UnifiedPageInner() {
           onGenerateRandom={() => generateRandomSession(boundedEntries)}
           onToggleLearned={toggleLearned}
           onRelatedSelect={handleRelatedSelect}
+          relatedError={relatedError}
           onBackToList={() => patch({ viewMode: "list" })}
           onCollectionChange={(id: CollectionId) =>
             patch({
@@ -161,7 +195,7 @@ function UnifiedPageInner() {
               <Input
                 value={query}
                 placeholder="搜尋單字、假名、釋義"
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => handleQueryChange(e.target.value)}
                 className="pl-4"
               />
             </div>
@@ -238,8 +272,18 @@ function UnifiedPageInner() {
             />
           </div>
           {fetchError && (
-            <p className="mt-2 text-sm text-destructive">
+            <p role="alert" className="mt-2 text-sm text-destructive">
               載入失敗，請重新整理頁面。
+            </p>
+          )}
+          {fullCorpusSearch.error && (
+            <p role="alert" className="mt-2 text-sm text-destructive">
+              {fullCorpusSearch.error}
+            </p>
+          )}
+          {relatedError && (
+            <p role="alert" className="mt-2 text-sm text-destructive">
+              {relatedError}
             </p>
           )}
         </div>
@@ -248,6 +292,10 @@ function UnifiedPageInner() {
           collection={state.collection}
           entries={boundedEntries}
           loadingEntries={loadingEntries}
+          searchEntries={fullCorpusSearch.entries}
+          searchLoading={fullCorpusSearch.isLoading}
+          focusTargetId={focusTargetId}
+          onTargetFocused={handleTargetFocused}
           jlpt={state.jlpt}
           partOfSpeech={state.partOfSpeech}
           query={query}

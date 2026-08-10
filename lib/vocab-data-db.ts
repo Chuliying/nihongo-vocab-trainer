@@ -1,5 +1,11 @@
 import type { VocabEntry } from "@/lib/types";
 import { getSql } from "@/lib/db-client";
+import {
+  clampSearchLimit,
+  escapeLikePattern,
+  normalizeSearchQuery,
+  sortVocabEntries,
+} from "@/lib/vocab-search";
 
 type VocabRow = {
   id: number;
@@ -99,6 +105,47 @@ async function fetchTagsByIds(
   return byId;
 }
 
+async function hydrateFocusedRows(
+  sql: ReturnType<typeof getSql>,
+  rows: VocabRow[]
+): Promise<VocabEntry[]> {
+  if (rows.length === 0) return [];
+
+  const ids = rows.map((row) => row.id);
+  const verbRows = await sql<VerbInfoRow[]>`
+    select * from verb_info where vocab_id in ${sql(ids)} order by vocab_id asc
+  `;
+  const relatedRows = await sql<RelatedWordRow[]>`
+    select vocab_id, position, word, reading, meaning, target_id
+    from related_words
+    where vocab_id in ${sql(ids)}
+    order by vocab_id asc, position asc
+  `;
+
+  const verbById = new Map(verbRows.map((row) => [row.vocab_id, row]));
+  const relatedById = new Map<number, VocabEntry["related"]>();
+  for (const row of relatedRows) {
+    const current = relatedById.get(row.vocab_id) || [];
+    current.push({
+      word: row.word,
+      reading: row.reading,
+      meaning: row.meaning,
+      ...(row.target_id != null ? { target_id: row.target_id } : {}),
+    });
+    relatedById.set(row.vocab_id, current);
+  }
+
+  const tagsById = await fetchTagsByIds(sql, ids);
+  return rows.map((row) =>
+    rowToEntry(
+      row,
+      verbById.get(row.id) || null,
+      relatedById.get(row.id) || [],
+      tagsById.get(row.id) || []
+    )
+  );
+}
+
 export async function getTrancheIds(): Promise<number[]> {
   const sql = getSql();
   const rows = await sql<{ id: number }[]>`
@@ -157,6 +204,64 @@ export async function getTrancheEntries(trancheId: number): Promise<VocabEntry[]
   return rows.map((row) =>
     rowToEntry(row, verbById.get(row.id) || null, relatedById.get(row.id) || [], tagsById.get(row.id) || [])
   );
+}
+
+export async function searchEntries(
+  query: string,
+  limit: number
+): Promise<VocabEntry[]> {
+  const normalized = normalizeSearchQuery(query);
+  if (!normalized) return [];
+
+  const sql = getSql();
+  const pattern = `%${escapeLikePattern(normalized)}%`;
+  const escapeCharacter = "\\";
+  const rows = await sql<VocabRow[]>`
+    select
+      id,
+      word,
+      reading,
+      part_of_speech,
+      jlpt_level,
+      tranche_id,
+      frequency_rank,
+      meaning,
+      quality_score,
+      example_json,
+      source_json
+    from vocab_entries
+    where word ilike ${pattern} escape ${escapeCharacter}
+       or reading ilike ${pattern} escape ${escapeCharacter}
+       or meaning ilike ${pattern} escape ${escapeCharacter}
+       or (example_json ->> 'chinese') ilike ${pattern} escape ${escapeCharacter}
+    order by frequency_rank asc, id asc
+    limit ${clampSearchLimit(limit)}
+  `;
+
+  return sortVocabEntries(await hydrateFocusedRows(sql, rows));
+}
+
+export async function getEntryById(id: number): Promise<VocabEntry | null> {
+  const sql = getSql();
+  const rows = await sql<VocabRow[]>`
+    select
+      id,
+      word,
+      reading,
+      part_of_speech,
+      jlpt_level,
+      tranche_id,
+      frequency_rank,
+      meaning,
+      quality_score,
+      example_json,
+      source_json
+    from vocab_entries
+    where id = ${id}
+    limit 1
+  `;
+  const entries = await hydrateFocusedRows(sql, rows);
+  return entries[0] ?? null;
 }
 
 export async function getVocabIndex(): Promise<Record<number, number>> {

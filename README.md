@@ -6,7 +6,7 @@ A mobile-first Japanese vocabulary trainer for Traditional Chinese (Taiwan) lear
 
 - 13,000 common Japanese words.
 - Tranche-based browsing and progress.
-- Normal study mode and Random 30 mode.
+- Sequential study mode and 隨機練習 (Random 30) mode.
 - Fixed-size flashcards with mobile swipe; word font auto-scales to length.
 - localStorage progress.
 - Deterministic verb conjugation info for verbs.
@@ -24,6 +24,16 @@ Node note: the project needs Node 20. If your default `node` is older, prefix
 commands with the v20 path, e.g.
 `env PATH=/Users/Chuliying/.nvm/versions/node/v20.19.4/bin:$PATH npm run dev`.
 
+Core quality gates:
+
+```bash
+npm run type-check
+npm run lint
+npm run test:unit
+npm run audit:copy
+npm run build
+```
+
 ## Data architecture
 
 There are two sources of truth, kept in sync by an importer:
@@ -33,6 +43,8 @@ There are two sources of truth, kept in sync by an importer:
 - **Runtime source** — Neon Postgres. The app reads from the DB
   (`validate:runtime-repository` reports `source: db`, 13,000 entries, 13 tranches).
 - Sync edit → runtime with `npm run db:import` (writes the DB and checks API parity).
+- Client components receive only focused API payloads. Empty-query browsing loads the
+  13 tranches progressively; a non-empty query uses the bounded full-corpus search.
 
 > `public/data/vocab_13000.json` is legacy seed data and is **not** the runtime
 > source — it diverges heavily from the chunks/DB and must not be used to overwrite them.

@@ -31,8 +31,10 @@ export const VocabCard = memo(function VocabCard({
   return (
     <Card
       id={`word-${entry.id}`}
+      tabIndex={-1}
+      data-vocab-id={entry.id}
       className={cn(
-        "gap-0 p-5 transition-colors",
+        "gap-0 p-5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/60",
         isLearned && "border-primary/40 bg-primary/[0.04]"
       )}
     >

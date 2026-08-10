@@ -32,7 +32,7 @@ Traditional Chinese learners of Japanese need a lightweight way to browse and pr
 ## 5. Defensive Thinking
 - Data risk: corpus entries may contain placeholder meanings, weak examples, or incomplete verb data; mitigation is `scripts/validate_vocab.py` and `npm run validate:data`.
 - UX risk: 13,000 words can feel heavy; mitigation is tranche slicing, lazy client fetches, cached API helpers, pagination, and focused practice modes.
-- Product risk: frequency/JLPT labels can be misread as official; mitigation is Sources page caveats and wording such as `推估`.
+- Product risk: frequency/JLPT labels can be misread as official; mitigation is source-page notes and wording such as `推估`.
 
 ## 6. Functional Requirements
 
@@ -41,8 +41,8 @@ Users can browse vocabulary by tranche from the home page.
 
 Evidence:
 - `app/page.tsx`
-- `components/LibraryPage.tsx`
-- `components/TrancheSelector.tsx`
+- `components/UnifiedPage.tsx`
+- `components/ListMode.tsx`
 
 Acceptance Criteria:
 - Given a user opens `/`, when the page loads, then it renders tranche navigation and the selected tranche vocabulary.
@@ -53,8 +53,9 @@ Acceptance Criteria:
 Users can search active entries and filter by part of speech in tranche mode.
 
 Evidence:
-- `components/LibraryPage.tsx`
+- `components/UnifiedPage.tsx`
 - `lib/vocab.ts`
+- `app/api/search/route.ts`
 
 Acceptance Criteria:
 - Given a user types a query, when entries are loaded, then matching is performed against word, reading, meaning, and Chinese example.
@@ -65,9 +66,9 @@ Acceptance Criteria:
 Users can switch from tranche browsing to a curated top-300 verb set.
 
 Evidence:
-- `components/LibraryPage.tsx`
+- `components/UnifiedPage.tsx`
 - `app/api/popular-verbs/route.ts`
-- `lib/vocab-data.ts`
+- `lib/vocab-repository.ts`
 - `public/data/popular_verbs_300.json`
 
 Acceptance Criteria:
@@ -87,15 +88,15 @@ Evidence:
 Acceptance Criteria:
 - Given a vocabulary entry renders in the library, then the card shows JLPT estimate, quality label, word, reading, part of speech, and meaning.
 - Given a user expands details, then the card shows Japanese example, reading, Chinese translation, verb info when present, and related words when present.
-- Given a related word has `target_id`, when clicked, then the app navigates to that target entry's tranche context.
+- Given a related word has `target_id`, when clicked, then the app resolves it through direct lookup and navigates to the canonical all/list workspace.
 
 ### FR-5 Practice Flow
 Users can practice selected tranche vocabulary as flashcards.
 
 Evidence:
-- `app/practice/page.tsx`
-- `components/PracticePage.tsx`
-- `lib/storage.ts`
+- `components/CardMode.tsx`
+- `components/UnifiedPage.tsx`
+- `lib/unified-state.ts`
 
 Acceptance Criteria:
 - Given a user opens `/practice`, then the app loads the selected tranche and shows one flashcard at a time.
@@ -104,17 +105,17 @@ Acceptance Criteria:
 - Given the user marks a word learned, then progress updates in local storage.
 
 ### FR-6 Practice Modes and Settings
-Users can practice sequentially or in a random 30-card session.
+Users can practice sequentially or in a bounded 隨機練習 session.
 
 Evidence:
-- `components/PracticePage.tsx`
+- `components/CardMode.tsx`
 - `lib/types.ts`
 - `lib/vocab.ts`
 
 Acceptance Criteria:
 - Given sequential mode is selected, then session words follow filtered tranche order.
-- Given random 30 mode starts, then the app shuffles the eligible pool and stores up to 30 word ids in progress.
-- Given the user reshuffles random 30, then a new random session is generated and progress index resets to 0.
+- Given 隨機練習 starts, then the app shuffles the eligible pool and stores bounded session ids in unified state.
+- Given the user reshuffles 隨機練習, then a new random session is generated and progress index resets to 0.
 - Given the user changes tranche from settings, then mode resets to sequential and session ids are cleared.
 
 ### FR-7 Local Study Progress
@@ -129,7 +130,7 @@ Acceptance Criteria:
 - Given a progress patch is set, then `lastUpdated` changes and data is saved under `nihongo-vocab-trainer:progress`.
 - Given progress is reset, then defaults are saved with a fresh `lastUpdated`.
 
-### FR-8 Data Sources Disclosure
+### FR-8 資料來源揭露
 Users can inspect data source and licensing notes.
 
 Evidence:
@@ -158,9 +159,9 @@ Acceptance Criteria:
 ## 9. Follow-Ups
 | 類型 | 背景 | AI 推薦 | 決策 |
 | --- | --- | --- | --- |
-| 非阻擋 | Current code has no automated UI test suite. | Add focused smoke tests after product behavior stabilizes. | 待後續規劃 |
+| 非阻擋 | Browser coverage is focused on the core loop. | Expand visual regression coverage only when a visual redesign is prioritized. | 維持現況 |
 | 非阻擋 | Progress is local-only by design. | Keep local-only until account/cloud sync is explicitly prioritized. | 維持現況 |
-| 非阻擋 | Sources page text mentions a 10,000-word plan while current manifest and corpus reference 13,000 words. | Align wording in a future copy cleanup. | 待後續規劃 |
+| 非阻擋 | Full-corpus search and direct related lookup are now focused API paths. | Reuse these boundaries for future SRS work. | 維持現況 |
 
 ## 10. Gate 1 Self-Check
 - FR present: PASS

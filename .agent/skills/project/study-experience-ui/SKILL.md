@@ -34,12 +34,14 @@ This skill describes the existing learner-facing UI and state patterns.
 - Track meaningful learning events with `@vercel/analytics` where existing flows already do so.
 
 ## Interaction Patterns
-- List browsing uses progressively loaded tranches for `all` and bounded API collections for common parts of speech.
-- Search and filters operate on entries already loaded into the active client view.
+- List browsing uses progressively loaded tranches for empty-query `all`, remote full-corpus search for a non-empty query, and bounded API collections for common parts of speech.
 - Card practice uses sequential and random session modes, a safe persisted index, card flip state, swipe navigation, draggable progress, and a session-end summary.
 - Collection/filter changes reset dependent indexes and random-session ids so persisted state cannot point outside the new scope.
+- Related-word navigation should resolve target ids through the direct lookup API, then switch to the canonical all/list workspace and focus the target card.
 - Learned toggles should record analytics only when transitioning from not learned to learned.
 
 ## Verification
 - Run `npm run build` after changing client components, routes, types, or style tokens.
+- Run `npm run typecheck`, `npm run lint`, `npm run test:unit`, and `npm run audit:copy` for focused regression gates.
+- Run `npm run test:e2e` for full-corpus search, related navigation, error recovery, and learner copy flows.
 - Manually smoke-test list/card query states on `/`, the `/practice` redirect, and `/sources` when changing navigation, progress, flip, filters, or related-word behavior.

@@ -151,7 +151,7 @@ export function FilterSheet({
 
           {showRandomSettings && (
             <div className="space-y-4 rounded-xl border border-border/60 bg-muted/30 p-4">
-              <p className="text-sm font-medium">Random Session 設定</p>
+              <p className="text-sm font-medium">隨機練習設定</p>
 
               <div className="space-y-2">
                 <Label>包含已學會的單字</Label>
@@ -204,7 +204,7 @@ export function FilterSheet({
                 onClick={onRegenerateRandom}
               >
                 <Shuffle className="size-4" />
-                重新產出 Random Session
+                重新產出隨機練習
               </Button>
             </div>
           )}

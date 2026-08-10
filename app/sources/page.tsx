@@ -5,34 +5,34 @@ import { Card } from "@/components/ui/card";
 
 const SOURCES = [
   {
-    name: "JMdict / EDRDG",
+    name: "JMdict／EDRDG",
     note: "用於單字、假名、詞性、priority tags 與字典釋義對照。需保留 EDRDG attribution 與 CC BY-SA 4.0 授權資訊。",
     href: "https://www.edrdg.org/edrdg/licence.html",
-    label: "EDRDG licence"
+    label: "EDRDG 授權條款"
   },
   {
-    name: "Tranche / frequency layer",
-    note: "目前 10 個 tranche 是產品內部分層：依 JMdict priority tags 排序後每 1,000 詞切一層。這不是 JLPT 官方層級，也不是 BCCWJ 官方排名。",
+    name: "分層／詞頻資料",
+    note: "目前 13 個分層是產品內部分層：依 JMdict priority tags 排序後每 1,000 詞切一層。這不是 JLPT 官方層級，也不是 BCCWJ 官方排名。",
     href: "https://clrd.ninjal.ac.jp/bccwj/freq-list.html",
-    label: "BCCWJ frequency list reference"
+    label: "BCCWJ 詞頻清單參考"
   },
   {
     name: "JLPT 等級標記",
     note: "JLPT 官方公開考試科目與題型，但現行 N1-N5 沒有公開官方單字表。本專案的 jlpt_level 目前是頻率區間推估，只能作為學習提示，不能視為官方分類。",
     href: "https://www.jlpt.jp/guideline/testsections.html",
-    label: "JLPT official test sections"
+    label: "JLPT 官方考試科目"
   },
   {
     name: "Tatoeba / Tanaka Corpus",
     note: "優先用於日文例句與翻譯對照。缺少繁中翻譯時，會標記為待補齊或生成補齊。",
     href: "https://tatoeba.org/en/downloads",
-    label: "Tatoeba downloads"
+    label: "Tatoeba 下載頁"
   },
   {
     name: "wordfreq",
-    note: "作為詞頻備援資料來源，避免單一公開詞頻來源無法覆蓋完整 10,000 詞。",
+    note: "作為詞頻備援資料來源，協助覆蓋完整 13,000 詞。",
     href: "https://pypi.org/project/wordfreq/",
-    label: "wordfreq"
+    label: "wordfreq 專案頁"
   }
 ];
 
@@ -41,12 +41,12 @@ export default function SourcesPage() {
     <AppShell>
       <main className="mx-auto w-full max-w-2xl px-4 pb-16 pt-6">
         <p className="font-display text-[0.7rem] tracking-[0.18em] text-muted-foreground uppercase">
-          Sources
+          資料來源
         </p>
         <h1 className="mt-2 font-serif text-3xl font-semibold">資料來源與授權</h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          本專案規劃優先使用公開資料建立 10,000 筆常用日語單字資料。正式資料匯入後，
-          此頁會列出資料版本、下載日期與每筆資料來源標記。
+          本專案目前提供 13,000 筆常用日語單字，分成 13 個分層與 52 個資料區塊。
+          此頁列出資料版本、下載日期與每筆資料來源標記。
         </p>
 
         <div className="mt-6 space-y-3">
