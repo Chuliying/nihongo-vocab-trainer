@@ -56,6 +56,14 @@ const slowSearchEntry = {
   related: [],
 };
 
+function createDeferred() {
+  let resolve: (() => void) | undefined;
+  const promise = new Promise<void>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve: () => resolve?.() };
+}
+
 test("full-corpus search shows a result from a later tranche", async ({ page }) => {
   const consoleErrors: string[] = [];
   let trancheTwoRequests = 0;
@@ -286,6 +294,108 @@ test("a missing related target preserves the current view and collection", async
   await expect(page).toHaveURL(/collection=popular-verbs/);
   await expect(page.getByText("來源詞").first()).toBeVisible();
   expect(consoleErrors.filter((message) => !message.includes("404 (Not Found)"))).toEqual([]);
+});
+
+test("a delayed related lookup cannot override a card user's return to list", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  const lookupStarted = createDeferred();
+  const allowLookupResponse = createDeferred();
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+  await page.route("**/api/popular-verbs", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([sourceEntry]),
+    })
+  );
+  await page.route("**/api/vocab/12345", async (route) => {
+    lookupStarted.resolve();
+    await allowLookupResponse.promise;
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(targetEntry),
+    });
+  });
+
+  await page.goto("/?view=card&collection=popular-verbs");
+  await page.getByRole("button", { name: "隨機模式" }).click();
+  await page.getByRole("button", { name: /來源詞/ }).click();
+  await page.getByText("相關詞彙").waitFor();
+  await page.getByRole("button", { name: /後段詞/ }).click();
+  await lookupStarted.promise;
+  await page.getByRole("button", { name: "回到列表" }).click();
+
+  await expect(page).toHaveURL(/collection=popular-verbs/);
+  await expect(page).not.toHaveURL(/view=card/);
+  allowLookupResponse.resolve();
+  await page.waitForTimeout(300);
+  await expect(page).toHaveURL(/collection=popular-verbs/);
+  await expect(page).not.toHaveURL(/view=card/);
+  await expect(page.locator("#word-12345")).toHaveCount(0);
+  await expect(page.getByText("找不到這個相關詞。", { exact: true })).toHaveCount(0);
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const raw = window.localStorage.getItem("nihongo-vocab-trainer:unified");
+        return raw ? JSON.parse(raw) : null;
+      })
+    )
+    .toMatchObject({
+      activeSession: "random",
+      randomSessionIds: [1],
+    });
+  expect(consoleErrors).toEqual([]);
+});
+
+test("a delayed related lookup cannot override a collection user's newer scope", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  const lookupStarted = createDeferred();
+  const allowLookupResponse = createDeferred();
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+  await page.route("**/api/collection/popular-adj", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([sourceEntry]),
+    })
+  );
+  await page.route("**/api/collection/popular-adv", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([sourceEntry]),
+    })
+  );
+  await page.route("**/api/vocab/12345", async (route) => {
+    lookupStarted.resolve();
+    await allowLookupResponse.promise;
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(targetEntry),
+    });
+  });
+
+  await page.goto("/?collection=popular-adj");
+  await page.getByText("例句・變化・相關詞").first().click();
+  await page.getByRole("button", { name: /後段詞/ }).click();
+  await lookupStarted.promise;
+  await page.getByRole("button", { name: "篩選" }).click();
+  await page.getByRole("button", { name: "常用副詞" }).click();
+
+  await expect(page).toHaveURL(/collection=popular-adv/);
+  allowLookupResponse.resolve();
+  await page.waitForTimeout(300);
+  await expect(page).toHaveURL(/collection=popular-adv/);
+  await expect(page).not.toHaveURL(/view=card/);
+  await expect(page.locator("#word-12345")).toHaveCount(0);
+  await expect(page.getByText("找不到這個相關詞。", { exact: true })).toHaveCount(0);
+  expect(consoleErrors).toEqual([]);
 });
 
 test("Sources uses the approved Traditional Chinese copy and current corpus facts", async ({ page }) => {

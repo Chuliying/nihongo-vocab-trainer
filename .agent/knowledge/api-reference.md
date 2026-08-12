@@ -20,10 +20,10 @@
 - Client helper: `fetchPopularVerbs()` in `lib/vocab-client.ts`.
 
 ## `GET /api/collection/[id]`
-- Supported ids: `popular-adj`, `popular-adv`, and `popular-conj`.
-- Returns a frequency-sorted, bounded `VocabEntry[]` selected by configured part of speech.
+- Supported ids: `popular-adj`, `popular-adv`, `popular-conj`, and `popular-nouns-500`.
+- Returns a frequency-sorted, bounded `VocabEntry[]` selected by configured part of speech or tag.
 - Source: `app/api/collection/[id]/route.ts`.
-- Data source: `getEntriesByPos(pos, limit)` from `lib/vocab-repository.ts`.
+- Data source: `getEntriesByPos(pos, limit)` or `getEntriesByTag(tag, limit)` from `lib/vocab-repository.ts`.
 - Client helper: `fetchCollection(id)` in `lib/vocab-client.ts`.
 - Unknown ids return `404 { "error": "Unknown collection" }`.
 
