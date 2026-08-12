@@ -14,13 +14,13 @@
 
 ## Runtime / Build JSON Consumers
 
-- `lib/vocab-data.ts`
+- `lib/vocab-repository.ts`
+  - Repository selector：JSON chunks or Postgres, controlled by `VOCAB_DATA_SOURCE`
+- `lib/vocab-data-json.ts`
   - Runtime source：`public/data/chunks/vocab_chunk_*.json`
   - Popular verb source：`public/data/popular_verbs_300.json`
-- `app/page.tsx`
-  - Build source：`public/data/tranches.json`
-- `app/practice/page.tsx`
-  - Build source：`public/data/tranches.json`
+- `app/page.tsx` / `components/UnifiedPage.tsx`
+  - UI route and state owner; static metadata is not used to ship the corpus
 
 ## Script JSON Dependency Summary
 
@@ -68,7 +68,7 @@ Legacy absolute path scripts 需要在 DB migration 前標記為 one-off 或改�
 - runtime source：`public/data/chunks/vocab_chunk_*.json`
 - canonical vs runtime chunk mismatches：11,213 entries
 
-`CLAUDE.md` identifies the chunk files as the current app data source, and `lib/vocab-data.ts` serves API payloads from those chunk files. Therefore DB runtime parity uses `runtime-chunks` as the import source.
+`CLAUDE.md` identifies the chunk files as the current app data source, and `lib/vocab-data-json.ts` serves API payloads from those chunks through the repository selector. Therefore DB runtime parity uses `runtime-chunks` as the import source.
 
 The full `vocab_13000.json` remains important for generator / canonical validation workflows, but it must be reconciled with chunks before it can be used as a runtime cutover baseline.
 

@@ -7,9 +7,11 @@
 
 ## Engineering Boundaries
 - Use Next.js App Router patterns already present in `app/`.
-- Keep large corpus reads server-side through `lib/vocab-data.ts` and API routes. Do not import `public/data/vocab_13000.json` into client components.
+- Keep corpus reads server-side through `lib/vocab-repository.ts` and API routes. Do not import full corpus or chunk JSON into client components.
+- Preserve behavioral parity between `lib/vocab-data-json.ts` and `lib/vocab-data-db.ts` when extending the repository interface.
 - Client components may fetch slices through `lib/vocab-client.ts`, which owns module-level request caches.
-- Study progress lives in `localStorage` through `useStudyProgress`; normalize persisted values when adding fields.
+- Learner state lives in `localStorage` and URL query parameters through `useUnifiedState`; update `UnifiedState`, `DEFAULT_STATE`, normalization, and URL serialization together when adding fields.
+- Treat `lib/storage.ts` as legacy migration compatibility unless a task explicitly revives the old progress model.
 - Use existing shadcn/Radix-style components from `components/ui/` and `lucide-react` icons for controls.
 
 ## Data Quality Boundaries

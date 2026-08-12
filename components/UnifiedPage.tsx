@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { CardMode } from "@/components/CardMode";
@@ -9,9 +9,18 @@ import { ListMode } from "@/components/ListMode";
 import { Input } from "@/components/ui/input";
 import { useUnifiedState } from "@/lib/unified-state";
 import { fetchCollection } from "@/lib/vocab-client";
+import { fetchVocabById } from "@/lib/vocab-search-client";
+import { useVocabSearch } from "@/lib/use-vocab-search";
+import { createRelatedNavigation } from "@/lib/related-navigation";
 import { getPartOfSpeechOptions, shuffle } from "@/lib/vocab";
 import { track } from "@vercel/analytics";
-import type { CollectionId, JlptLevel, SessionMode, VocabEntry } from "@/lib/types";
+import type {
+  CollectionId,
+  JlptLevel,
+  SessionMode,
+  UnifiedState,
+  VocabEntry,
+} from "@/lib/types";
 
 function UnifiedPageInner() {
   const { state, isHydrated, patch, toggleLearned, resetProgress } =
@@ -21,6 +30,45 @@ function UnifiedPageInner() {
   const [boundedEntries, setBoundedEntries] = useState<VocabEntry[]>([]);
   const [loadingEntries, setLoadingEntries] = useState(false);
   const [fetchError, setFetchError] = useState(false);
+  const [relatedError, setRelatedError] = useState<string | null>(null);
+  const [focusTargetId, setFocusTargetId] = useState<number | null>(null);
+  const relatedRequestRef = useRef(0);
+  const relatedControllerRef = useRef<AbortController | null>(null);
+  const fullCorpusSearch = useVocabSearch(query, {
+    enabled: state.collection === "all",
+  });
+  const scopeKey = [
+    state.viewMode,
+    state.collection,
+    state.jlpt,
+    state.partOfSpeech,
+  ].join(":");
+  const previousScopeKeyRef = useRef(scopeKey);
+
+  const cancelRelatedLookup = useCallback(() => {
+    relatedRequestRef.current += 1;
+    relatedControllerRef.current?.abort();
+    relatedControllerRef.current = null;
+  }, []);
+
+  const patchAfterUserAction = useCallback(
+    (updates: Partial<UnifiedState>) => {
+      cancelRelatedLookup();
+      patch(updates);
+    },
+    [cancelRelatedLookup, patch]
+  );
+
+  // User actions call patchAfterUserAction synchronously. This effect also
+  // handles URL navigation from shell links or browser history. A successful
+  // related navigation clears its controller before its own canonical patch.
+  useEffect(() => {
+    if (previousScopeKeyRef.current === scopeKey) return;
+    previousScopeKeyRef.current = scopeKey;
+    if (relatedControllerRef.current) cancelRelatedLookup();
+  }, [cancelRelatedLookup, scopeKey]);
+
+  useEffect(() => () => cancelRelatedLookup(), [cancelRelatedLookup]);
 
   // Fix #4: use ignore flag to prevent stale async races on rapid collection switches
   useEffect(() => {
@@ -60,17 +108,69 @@ function UnifiedPageInner() {
       collection: state.collection,
       count: ids.length,
     });
-    patch({
+    patchAfterUserAction({
       randomSessionIds: ids,
       randomSessionIndex: 0,
       activeSession: "random",
     });
   }
 
-  const handleRelatedSelect = useCallback((targetId: number) => {
-    const found = boundedEntries.find((e) => e.id === targetId);
-    if (found) setQuery(found.word);
-  }, [boundedEntries]);
+  const handleQueryChange = useCallback((value: string) => {
+    cancelRelatedLookup();
+    setQuery(value);
+    setRelatedError(null);
+    setFocusTargetId(null);
+  }, [cancelRelatedLookup]);
+
+  const handleRelatedSelect = useCallback(async (targetId: number) => {
+    cancelRelatedLookup();
+    const requestId = relatedRequestRef.current;
+    const controller = new AbortController();
+    relatedControllerRef.current = controller;
+    setRelatedError(null);
+
+    try {
+      const entry = await fetchVocabById(targetId, controller.signal);
+      if (
+        controller.signal.aborted ||
+        requestId !== relatedRequestRef.current ||
+        relatedControllerRef.current !== controller
+      ) {
+        return;
+      }
+
+      const navigation = createRelatedNavigation(entry);
+      relatedControllerRef.current = null;
+      patch(navigation.state);
+      setQuery(navigation.query);
+      setFocusTargetId(navigation.focusTargetId);
+    } catch {
+      if (
+        controller.signal.aborted ||
+        requestId !== relatedRequestRef.current ||
+        relatedControllerRef.current !== controller
+      ) {
+        return;
+      }
+      relatedControllerRef.current = null;
+      setRelatedError("找不到這個相關詞。");
+    }
+  }, [cancelRelatedLookup, patch]);
+
+  const handleTargetFocused = useCallback(() => {
+    setFocusTargetId(null);
+  }, []);
+
+  const handleToggleLearned = useCallback((wordId: number) => {
+    cancelRelatedLookup();
+    toggleLearned(wordId);
+  }, [cancelRelatedLookup, toggleLearned]);
+
+  const handleResetProgress = useCallback(() => {
+    cancelRelatedLookup();
+    resetProgress();
+    setFocusTargetId(null);
+  }, [cancelRelatedLookup, resetProgress]);
 
   if (!isHydrated) {
     return (
@@ -104,17 +204,22 @@ function UnifiedPageInner() {
             if (mode === "random" && state.randomSessionIds.length === 0) {
               generateRandomSession(boundedEntries);
             } else {
-              patch({ activeSession: mode });
+              patchAfterUserAction({ activeSession: mode });
             }
           }}
-          onSetSequentialIndex={(i) => patch({ sequentialIndex: i })}
-          onSetRandomIndex={(i) => patch({ randomSessionIndex: i })}
+          onSetSequentialIndex={(i) =>
+            patchAfterUserAction({ sequentialIndex: i })
+          }
+          onSetRandomIndex={(i) =>
+            patchAfterUserAction({ randomSessionIndex: i })
+          }
           onGenerateRandom={() => generateRandomSession(boundedEntries)}
-          onToggleLearned={toggleLearned}
+          onToggleLearned={handleToggleLearned}
           onRelatedSelect={handleRelatedSelect}
-          onBackToList={() => patch({ viewMode: "list" })}
+          relatedError={relatedError}
+          onBackToList={() => patchAfterUserAction({ viewMode: "list" })}
           onCollectionChange={(id: CollectionId) =>
-            patch({
+            patchAfterUserAction({
               collection: id,
               sequentialIndex: 0,
               partOfSpeech: "全部",
@@ -124,7 +229,7 @@ function UnifiedPageInner() {
             })
           }
           onJlptChange={(level: JlptLevel) =>
-            patch({
+            patchAfterUserAction({
               jlpt: level,
               sequentialIndex: 0,
               randomSessionIds: [],
@@ -133,7 +238,7 @@ function UnifiedPageInner() {
             })
           }
           onPartOfSpeechChange={(pos) =>
-            patch({
+            patchAfterUserAction({
               partOfSpeech: pos,
               sequentialIndex: 0,
               randomSessionIds: [],
@@ -142,10 +247,12 @@ function UnifiedPageInner() {
             })
           }
           onRandomIncludeLearnedChange={(val) =>
-            patch({ randomIncludeLearned: val })
+            patchAfterUserAction({ randomIncludeLearned: val })
           }
-          onRandomQuantityChange={(val) => patch({ randomQuantity: val })}
-          onResetProgress={resetProgress}
+          onRandomQuantityChange={(val) =>
+            patchAfterUserAction({ randomQuantity: val })
+          }
+          onResetProgress={handleResetProgress}
         />
       </AppShell>
     );
@@ -161,7 +268,7 @@ function UnifiedPageInner() {
               <Input
                 value={query}
                 placeholder="搜尋單字、假名、釋義"
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => handleQueryChange(e.target.value)}
                 className="pl-4"
               />
             </div>
@@ -172,7 +279,7 @@ function UnifiedPageInner() {
               partOfSpeechOptions={partOfSpeechOptions}
               activeFilterCount={activeFilterCount}
               onCollectionChange={(id) =>
-                patch({
+                patchAfterUserAction({
                   collection: id,
                   sequentialIndex: 0,
                   partOfSpeech: "全部",
@@ -182,7 +289,7 @@ function UnifiedPageInner() {
                 })
               }
               onJlptChange={(level) =>
-                patch({
+                patchAfterUserAction({
                   jlpt: level,
                   sequentialIndex: 0,
                   randomSessionIds: [],
@@ -191,7 +298,7 @@ function UnifiedPageInner() {
                 })
               }
               onPartOfSpeechChange={(pos) =>
-                patch({
+                patchAfterUserAction({
                   partOfSpeech: pos,
                   sequentialIndex: 0,
                   randomSessionIds: [],
@@ -199,7 +306,7 @@ function UnifiedPageInner() {
                   activeSession: "sequential",
                 })
               }
-              onResetProgress={resetProgress}
+              onResetProgress={handleResetProgress}
             />
           </div>
           <div className="mt-2">
@@ -208,7 +315,7 @@ function UnifiedPageInner() {
               jlpt={state.jlpt}
               partOfSpeech={state.partOfSpeech}
               onRemoveCollection={() =>
-                patch({
+                patchAfterUserAction({
                   collection: "all",
                   sequentialIndex: 0,
                   partOfSpeech: "全部",
@@ -218,7 +325,7 @@ function UnifiedPageInner() {
                 })
               }
               onRemoveJlpt={() =>
-                patch({
+                patchAfterUserAction({
                   jlpt: "全部",
                   sequentialIndex: 0,
                   randomSessionIds: [],
@@ -227,7 +334,7 @@ function UnifiedPageInner() {
                 })
               }
               onRemovePartOfSpeech={() =>
-                patch({
+                patchAfterUserAction({
                   partOfSpeech: "全部",
                   sequentialIndex: 0,
                   randomSessionIds: [],
@@ -238,8 +345,18 @@ function UnifiedPageInner() {
             />
           </div>
           {fetchError && (
-            <p className="mt-2 text-sm text-destructive">
+            <p role="alert" className="mt-2 text-sm text-destructive">
               載入失敗，請重新整理頁面。
+            </p>
+          )}
+          {fullCorpusSearch.error && (
+            <p role="alert" className="mt-2 text-sm text-destructive">
+              {fullCorpusSearch.error}
+            </p>
+          )}
+          {relatedError && (
+            <p role="alert" className="mt-2 text-sm text-destructive">
+              {relatedError}
             </p>
           )}
         </div>
@@ -248,11 +365,15 @@ function UnifiedPageInner() {
           collection={state.collection}
           entries={boundedEntries}
           loadingEntries={loadingEntries}
+          searchEntries={fullCorpusSearch.entries}
+          searchLoading={fullCorpusSearch.isLoading}
+          focusTargetId={focusTargetId}
+          onTargetFocused={handleTargetFocused}
           jlpt={state.jlpt}
           partOfSpeech={state.partOfSpeech}
           query={query}
           learnedWordIds={state.learnedWordIds}
-          onToggleLearned={toggleLearned}
+          onToggleLearned={handleToggleLearned}
           onRelatedSelect={handleRelatedSelect}
         />
       </main>
