@@ -36,7 +36,7 @@
 
 ## 5. Current Runtime Model
 
-- app/page.tsx 渲染 UnifiedPage；預設為 ListMode。
+- app/page.tsx 渲染 UnifiedPage。URL 明示的 view/filter 參數優先；bare / 在 hydration 時會先還原持久化的非預設 view/filter，只有沒有可還原的 scope 時才以 ListMode 為預設。
 - app/practice/page.tsx 僅將既有連結 redirect 到 /，不是另一個練習畫面。
 - ListMode 在 collection=all 且 query 為空白時，先載入第一個分層，並由 sentinel 漸進載入其餘分層。
 - ListMode 在 collection=all 且 query 非空時，改用 /api/search 的遠端結果；該路由查完整 13,000 詞而非已載入的分層。
@@ -60,7 +60,8 @@ Evidence:
 
 Acceptance Criteria:
 
-- Given a user opens / without a view query, when hydration completes, then UnifiedPage renders ListMode.
+- Given a user opens a URL with explicit view or filter parameters, when hydration completes, then those URL parameters determine the active mode and scope regardless of local storage.
+- Given a user opens bare /, when persisted non-default view/filter scope exists, then hydration restores that scope once into the URL; when no such scope exists, then UnifiedPage defaults to ListMode.
 - Given collection=all and the query is empty or whitespace-only, when the list starts, then it loads the first of 13 server-side tranches and progressively requests further tranches only as the sentinel is reached.
 - Given collection=all and a non-empty query is present, when results are shown, then the progressive tranche source is not used for that query.
 - Given a user returns to an empty all-corpus query, when the list renders, then it resumes the progressive-loading path rather than performing a full-corpus client download.
@@ -151,7 +152,8 @@ Evidence:
 Acceptance Criteria:
 
 - Given view, collection, JLPT, or part-of-speech changes, when useUnifiedState patches them, then view, collection, jlpt, and pos are normalized into the canonical / URL query string.
-- Given the page hydrates from a URL with those parameters, then the URL owns the active view/filter scope; a bare URL may receive one initial restore from stored scope.
+- Given the page hydrates from a URL with explicit parameters, then the URL owns the active view/filter scope over local storage.
+- Given a user opens bare /, when stored non-default view/filter scope exists, then it receives one initial URL restore; without a restorable scope, the default is ListMode.
 - Given learned ids, random settings, session ids, or session indices change, then the settled UnifiedState is saved under nihongo-vocab-trainer:unified.
 - Given old progress data exists, then lib/storage.ts and nihongo-vocab-trainer:progress are used only for migration compatibility; the active UI writes no new state to that old key and migrates only learned ids into the unified model.
 - Given malformed unified or legacy storage is encountered, then the app safely falls back to normalized defaults.

@@ -7,6 +7,10 @@ vi.mock("@/lib/db-client", () => database);
 
 import { getEntryById, searchEntries } from "@/lib/vocab-data-db";
 
+type VerbInfoRow = NonNullable<VocabEntry["verb_info"]> & {
+  vocab_id: number;
+};
+
 const deterministicContractFixture: VocabEntry[] = [
   {
     id: 102,
@@ -35,9 +39,9 @@ const deterministicContractFixture: VocabEntry[] = [
   },
   {
     id: 103,
-    word: "確認",
-    reading: "かくにん",
-    part_of_speech: "名詞",
+    word: "確認する",
+    reading: "かくにんする",
+    part_of_speech: "動詞（サ変）",
     jlpt_level: "N3",
     tranche_id: 1,
     frequency_rank: 10,
@@ -47,7 +51,21 @@ const deterministicContractFixture: VocabEntry[] = [
       reading: "よていをかくにんする。",
       chinese: "確認行程。",
     },
-    verb_info: null,
+    verb_info: {
+      verb_type: "サ変動詞",
+      dictionary_form: "確認する",
+      masu_form: "確認します",
+      te_form: "確認して",
+      ta_form: "確認した",
+      nai_form: "確認しない",
+      potential_form: "確認できる",
+      passive_form: "確認される",
+      causative_form: "確認させる",
+      imperative_form: "確認しろ",
+      conditional_form: "確認すれば",
+      volitional_form: "確認しよう",
+      notes: "確認を行う。",
+    },
     related: [{
       word: "確かめる",
       reading: "たしかめる",
@@ -114,6 +132,11 @@ function setupFixtureSql(entries: VocabEntry[] = deterministicContractFixture) {
   const tagRows = entries.flatMap((entry) =>
     (entry.tags ?? []).map((tag) => ({ vocab_id: entry.id, tag }))
   );
+  const verbRows: VerbInfoRow[] = entries.flatMap((entry) =>
+    entry.verb_info
+      ? [{ vocab_id: entry.id, ...entry.verb_info }]
+      : []
+  );
 
   const sql = vi.fn(
     (strings: TemplateStringsArray | unknown[], ...values: unknown[]) => {
@@ -140,7 +163,7 @@ function setupFixtureSql(entries: VocabEntry[] = deterministicContractFixture) {
           : orderedRows.slice(0, requestedLimit);
       }
 
-      if (query.includes("from verb_info")) return [];
+      if (query.includes("from verb_info")) return verbRows;
       if (query.includes("from related_words")) return relatedRows;
       if (query.includes("from vocab_tags")) return tagRows;
       return [];
@@ -156,7 +179,7 @@ beforeEach(() => {
 });
 
 describe("Postgres repository search and lookup parity", () => {
-  it("TC-L4-06: JSON/Postgres multi-entry fixtures preserve VocabEntry shape, frequency_rank/id ordering, limit, tags, related target hydration, and unknown-id null parity", async () => {
+  it("TC-L4-06: JSON/Postgres multi-entry fixtures preserve VocabEntry shape, frequency_rank/id ordering, limit, tags, related target and verb_info hydration, and unknown-id null parity", async () => {
     const sql = setupFixtureSql();
 
     const fullResults = await searchEntries("fixture", 3);
@@ -172,6 +195,9 @@ describe("Postgres repository search and lookup parity", () => {
       tags: ["常用名詞500", "測試標籤"],
       related: [{ target_id: 702 }],
     });
+    expect(fullResults[1]!.verb_info).toEqual(
+      deterministicContractFixture[1]!.verb_info
+    );
 
     const limitedResults = await searchEntries("fixture", 2);
     expect(limitedResults).toEqual(deterministicContractFixture.slice(0, 2));
@@ -185,8 +211,8 @@ describe("Postgres repository search and lookup parity", () => {
         .at(-1)
     ).toContain(2);
 
-    await expect(getEntryById(102)).resolves.toEqual(
-      deterministicContractFixture[0]
+    await expect(getEntryById(103)).resolves.toEqual(
+      deterministicContractFixture[1]
     );
 
     const unknownId = 99_999_999;
