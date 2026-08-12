@@ -1,9 +1,9 @@
 # 核心學習閉環校正 PRD
 
-**Story ID**: S-HOME-01  
-**版本**: v1.0.0  
+**Story ID**: S-HOME-01
+**版本**: v1.0.0
 **狀態**: 已完成
-**Sprint**: Sprint 1  
+**Sprint**: Sprint 1
 **Tickets**: 不適用，因為本工作直接由 repository task 啟動
 
 ## 版本歷史
@@ -85,33 +85,33 @@ flowchart TD
 
 **描述**：在 `collection=all` 時，搜尋必須查詢完整 13,000 詞，而非只查已載入 tranche。
 
-**輸入**：query 字串與 bounded limit。  
+**輸入**：query 字串與 bounded limit。
 **輸出**：依 frequency rank 排序的 `VocabEntry[]`。
 
-**邊界條件**：空白 query 回傳空陣列；limit 受 server hard cap；特殊字元視為文字，不作 regex。  
-**Data 來源狀態**：✅ 已有 corpus，需新增 focused API 與 repository method。  
+**邊界條件**：空白 query 回傳空陣列；limit 受 server hard cap；特殊字元視為文字，不作 regex。
+**Data 來源狀態**：✅ 已有 corpus，需新增 focused API 與 repository method。
 **權限/可見性**：所有使用者，read-only。
 
 ### FR-002：可靠的相關詞導航
 
 **描述**：從列表或卡片模式、任一 collection 點擊有效相關詞，都能解析目標並回到 canonical list workspace 顯示該詞。
 
-**輸入**：`target_id`。  
+**輸入**：`target_id`。
 **輸出**：目標詞卡片可見並取得程式化 focus。
 
-**邊界條件**：target 不存在或 API 失敗時不改變目前 scope。  
-**Data 來源狀態**：✅ 已有 `target_id` 與 corpus，需新增 id lookup API。  
+**邊界條件**：target 不存在或 API 失敗時不改變目前 scope。
+**Data 來源狀態**：✅ 已有 `target_id` 與 corpus，需新增 id lookup API。
 **權限/可見性**：所有使用者。
 
 ### FR-003：產品字詞一致性
 
 **描述**：使用者可見英文片段改為自然繁中，所有現行文件與頁面使用正確 corpus 規模及目前元件／資料架構名稱。
 
-**輸入**：active UI strings 與 current-state docs。  
+**輸入**：active UI strings 與 current-state docs。
 **輸出**：校正後文案與 deterministic audit 結果。
 
-**邊界條件**：品牌 `Nihongo`、資料來源專名與 corpus 內日文不翻譯。  
-**Data 來源狀態**：✅ repository 內既有文字。  
+**邊界條件**：品牌 `Nihongo`、資料來源專名與 corpus 內日文不翻譯。
+**Data 來源狀態**：✅ repository 內既有文字。
 **權限/可見性**：所有使用者及專案維護者。
 
 ## 3. 非功能需求（NFR）
@@ -127,26 +127,26 @@ flowchart TD
 
 ### ERR-001：搜尋失敗
 
-**觸發條件**：搜尋 endpoint 非 2xx 或網路失敗。  
-**預期行為**：顯示「搜尋失敗，請稍後再試。」且保留 query。  
+**觸發條件**：搜尋 endpoint 非 2xx 或網路失敗。
+**預期行為**：顯示「搜尋失敗，請稍後再試。」且保留 query。
 **恢復策略**：修改 query 或重試。
 
 ### ERR-002：相關詞不存在
 
-**觸發條件**：target id 合法但 corpus 無此詞。  
-**預期行為**：顯示「找不到這個相關詞。」且不切換 scope。  
+**觸發條件**：target id 合法但 corpus 無此詞。
+**預期行為**：顯示「找不到這個相關詞。」且不切換 scope。
 **恢復策略**：關閉提示後繼續目前學習。
 
 ### ERR-003：無效 request
 
-**觸發條件**：id 非正整數或 limit 非數字。  
-**預期行為**：API 回傳 400 JSON error，不執行 repository scan。  
+**觸發條件**：id 非正整數或 limit 非數字。
+**預期行為**：API 回傳 400 JSON error，不執行 repository scan。
 **恢復策略**：Client 不應產生此 request；測試確認契約。
 
 ### ERR-004：快速請求競態
 
-**觸發條件**：舊 request 比新 request 晚回來。  
-**預期行為**：舊結果不得覆蓋目前 query 或 navigation。  
+**觸發條件**：舊 request 比新 request 晚回來。
+**預期行為**：舊結果不得覆蓋目前 query 或 navigation。
 **恢復策略**：不需使用者操作。
 
 ## 5. 驗收標準（AC）

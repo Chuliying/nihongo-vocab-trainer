@@ -1,7 +1,7 @@
 # 核心學習閉環校正技術規格
 
-**Story ID**: S-HOME-01  
-**Spec 版本**: v1.0.0  
+**Story ID**: S-HOME-01
+**Spec 版本**: v1.0.0
 **對應 PRD**: `docs/prd/pages/home/stories/s01-core-loop-integrity.md` @ v1.0.0
 
 ## 版本歷史
@@ -254,4 +254,3 @@ it("clamps the public limit", () => {
 - [x] Interface、API JSON、empty/error 範例、資料流程與測試案例完整。
 - [x] 不新增色碼；mockup 不存在；Graph 使用 rg fallback。
 - [x] API 建立在現有 corpus SSOT 與 repository boundary 上。
-

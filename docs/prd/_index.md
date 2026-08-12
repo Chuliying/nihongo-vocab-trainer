@@ -11,4 +11,3 @@
 ## Sprints
 
 - [Sprint 1](sprints/sprint_1.md)
-

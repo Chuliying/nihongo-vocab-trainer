@@ -1,8 +1,8 @@
 # 核心學習閉環校正 QA 方案
 
-**Story ID**: S-HOME-01  
-**版本**: v1.0.0  
-**對應 PRD**: `docs/prd/pages/home/stories/s01-core-loop-integrity.md` @ v1.0.0  
+**Story ID**: S-HOME-01
+**版本**: v1.0.0
+**對應 PRD**: `docs/prd/pages/home/stories/s01-core-loop-integrity.md` @ v1.0.0
 **對應 Spec**: `docs/spec/pages/home/stories/s01-core-loop-integrity.md` @ v1.0.0
 
 ## 0. 可測試性與策略

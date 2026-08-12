@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "type-check": "npm run typecheck",
     "test": "vitest run",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",

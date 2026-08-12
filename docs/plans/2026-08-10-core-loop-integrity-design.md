@@ -85,4 +85,3 @@ query or related target
 - Automated tests cover matching fields, limits, empty queries, missing ids, and deterministic navigation state.
 - Runtime repository validation remains green for all 13,000 entries and 300 popular verbs.
 - Type check, lint, tests, build, design-token scan, and browser smoke tests must pass before completion.
-
