@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 
-VOCAB_PATH = Path("public/data/vocab_13000.json")
+CHUNKS_DIR = Path("public/data/chunks")
 OUTPUT_PATH = Path("public/data/popular_verbs_300.json")
 TARGET = 300
 
@@ -74,8 +74,26 @@ def is_independent_dictionary_verb(entry: dict) -> bool:
     return True
 
 
+def load_runtime_vocab() -> list[dict]:
+    chunk_paths = sorted(
+        CHUNKS_DIR.glob("vocab_chunk_*.json"),
+        key=lambda path: int(path.stem.rsplit("_", 1)[1]),
+    )
+    if len(chunk_paths) != 52:
+        raise SystemExit(f"Expected 52 runtime chunks, found {len(chunk_paths)}")
+    vocab = []
+    for chunk_path in chunk_paths:
+        chunk = json.loads(chunk_path.read_text(encoding="utf-8"))
+        if not isinstance(chunk, list) or len(chunk) != 250:
+            raise SystemExit(f"{chunk_path} must contain exactly 250 entries")
+        vocab.extend(chunk)
+    if len(vocab) != 13000:
+        raise SystemExit(f"Expected 13000 runtime entries, found {len(vocab)}")
+    return vocab
+
+
 def main() -> None:
-    vocab = json.loads(VOCAB_PATH.read_text(encoding="utf-8"))
+    vocab = load_runtime_vocab()
     verbs = [
         entry
         for entry in vocab

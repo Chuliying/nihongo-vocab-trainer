@@ -37,6 +37,21 @@ class RealExampleSafetyTests(unittest.TestCase):
         target = {"word": "食べる", "reading": "たべる"}
         self.assertTrue(MODULE.token_matches_target(token, target))
 
+    def test_matches_inflected_kana_verb_by_orthographic_base(self):
+        token = FakeToken(
+            "いただき",
+            lemma="頂く",
+            kana="イタダキ",
+            orthBase="いただく",
+            pos1="動詞",
+        )
+        target = {
+            "word": "いただく",
+            "reading": "いただく",
+            "part_of_speech": "動詞・助動詞",
+        }
+        self.assertTrue(MODULE.token_matches_target(token, target))
+
     def test_does_not_match_prefix_of_different_lemma(self):
         token = FakeToken("わかり", lemma="分かる", kana="ワカリ")
         target = {"word": "わか", "reading": "わか"}

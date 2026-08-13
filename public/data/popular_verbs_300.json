@@ -188,7 +188,7 @@
     "frequency_rank": 278,
     "tranche_id": 1,
     "jlpt_level": "N5",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
@@ -308,7 +308,7 @@
     "frequency_rank": 4774,
     "tranche_id": 5,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "learning_priority"
   },
   {
@@ -829,18 +829,6 @@
   },
   {
     "rank": 70,
-    "id": 123,
-    "word": "できる",
-    "reading": "できる",
-    "meaning": "能、會、可以",
-    "frequency_rank": 123,
-    "tranche_id": 1,
-    "jlpt_level": "N5",
-    "verb_type": "一段動詞",
-    "rank_source": "frequency_backfill"
-  },
-  {
-    "rank": 71,
     "id": 174,
     "word": "くれる",
     "reading": "くれる",
@@ -852,7 +840,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 72,
+    "rank": 71,
     "id": 228,
     "word": "違う",
     "reading": "ちがう",
@@ -864,7 +852,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 73,
+    "rank": 72,
     "id": 303,
     "word": "すぎる",
     "reading": "すぎる",
@@ -876,7 +864,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 74,
+    "rank": 73,
     "id": 431,
     "word": "見える",
     "reading": "みえる",
@@ -888,7 +876,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 75,
+    "rank": 74,
     "id": 478,
     "word": "考える",
     "reading": "かんがえる",
@@ -900,7 +888,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 76,
+    "rank": 75,
     "id": 522,
     "word": "死ぬ",
     "reading": "しぬ",
@@ -912,7 +900,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 77,
+    "rank": 76,
     "id": 579,
     "word": "行う",
     "reading": "おこなう",
@@ -924,7 +912,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 78,
+    "rank": 77,
     "id": 608,
     "word": "感じる",
     "reading": "かんじる",
@@ -936,7 +924,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 79,
+    "rank": 78,
     "id": 784,
     "word": "入れる",
     "reading": "いれる",
@@ -948,19 +936,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 80,
-    "id": 896,
-    "word": "使える",
-    "reading": "つかえる",
-    "meaning": "能用、可使用",
-    "frequency_rank": 896,
-    "tranche_id": 1,
-    "jlpt_level": "N5",
-    "verb_type": "一段動詞",
-    "rank_source": "frequency_backfill"
-  },
-  {
-    "rank": 81,
+    "rank": 79,
     "id": 984,
     "word": "変わる",
     "reading": "かわる",
@@ -968,23 +944,11 @@
     "frequency_rank": 984,
     "tranche_id": 1,
     "jlpt_level": "N5",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 82,
-    "id": 1041,
-    "word": "言える",
-    "reading": "いえる",
-    "meaning": "可以說、能說",
-    "frequency_rank": 1041,
-    "tranche_id": 2,
-    "jlpt_level": "N4",
-    "verb_type": "一段動詞",
-    "rank_source": "frequency_backfill"
-  },
-  {
-    "rank": 83,
+    "rank": 80,
     "id": 1099,
     "word": "続く",
     "reading": "つづく",
@@ -996,7 +960,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 84,
+    "rank": 81,
     "id": 1193,
     "word": "つける",
     "reading": "つける",
@@ -1008,7 +972,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 85,
+    "rank": 82,
     "id": 1241,
     "word": "異なる",
     "reading": "ことなる",
@@ -1016,11 +980,11 @@
     "frequency_rank": 1241,
     "tranche_id": 2,
     "jlpt_level": "N4",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 86,
+    "rank": 83,
     "id": 1258,
     "word": "含む",
     "reading": "ふくむ",
@@ -1032,7 +996,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 87,
+    "rank": 84,
     "id": 1261,
     "word": "始まる",
     "reading": "はじまる",
@@ -1040,11 +1004,11 @@
     "frequency_rank": 1261,
     "tranche_id": 2,
     "jlpt_level": "N4",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 88,
+    "rank": 85,
     "id": 1263,
     "word": "守る",
     "reading": "まもる",
@@ -1052,11 +1016,11 @@
     "frequency_rank": 1263,
     "tranche_id": 2,
     "jlpt_level": "N4",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 89,
+    "rank": 86,
     "id": 1356,
     "word": "与える",
     "reading": "あたえる",
@@ -1068,7 +1032,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 90,
+    "rank": 87,
     "id": 1381,
     "word": "かける",
     "reading": "かける",
@@ -1080,7 +1044,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 91,
+    "rank": 88,
     "id": 1402,
     "word": "変える",
     "reading": "かえる",
@@ -1092,19 +1056,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 92,
-    "id": 1474,
-    "word": "いける",
-    "reading": "いける",
-    "meaning": "可以、行得通",
-    "frequency_rank": 1474,
-    "tranche_id": 2,
-    "jlpt_level": "N4",
-    "verb_type": "一段動詞",
-    "rank_source": "frequency_backfill"
-  },
-  {
-    "rank": 93,
+    "rank": 89,
     "id": 1528,
     "word": "求める",
     "reading": "もとめる",
@@ -1116,7 +1068,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 94,
+    "rank": 90,
     "id": 1566,
     "word": "残る",
     "reading": "のこる",
@@ -1124,11 +1076,11 @@
     "frequency_rank": 1566,
     "tranche_id": 2,
     "jlpt_level": "N4",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 95,
+    "rank": 91,
     "id": 1624,
     "word": "目指す",
     "reading": "めざす",
@@ -1140,7 +1092,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 96,
+    "rank": 92,
     "id": 1646,
     "word": "動く",
     "reading": "うごく",
@@ -1152,7 +1104,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 97,
+    "rank": 93,
     "id": 1751,
     "word": "困る",
     "reading": "こまる",
@@ -1160,11 +1112,11 @@
     "frequency_rank": 1751,
     "tranche_id": 2,
     "jlpt_level": "N4",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 98,
+    "rank": 94,
     "id": 1795,
     "word": "決める",
     "reading": "きめる",
@@ -1176,19 +1128,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 99,
-    "id": 1802,
-    "word": "行ける",
-    "reading": "いける",
-    "meaning": "能去、可行",
-    "frequency_rank": 1802,
-    "tranche_id": 2,
-    "jlpt_level": "N4",
-    "verb_type": "一段動詞",
-    "rank_source": "frequency_backfill"
-  },
-  {
-    "rank": 100,
+    "rank": 95,
     "id": 1805,
     "word": "頼む",
     "reading": "たのむ",
@@ -1200,7 +1140,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 101,
+    "rank": 96,
     "id": 1832,
     "word": "戦う",
     "reading": "たたかう",
@@ -1212,7 +1152,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 102,
+    "rank": 97,
     "id": 1836,
     "word": "殺す",
     "reading": "ころす",
@@ -1224,7 +1164,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 103,
+    "rank": 98,
     "id": 1863,
     "word": "向かう",
     "reading": "むかう",
@@ -1236,7 +1176,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 104,
+    "rank": 99,
     "id": 1867,
     "word": "増える",
     "reading": "ふえる",
@@ -1248,7 +1188,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 105,
+    "rank": 100,
     "id": 1868,
     "word": "売る",
     "reading": "うる",
@@ -1256,11 +1196,11 @@
     "frequency_rank": 1868,
     "tranche_id": 2,
     "jlpt_level": "N4",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 106,
+    "rank": 101,
     "id": 1875,
     "word": "描く",
     "reading": "えがく",
@@ -1272,7 +1212,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 107,
+    "rank": 102,
     "id": 1894,
     "word": "起こる",
     "reading": "おこる",
@@ -1280,11 +1220,11 @@
     "frequency_rank": 1894,
     "tranche_id": 2,
     "jlpt_level": "N4",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 108,
+    "rank": 103,
     "id": 1895,
     "word": "越える",
     "reading": "こえる",
@@ -1296,7 +1236,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 109,
+    "rank": 104,
     "id": 1896,
     "word": "進む",
     "reading": "すすむ",
@@ -1308,7 +1248,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 110,
+    "rank": 105,
     "id": 1942,
     "word": "示す",
     "reading": "しめす",
@@ -1320,7 +1260,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 111,
+    "rank": 106,
     "id": 1948,
     "word": "語る",
     "reading": "かたる",
@@ -1328,11 +1268,11 @@
     "frequency_rank": 1948,
     "tranche_id": 2,
     "jlpt_level": "N4",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 112,
+    "rank": 107,
     "id": 1975,
     "word": "当たる",
     "reading": "あたる",
@@ -1340,11 +1280,11 @@
     "frequency_rank": 1975,
     "tranche_id": 2,
     "jlpt_level": "N4",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 113,
+    "rank": 108,
     "id": 2076,
     "word": "戻る",
     "reading": "もどる",
@@ -1352,11 +1292,11 @@
     "frequency_rank": 2076,
     "tranche_id": 3,
     "jlpt_level": "N4",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 114,
+    "rank": 109,
     "id": 2088,
     "word": "笑う",
     "reading": "わらう",
@@ -1368,19 +1308,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 115,
-    "id": 2090,
-    "word": "読める",
-    "reading": "よめる",
-    "meaning": "能讀、看得懂",
-    "frequency_rank": 2090,
-    "tranche_id": 3,
-    "jlpt_level": "N4",
-    "verb_type": "一段動詞",
-    "rank_source": "frequency_backfill"
-  },
-  {
-    "rank": 116,
+    "rank": 110,
     "id": 2105,
     "word": "伝える",
     "reading": "つたえる",
@@ -1392,7 +1320,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 117,
+    "rank": 111,
     "id": 2114,
     "word": "学ぶ",
     "reading": "まなぶ",
@@ -1404,7 +1332,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 118,
+    "rank": 112,
     "id": 2126,
     "word": "落ちる",
     "reading": "おちる",
@@ -1416,7 +1344,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 119,
+    "rank": 113,
     "id": 2235,
     "word": "住む",
     "reading": "すむ",
@@ -1428,7 +1356,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 120,
+    "rank": 114,
     "id": 2300,
     "word": "思い出す",
     "reading": "おもいだす",
@@ -1440,19 +1368,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 121,
-    "id": 2328,
-    "word": "いただける",
-    "reading": "いただける",
-    "meaning": "能收到、能享用",
-    "frequency_rank": 2328,
-    "tranche_id": 3,
-    "jlpt_level": "N4",
-    "verb_type": "一段動詞",
-    "rank_source": "frequency_backfill"
-  },
-  {
-    "rank": 122,
+    "rank": 115,
     "id": 2365,
     "word": "開く",
     "reading": "ひらく",
@@ -1464,11 +1380,11 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 123,
+    "rank": 116,
     "id": 2508,
     "word": "楽しむ",
     "reading": "たのしむ",
-    "meaning": "好、良好、時間",
+    "meaning": "享受；玩樂",
     "frequency_rank": 2508,
     "tranche_id": 3,
     "jlpt_level": "N3",
@@ -1476,11 +1392,11 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 124,
+    "rank": 117,
     "id": 2510,
     "word": "済む",
     "reading": "すむ",
-    "meaning": "結束、結尾",
+    "meaning": "完成；解決",
     "frequency_rank": 2510,
     "tranche_id": 3,
     "jlpt_level": "N3",
@@ -1488,11 +1404,11 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 125,
+    "rank": 118,
     "id": 2561,
     "word": "生まれる",
     "reading": "うまれる",
-    "meaning": "動作、行為",
+    "meaning": "出生；誕生",
     "frequency_rank": 2561,
     "tranche_id": 3,
     "jlpt_level": "N3",
@@ -1500,35 +1416,23 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 126,
+    "rank": 119,
     "id": 2571,
     "word": "関わる",
     "reading": "かかわる",
-    "meaning": "部分、自己、自身",
+    "meaning": "參與；有關聯",
     "frequency_rank": 2571,
     "tranche_id": 3,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 127,
-    "id": 2596,
-    "word": "思える",
-    "reading": "おもえる",
-    "meaning": "動作、行為",
-    "frequency_rank": 2596,
-    "tranche_id": 3,
-    "jlpt_level": "N3",
-    "verb_type": "一段動詞",
-    "rank_source": "frequency_backfill"
-  },
-  {
-    "rank": 128,
+    "rank": 120,
     "id": 2608,
     "word": "認める",
     "reading": "みとめる",
-    "meaning": "通知、注意",
+    "meaning": "承認；認可",
     "frequency_rank": 2608,
     "tranche_id": 3,
     "jlpt_level": "N3",
@@ -1536,35 +1440,35 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 129,
+    "rank": 121,
     "id": 2638,
     "word": "切る",
     "reading": "きる",
-    "meaning": "形式、形狀",
+    "meaning": "切；剪斷",
     "frequency_rank": 2638,
     "tranche_id": 3,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 130,
+    "rank": 122,
     "id": 2658,
     "word": "至る",
     "reading": "いたる",
-    "meaning": "動作、行為",
+    "meaning": "到達，達到",
     "frequency_rank": 2658,
     "tranche_id": 3,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 131,
+    "rank": 123,
     "id": 2698,
     "word": "引く",
     "reading": "ひく",
-    "meaning": "動作、行為",
+    "meaning": "拉，拖",
     "frequency_rank": 2698,
     "tranche_id": 3,
     "jlpt_level": "N3",
@@ -1572,11 +1476,11 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 132,
+    "rank": 124,
     "id": 2712,
     "word": "起こす",
     "reading": "おこす",
-    "meaning": "一組、套裝、設定、提高、養育、引起",
+    "meaning": "喚醒，引起",
     "frequency_rank": 2712,
     "tranche_id": 3,
     "jlpt_level": "N3",
@@ -1584,11 +1488,11 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 133,
+    "rank": 125,
     "id": 2718,
     "word": "驚く",
     "reading": "おどろく",
-    "meaning": "上升、提高、背後、後方",
+    "meaning": "驚訝，感到驚奇",
     "frequency_rank": 2718,
     "tranche_id": 3,
     "jlpt_level": "N3",
@@ -1596,11 +1500,11 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 134,
+    "rank": 126,
     "id": 2747,
     "word": "届く",
     "reading": "とどく",
-    "meaning": "屆く",
+    "meaning": "到達，傳達",
     "frequency_rank": 2747,
     "tranche_id": 3,
     "jlpt_level": "N3",
@@ -1608,11 +1512,11 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 135,
+    "rank": 127,
     "id": 2752,
     "word": "扱う",
     "reading": "あつかう",
-    "meaning": "手",
+    "meaning": "處理，對待",
     "frequency_rank": 2752,
     "tranche_id": 3,
     "jlpt_level": "N3",
@@ -1620,7 +1524,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 136,
+    "rank": 128,
     "id": 2756,
     "word": "歌う",
     "reading": "うたう",
@@ -1632,11 +1536,11 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 137,
+    "rank": 129,
     "id": 2758,
     "word": "流れる",
     "reading": "ながれる",
-    "meaning": "方式、方法、流動、流程",
+    "meaning": "流動，流淌",
     "frequency_rank": 2758,
     "tranche_id": 3,
     "jlpt_level": "N3",
@@ -1644,7 +1548,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 138,
+    "rank": 130,
     "id": 2759,
     "word": "現れる",
     "reading": "あらわれる",
@@ -1656,7 +1560,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 139,
+    "rank": 131,
     "id": 2768,
     "word": "逃げる",
     "reading": "にげる",
@@ -1668,7 +1572,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 140,
+    "rank": 132,
     "id": 2770,
     "word": "通る",
     "reading": "とおる",
@@ -1676,15 +1580,15 @@
     "frequency_rank": 2770,
     "tranche_id": 3,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 141,
+    "rank": 133,
     "id": 2781,
     "word": "やめる",
     "reading": "やめる",
-    "meaning": "動作、行為",
+    "meaning": "停止，放棄，辭職",
     "frequency_rank": 2781,
     "tranche_id": 3,
     "jlpt_level": "N3",
@@ -1692,7 +1596,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 142,
+    "rank": 134,
     "id": 2814,
     "word": "消す",
     "reading": "けす",
@@ -1704,19 +1608,19 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 143,
+    "rank": 135,
     "id": 2833,
     "word": "なくなる",
     "reading": "なくなる",
-    "meaning": "方式、方法",
+    "meaning": "去世，消失",
     "frequency_rank": 2833,
     "tranche_id": 3,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 144,
+    "rank": 136,
     "id": 2875,
     "word": "稼ぐ",
     "reading": "かせぐ",
@@ -1728,19 +1632,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 145,
-    "id": 2878,
-    "word": "見れる",
-    "reading": "みれる",
-    "meaning": "動作、行為",
-    "frequency_rank": 2878,
-    "tranche_id": 3,
-    "jlpt_level": "N3",
-    "verb_type": "一段動詞",
-    "rank_source": "frequency_backfill"
-  },
-  {
-    "rank": 146,
+    "rank": 137,
     "id": 2887,
     "word": "集まる",
     "reading": "あつまる",
@@ -1748,11 +1640,11 @@
     "frequency_rank": 2887,
     "tranche_id": 3,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 147,
+    "rank": 138,
     "id": 2919,
     "word": "消える",
     "reading": "きえる",
@@ -1764,7 +1656,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 148,
+    "rank": 139,
     "id": 2953,
     "word": "付ける",
     "reading": "つける",
@@ -1776,7 +1668,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 149,
+    "rank": 140,
     "id": 2978,
     "word": "除く",
     "reading": "のぞく",
@@ -1788,7 +1680,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 150,
+    "rank": 141,
     "id": 3080,
     "word": "過ごす",
     "reading": "すごす",
@@ -1800,11 +1692,11 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 151,
+    "rank": 142,
     "id": 3082,
     "word": "防ぐ",
     "reading": "ふせぐ",
-    "meaning": "事件、活動、結束、結尾",
+    "meaning": "防止、預防、保護",
     "frequency_rank": 3082,
     "tranche_id": 4,
     "jlpt_level": "N3",
@@ -1812,7 +1704,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 152,
+    "rank": 143,
     "id": 3119,
     "word": "信じる",
     "reading": "しんじる",
@@ -1824,7 +1716,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 153,
+    "rank": 144,
     "id": 3157,
     "word": "飛ぶ",
     "reading": "とぶ",
@@ -1836,7 +1728,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 154,
+    "rank": 145,
     "id": 3205,
     "word": "繰り返す",
     "reading": "くりかえす",
@@ -1848,7 +1740,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 155,
+    "rank": 146,
     "id": 3275,
     "word": "避ける",
     "reading": "さける",
@@ -1860,7 +1752,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 156,
+    "rank": 147,
     "id": 3314,
     "word": "捨てる",
     "reading": "すてる",
@@ -1872,7 +1764,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 157,
+    "rank": 148,
     "id": 3335,
     "word": "聞こえる",
     "reading": "きこえる",
@@ -1884,7 +1776,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 158,
+    "rank": 149,
     "id": 3337,
     "word": "落とす",
     "reading": "おとす",
@@ -1896,7 +1788,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 159,
+    "rank": 150,
     "id": 3341,
     "word": "調べる",
     "reading": "しらべる",
@@ -1908,7 +1800,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 160,
+    "rank": 151,
     "id": 3346,
     "word": "食う",
     "reading": "くう",
@@ -1920,7 +1812,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 161,
+    "rank": 152,
     "id": 3373,
     "word": "効く",
     "reading": "きく",
@@ -1932,7 +1824,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 162,
+    "rank": 153,
     "id": 3395,
     "word": "答える",
     "reading": "こたえる",
@@ -1944,7 +1836,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 163,
+    "rank": 154,
     "id": 3405,
     "word": "集める",
     "reading": "あつめる",
@@ -1956,7 +1848,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 164,
+    "rank": 155,
     "id": 3433,
     "word": "伴う",
     "reading": "ともなう",
@@ -1968,7 +1860,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 165,
+    "rank": 156,
     "id": 3443,
     "word": "増やす",
     "reading": "ふやす",
@@ -1980,7 +1872,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 166,
+    "rank": 157,
     "id": 3467,
     "word": "見つかる",
     "reading": "みつかる",
@@ -1988,11 +1880,11 @@
     "frequency_rank": 3467,
     "tranche_id": 4,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 167,
+    "rank": 158,
     "id": 3470,
     "word": "負ける",
     "reading": "まける",
@@ -2004,19 +1896,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 168,
-    "id": 3511,
-    "word": "取れる",
-    "reading": "とれる",
-    "meaning": "方式、方法",
-    "frequency_rank": 3511,
-    "tranche_id": 4,
-    "jlpt_level": "N3",
-    "verb_type": "一段動詞",
-    "rank_source": "frequency_backfill"
-  },
-  {
-    "rank": 169,
+    "rank": 159,
     "id": 3514,
     "word": "喜ぶ",
     "reading": "よろこぶ",
@@ -2028,19 +1908,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 170,
-    "id": 3535,
-    "word": "稼げる",
-    "reading": "かせげる",
-    "meaning": "動作、行為",
-    "frequency_rank": 3535,
-    "tranche_id": 4,
-    "jlpt_level": "N3",
-    "verb_type": "一段動詞",
-    "rank_source": "frequency_backfill"
-  },
-  {
-    "rank": 171,
+    "rank": 160,
     "id": 3597,
     "word": "悩む",
     "reading": "なやむ",
@@ -2052,7 +1920,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 172,
+    "rank": 161,
     "id": 3615,
     "word": "許す",
     "reading": "ゆるす",
@@ -2064,7 +1932,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 173,
+    "rank": 162,
     "id": 3651,
     "word": "動かす",
     "reading": "うごかす",
@@ -2076,7 +1944,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 174,
+    "rank": 163,
     "id": 3660,
     "word": "望む",
     "reading": "のぞむ",
@@ -2088,7 +1956,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 175,
+    "rank": 164,
     "id": 3667,
     "word": "狙う",
     "reading": "ねらう",
@@ -2100,7 +1968,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 176,
+    "rank": 165,
     "id": 3736,
     "word": "比べる",
     "reading": "くらべる",
@@ -2112,7 +1980,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 177,
+    "rank": 166,
     "id": 3745,
     "word": "繋がる",
     "reading": "つながる",
@@ -2120,11 +1988,11 @@
     "frequency_rank": 3745,
     "tranche_id": 4,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 178,
+    "rank": 167,
     "id": 3750,
     "word": "触れる",
     "reading": "ふれる",
@@ -2136,7 +2004,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 179,
+    "rank": 168,
     "id": 3751,
     "word": "通う",
     "reading": "かよう",
@@ -2148,7 +2016,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 180,
+    "rank": 169,
     "id": 3796,
     "word": "押す",
     "reading": "おす",
@@ -2160,7 +2028,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 181,
+    "rank": 170,
     "id": 3822,
     "word": "隠す",
     "reading": "かくす",
@@ -2172,7 +2040,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 182,
+    "rank": 171,
     "id": 3865,
     "word": "付く",
     "reading": "つく",
@@ -2184,7 +2052,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 183,
+    "rank": 172,
     "id": 3897,
     "word": "迎える",
     "reading": "むかえる",
@@ -2196,7 +2064,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 184,
+    "rank": 173,
     "id": 3902,
     "word": "頑張る",
     "reading": "がんばる",
@@ -2204,11 +2072,11 @@
     "frequency_rank": 3902,
     "tranche_id": 4,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 185,
+    "rank": 174,
     "id": 3938,
     "word": "出会う",
     "reading": "であう",
@@ -2220,7 +2088,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 186,
+    "rank": 175,
     "id": 3946,
     "word": "失う",
     "reading": "うしなう",
@@ -2232,7 +2100,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 187,
+    "rank": 176,
     "id": 3953,
     "word": "広がる",
     "reading": "ひろがる",
@@ -2240,11 +2108,11 @@
     "frequency_rank": 3953,
     "tranche_id": 4,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 188,
+    "rank": 177,
     "id": 3955,
     "word": "怒る",
     "reading": "おこる",
@@ -2252,11 +2120,11 @@
     "frequency_rank": 3955,
     "tranche_id": 4,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 189,
+    "rank": 178,
     "id": 3958,
     "word": "抜ける",
     "reading": "ぬける",
@@ -2268,7 +2136,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 190,
+    "rank": 179,
     "id": 3962,
     "word": "救う",
     "reading": "すくう",
@@ -2280,7 +2148,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 191,
+    "rank": 180,
     "id": 3984,
     "word": "進める",
     "reading": "すすめる",
@@ -2292,7 +2160,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 192,
+    "rank": 181,
     "id": 3998,
     "word": "もたらす",
     "reading": "もたらす",
@@ -2304,7 +2172,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 193,
+    "rank": 182,
     "id": 4050,
     "word": "打つ",
     "reading": "うつ",
@@ -2316,7 +2184,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 194,
+    "rank": 183,
     "id": 4097,
     "word": "伝わる",
     "reading": "つたわる",
@@ -2324,11 +2192,11 @@
     "frequency_rank": 4097,
     "tranche_id": 5,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 195,
+    "rank": 184,
     "id": 4100,
     "word": "助かる",
     "reading": "たすかる",
@@ -2336,11 +2204,11 @@
     "frequency_rank": 4100,
     "tranche_id": 5,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 196,
+    "rank": 185,
     "id": 4114,
     "word": "暮らす",
     "reading": "くらす",
@@ -2352,7 +2220,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 197,
+    "rank": 186,
     "id": 4117,
     "word": "流す",
     "reading": "ながす",
@@ -2364,7 +2232,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 198,
+    "rank": 187,
     "id": 4124,
     "word": "育てる",
     "reading": "そだてる",
@@ -2376,7 +2244,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 199,
+    "rank": 188,
     "id": 4165,
     "word": "売れる",
     "reading": "うれる",
@@ -2388,7 +2256,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 200,
+    "rank": 189,
     "id": 4183,
     "word": "気づく",
     "reading": "きづく",
@@ -2400,7 +2268,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 201,
+    "rank": 190,
     "id": 4184,
     "word": "演じる",
     "reading": "えんじる",
@@ -2412,7 +2280,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 202,
+    "rank": 191,
     "id": 4189,
     "word": "目立つ",
     "reading": "めだつ",
@@ -2424,7 +2292,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 203,
+    "rank": 192,
     "id": 4244,
     "word": "抜く",
     "reading": "ぬく",
@@ -2436,7 +2304,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 204,
+    "rank": 193,
     "id": 4258,
     "word": "輝く",
     "reading": "かがやく",
@@ -2448,7 +2316,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 205,
+    "rank": 194,
     "id": 4305,
     "word": "立てる",
     "reading": "たてる",
@@ -2460,19 +2328,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 206,
-    "id": 4307,
-    "word": "笑える",
-    "reading": "わらえる",
-    "meaning": "動作、行為",
-    "frequency_rank": 4307,
-    "tranche_id": 5,
-    "jlpt_level": "N3",
-    "verb_type": "一段動詞",
-    "rank_source": "frequency_backfill"
-  },
-  {
-    "rank": 207,
+    "rank": 195,
     "id": 4313,
     "word": "誇る",
     "reading": "ほこる",
@@ -2480,11 +2336,11 @@
     "frequency_rank": 4313,
     "tranche_id": 5,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 208,
+    "rank": 196,
     "id": 4354,
     "word": "合わせる",
     "reading": "あわせる",
@@ -2496,7 +2352,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 209,
+    "rank": 197,
     "id": 4372,
     "word": "生じる",
     "reading": "しょうじる",
@@ -2508,7 +2364,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 210,
+    "rank": 198,
     "id": 4378,
     "word": "表す",
     "reading": "あらわす",
@@ -2520,7 +2376,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 211,
+    "rank": 199,
     "id": 4380,
     "word": "訪れる",
     "reading": "おとずれる",
@@ -2532,7 +2388,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 212,
+    "rank": 200,
     "id": 4382,
     "word": "踊る",
     "reading": "おどる",
@@ -2540,11 +2396,11 @@
     "frequency_rank": 4382,
     "tranche_id": 5,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 213,
+    "rank": 201,
     "id": 4418,
     "word": "回る",
     "reading": "まわる",
@@ -2552,11 +2408,11 @@
     "frequency_rank": 4418,
     "tranche_id": 5,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 214,
+    "rank": 202,
     "id": 4420,
     "word": "基づく",
     "reading": "もとづく",
@@ -2568,7 +2424,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 215,
+    "rank": 203,
     "id": 4472,
     "word": "受け入れる",
     "reading": "うけいれる",
@@ -2580,7 +2436,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 216,
+    "rank": 204,
     "id": 4501,
     "word": "運ぶ",
     "reading": "はこぶ",
@@ -2592,7 +2448,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 217,
+    "rank": 205,
     "id": 4552,
     "word": "減る",
     "reading": "へる",
@@ -2600,11 +2456,11 @@
     "frequency_rank": 4552,
     "tranche_id": 5,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 218,
+    "rank": 206,
     "id": 4598,
     "word": "下がる",
     "reading": "さがる",
@@ -2612,11 +2468,11 @@
     "frequency_rank": 4598,
     "tranche_id": 5,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 219,
+    "rank": 207,
     "id": 4612,
     "word": "叩く",
     "reading": "たたく",
@@ -2628,7 +2484,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 220,
+    "rank": 208,
     "id": 4619,
     "word": "役立つ",
     "reading": "やくだつ",
@@ -2640,7 +2496,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 221,
+    "rank": 209,
     "id": 4623,
     "word": "戻す",
     "reading": "もどす",
@@ -2652,7 +2508,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 222,
+    "rank": 210,
     "id": 4635,
     "word": "経つ",
     "reading": "たつ",
@@ -2664,7 +2520,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 223,
+    "rank": 211,
     "id": 4678,
     "word": "似合う",
     "reading": "にあう",
@@ -2676,7 +2532,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 224,
+    "rank": 212,
     "id": 4709,
     "word": "決まる",
     "reading": "きまる",
@@ -2684,11 +2540,11 @@
     "frequency_rank": 4709,
     "tranche_id": 5,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 225,
+    "rank": 213,
     "id": 4710,
     "word": "減らす",
     "reading": "へらす",
@@ -2700,7 +2556,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 226,
+    "rank": 214,
     "id": 4759,
     "word": "図る",
     "reading": "はかる",
@@ -2708,11 +2564,11 @@
     "frequency_rank": 4759,
     "tranche_id": 5,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 227,
+    "rank": 215,
     "id": 4788,
     "word": "落ち着く",
     "reading": "おちつく",
@@ -2724,7 +2580,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 228,
+    "rank": 216,
     "id": 4824,
     "word": "伸びる",
     "reading": "のびる",
@@ -2736,7 +2592,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 229,
+    "rank": 217,
     "id": 4826,
     "word": "加える",
     "reading": "くわえる",
@@ -2748,7 +2604,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 230,
+    "rank": 218,
     "id": 4827,
     "word": "助ける",
     "reading": "たすける",
@@ -2760,7 +2616,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 231,
+    "rank": 219,
     "id": 4842,
     "word": "支払う",
     "reading": "しはらう",
@@ -2772,7 +2628,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 232,
+    "rank": 220,
     "id": 4847,
     "word": "治る",
     "reading": "なおる",
@@ -2780,11 +2636,11 @@
     "frequency_rank": 4847,
     "tranche_id": 5,
     "jlpt_level": "N3",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 233,
+    "rank": 221,
     "id": 4857,
     "word": "見かける",
     "reading": "みかける",
@@ -2796,19 +2652,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 234,
-    "id": 4859,
-    "word": "話せる",
-    "reading": "はなせる",
-    "meaning": "理解",
-    "frequency_rank": 4859,
-    "tranche_id": 5,
-    "jlpt_level": "N3",
-    "verb_type": "一段動詞",
-    "rank_source": "frequency_backfill"
-  },
-  {
-    "rank": 235,
+    "rank": 222,
     "id": 5003,
     "word": "保つ",
     "reading": "たもつ",
@@ -2820,7 +2664,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 236,
+    "rank": 223,
     "id": 5016,
     "word": "従う",
     "reading": "したがう",
@@ -2832,7 +2676,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 237,
+    "rank": 224,
     "id": 5017,
     "word": "投げる",
     "reading": "なげる",
@@ -2844,19 +2688,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 238,
-    "id": 5037,
-    "word": "如く",
-    "reading": "しく",
-    "meaning": "動作、行為",
-    "frequency_rank": 5037,
-    "tranche_id": 6,
-    "jlpt_level": "N2",
-    "verb_type": "五段動詞",
-    "rank_source": "frequency_backfill"
-  },
-  {
-    "rank": 239,
+    "rank": 225,
     "id": 5081,
     "word": "光る",
     "reading": "ひかる",
@@ -2864,11 +2696,11 @@
     "frequency_rank": 5081,
     "tranche_id": 6,
     "jlpt_level": "N2",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 240,
+    "rank": 226,
     "id": 5083,
     "word": "勤める",
     "reading": "つとめる",
@@ -2880,7 +2712,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 241,
+    "rank": 227,
     "id": 5115,
     "word": "着く",
     "reading": "つく",
@@ -2892,7 +2724,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 242,
+    "rank": 228,
     "id": 5118,
     "word": "組む",
     "reading": "くむ",
@@ -2904,7 +2736,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 243,
+    "rank": 229,
     "id": 5131,
     "word": "迷う",
     "reading": "まよう",
@@ -2916,7 +2748,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 244,
+    "rank": 230,
     "id": 5180,
     "word": "壊す",
     "reading": "こわす",
@@ -2928,7 +2760,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 245,
+    "rank": 231,
     "id": 5183,
     "word": "奪う",
     "reading": "うばう",
@@ -2940,7 +2772,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 246,
+    "rank": 232,
     "id": 5194,
     "word": "支える",
     "reading": "ささえる",
@@ -2952,7 +2784,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 247,
+    "rank": 233,
     "id": 5222,
     "word": "降る",
     "reading": "ふる",
@@ -2960,11 +2792,11 @@
     "frequency_rank": 5222,
     "tranche_id": 6,
     "jlpt_level": "N2",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 248,
+    "rank": 234,
     "id": 5259,
     "word": "及ぶ",
     "reading": "およぶ",
@@ -2976,7 +2808,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 249,
+    "rank": 235,
     "id": 5274,
     "word": "抑える",
     "reading": "おさえる",
@@ -2988,7 +2820,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 250,
+    "rank": 236,
     "id": 5317,
     "word": "くださる",
     "reading": "くださる",
@@ -2996,11 +2828,11 @@
     "frequency_rank": 5317,
     "tranche_id": 6,
     "jlpt_level": "N2",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞（敬語不規則）",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 251,
+    "rank": 237,
     "id": 5336,
     "word": "受け取る",
     "reading": "うけとる",
@@ -3008,11 +2840,11 @@
     "frequency_rank": 5336,
     "tranche_id": 6,
     "jlpt_level": "N2",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 252,
+    "rank": 238,
     "id": 5339,
     "word": "吸う",
     "reading": "すう",
@@ -3024,7 +2856,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 253,
+    "rank": 239,
     "id": 5340,
     "word": "喋る",
     "reading": "しゃべる",
@@ -3032,11 +2864,11 @@
     "frequency_rank": 5340,
     "tranche_id": 6,
     "jlpt_level": "N2",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 254,
+    "rank": 240,
     "id": 5344,
     "word": "好む",
     "reading": "このむ",
@@ -3048,7 +2880,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 255,
+    "rank": 241,
     "id": 5378,
     "word": "祈る",
     "reading": "いのる",
@@ -3056,11 +2888,11 @@
     "frequency_rank": 5378,
     "tranche_id": 6,
     "jlpt_level": "N2",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 256,
+    "rank": 242,
     "id": 5391,
     "word": "高める",
     "reading": "たかめる",
@@ -3072,7 +2904,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 257,
+    "rank": 243,
     "id": 5434,
     "word": "出かける",
     "reading": "でかける",
@@ -3084,7 +2916,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 258,
+    "rank": 244,
     "id": 5441,
     "word": "外す",
     "reading": "はずす",
@@ -3096,7 +2928,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 259,
+    "rank": 245,
     "id": 5446,
     "word": "定める",
     "reading": "さだめる",
@@ -3108,7 +2940,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 260,
+    "rank": 246,
     "id": 5465,
     "word": "浮かぶ",
     "reading": "うかぶ",
@@ -3120,7 +2952,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 261,
+    "rank": 247,
     "id": 5466,
     "word": "満たす",
     "reading": "みたす",
@@ -3132,7 +2964,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 262,
+    "rank": 248,
     "id": 5467,
     "word": "溢れる",
     "reading": "あふれる",
@@ -3144,7 +2976,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 263,
+    "rank": 249,
     "id": 5482,
     "word": "触る",
     "reading": "さわる",
@@ -3152,11 +2984,11 @@
     "frequency_rank": 5482,
     "tranche_id": 6,
     "jlpt_level": "N2",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 264,
+    "rank": 250,
     "id": 5483,
     "word": "諦める",
     "reading": "あきらめる",
@@ -3168,7 +3000,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 265,
+    "rank": 251,
     "id": 5484,
     "word": "近づく",
     "reading": "ちかづく",
@@ -3180,7 +3012,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 266,
+    "rank": 252,
     "id": 5485,
     "word": "迫る",
     "reading": "せまる",
@@ -3188,11 +3020,11 @@
     "frequency_rank": 5485,
     "tranche_id": 6,
     "jlpt_level": "N2",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 267,
+    "rank": 253,
     "id": 5515,
     "word": "付き合う",
     "reading": "つきあう",
@@ -3204,7 +3036,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 268,
+    "rank": 254,
     "id": 5525,
     "word": "叫ぶ",
     "reading": "さけぶ",
@@ -3216,7 +3048,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 269,
+    "rank": 255,
     "id": 5527,
     "word": "吐く",
     "reading": "つく",
@@ -3228,7 +3060,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 270,
+    "rank": 256,
     "id": 5531,
     "word": "塗る",
     "reading": "ぬる",
@@ -3236,11 +3068,11 @@
     "frequency_rank": 5531,
     "tranche_id": 6,
     "jlpt_level": "N2",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 271,
+    "rank": 257,
     "id": 5537,
     "word": "巡る",
     "reading": "めぐる",
@@ -3248,23 +3080,11 @@
     "frequency_rank": 5537,
     "tranche_id": 6,
     "jlpt_level": "N2",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 272,
-    "id": 5541,
-    "word": "持てる",
-    "reading": "もてる",
-    "meaning": "我們",
-    "frequency_rank": 5541,
-    "tranche_id": 6,
-    "jlpt_level": "N2",
-    "verb_type": "一段動詞",
-    "rank_source": "frequency_backfill"
-  },
-  {
-    "rank": 273,
+    "rank": 258,
     "id": 5543,
     "word": "指す",
     "reading": "さす",
@@ -3276,7 +3096,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 274,
+    "rank": 259,
     "id": 5557,
     "word": "焼く",
     "reading": "やく",
@@ -3288,7 +3108,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 275,
+    "rank": 260,
     "id": 5644,
     "word": "疑う",
     "reading": "うたがう",
@@ -3300,7 +3120,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 276,
+    "rank": 261,
     "id": 5645,
     "word": "疲れる",
     "reading": "つかれる",
@@ -3312,7 +3132,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 277,
+    "rank": 262,
     "id": 5646,
     "word": "眠る",
     "reading": "ねむる",
@@ -3320,11 +3140,11 @@
     "frequency_rank": 5646,
     "tranche_id": 6,
     "jlpt_level": "N2",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 278,
+    "rank": 263,
     "id": 5687,
     "word": "上回る",
     "reading": "うわまわる",
@@ -3332,11 +3152,11 @@
     "frequency_rank": 5687,
     "tranche_id": 6,
     "jlpt_level": "N2",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 279,
+    "rank": 264,
     "id": 5697,
     "word": "取り戻す",
     "reading": "とりもどす",
@@ -3348,7 +3168,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 280,
+    "rank": 265,
     "id": 5707,
     "word": "当てる",
     "reading": "あてる",
@@ -3360,7 +3180,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 281,
+    "rank": 266,
     "id": 5728,
     "word": "潰す",
     "reading": "つぶす",
@@ -3372,7 +3192,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 282,
+    "rank": 267,
     "id": 5729,
     "word": "無くなる",
     "reading": "なくなる",
@@ -3380,11 +3200,11 @@
     "frequency_rank": 5729,
     "tranche_id": 6,
     "jlpt_level": "N2",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 283,
+    "rank": 268,
     "id": 5736,
     "word": "結ぶ",
     "reading": "むすぶ",
@@ -3396,7 +3216,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 284,
+    "rank": 269,
     "id": 5757,
     "word": "湿る",
     "reading": "しめる",
@@ -3404,11 +3224,11 @@
     "frequency_rank": 5757,
     "tranche_id": 6,
     "jlpt_level": "N2",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 285,
+    "rank": 270,
     "id": 5800,
     "word": "導く",
     "reading": "みちびく",
@@ -3420,7 +3240,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 286,
+    "rank": 271,
     "id": 5833,
     "word": "通す",
     "reading": "とおす",
@@ -3432,7 +3252,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 287,
+    "rank": 272,
     "id": 5836,
     "word": "間に合う",
     "reading": "まにあう",
@@ -3444,7 +3264,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 288,
+    "rank": 273,
     "id": 5839,
     "word": "離れる",
     "reading": "はなれる",
@@ -3456,7 +3276,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 289,
+    "rank": 274,
     "id": 5850,
     "word": "まとめる",
     "reading": "まとめる",
@@ -3468,7 +3288,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 290,
+    "rank": 275,
     "id": 5900,
     "word": "抱く",
     "reading": "いだく",
@@ -3480,7 +3300,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 291,
+    "rank": 276,
     "id": 5919,
     "word": "燃える",
     "reading": "もえる",
@@ -3492,7 +3312,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 292,
+    "rank": 277,
     "id": 5931,
     "word": "苦しむ",
     "reading": "くるしむ",
@@ -3504,7 +3324,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 293,
+    "rank": 278,
     "id": 5933,
     "word": "訴える",
     "reading": "うったえる",
@@ -3516,7 +3336,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 294,
+    "rank": 279,
     "id": 5934,
     "word": "誘う",
     "reading": "さそう",
@@ -3528,7 +3348,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 295,
+    "rank": 280,
     "id": 5937,
     "word": "張る",
     "reading": "はる",
@@ -3536,11 +3356,11 @@
     "frequency_rank": 5937,
     "tranche_id": 6,
     "jlpt_level": "N2",
-    "verb_type": "一段動詞",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 296,
+    "rank": 281,
     "id": 5985,
     "word": "占める",
     "reading": "しめる",
@@ -3552,7 +3372,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 297,
+    "rank": 282,
     "id": 5998,
     "word": "引き起こす",
     "reading": "ひきおこす",
@@ -3564,19 +3384,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 298,
-    "id": 6030,
-    "word": "飲める",
-    "reading": "のめる",
-    "meaning": "飲品、飲用",
-    "frequency_rank": 6030,
-    "tranche_id": 7,
-    "jlpt_level": "N2",
-    "verb_type": "一段動詞",
-    "rank_source": "frequency_backfill"
-  },
-  {
-    "rank": 299,
+    "rank": 283,
     "id": 6068,
     "word": "下げる",
     "reading": "さげる",
@@ -3588,7 +3396,7 @@
     "rank_source": "frequency_backfill"
   },
   {
-    "rank": 300,
+    "rank": 284,
     "id": 6105,
     "word": "用いる",
     "reading": "もちいる",
@@ -3597,6 +3405,198 @@
     "tranche_id": 7,
     "jlpt_level": "N2",
     "verb_type": "一段動詞",
+    "rank_source": "frequency_backfill"
+  },
+  {
+    "rank": 285,
+    "id": 6203,
+    "word": "遅れる",
+    "reading": "おくれる",
+    "meaning": "後面、全部、下降、跌落",
+    "frequency_rank": 6203,
+    "tranche_id": 7,
+    "jlpt_level": "N2",
+    "verb_type": "一段動詞",
+    "rank_source": "frequency_backfill"
+  },
+  {
+    "rank": 286,
+    "id": 6248,
+    "word": "分ける",
+    "reading": "わける",
+    "meaning": "部分、比例、費率",
+    "frequency_rank": 6248,
+    "tranche_id": 7,
+    "jlpt_level": "N2",
+    "verb_type": "一段動詞",
+    "rank_source": "frequency_backfill"
+  },
+  {
+    "rank": 287,
+    "id": 6255,
+    "word": "名乗る",
+    "reading": "なのる",
+    "meaning": "全部、自己、自身、呼叫、通話、拜訪",
+    "frequency_rank": 6255,
+    "tranche_id": 7,
+    "jlpt_level": "N2",
+    "verb_type": "五段動詞",
+    "rank_source": "frequency_backfill"
+  },
+  {
+    "rank": 288,
+    "id": 6257,
+    "word": "咲く",
+    "reading": "さく",
+    "meaning": "花、我們、流動、流程",
+    "frequency_rank": 6257,
+    "tranche_id": 7,
+    "jlpt_level": "N2",
+    "verb_type": "五段動詞",
+    "rank_source": "frequency_backfill"
+  },
+  {
+    "rank": 289,
+    "id": 6271,
+    "word": "振る",
+    "reading": "ふる",
+    "meaning": "動作、行為",
+    "frequency_rank": 6271,
+    "tranche_id": 7,
+    "jlpt_level": "N2",
+    "verb_type": "五段動詞",
+    "rank_source": "frequency_backfill"
+  },
+  {
+    "rank": 290,
+    "id": 6296,
+    "word": "通じる",
+    "reading": "つうじる",
+    "meaning": "流動、流程",
+    "frequency_rank": 6296,
+    "tranche_id": 7,
+    "jlpt_level": "N2",
+    "verb_type": "一段動詞",
+    "rank_source": "frequency_backfill"
+  },
+  {
+    "rank": 291,
+    "id": 6301,
+    "word": "高まる",
+    "reading": "たかまる",
+    "meaning": "我們、上升、提高",
+    "frequency_rank": 6301,
+    "tranche_id": 7,
+    "jlpt_level": "N2",
+    "verb_type": "五段動詞",
+    "rank_source": "frequency_backfill"
+  },
+  {
+    "rank": 292,
+    "id": 6354,
+    "word": "招く",
+    "reading": "まねく",
+    "meaning": "動作、行為",
+    "frequency_rank": 6354,
+    "tranche_id": 7,
+    "jlpt_level": "N2",
+    "verb_type": "五段動詞",
+    "rank_source": "frequency_backfill"
+  },
+  {
+    "rank": 293,
+    "id": 6357,
+    "word": "殴る",
+    "reading": "なぐる",
+    "meaning": "毆る",
+    "frequency_rank": 6357,
+    "tranche_id": 7,
+    "jlpt_level": "N2",
+    "verb_type": "五段動詞",
+    "rank_source": "frequency_backfill"
+  },
+  {
+    "rank": 294,
+    "id": 6363,
+    "word": "生み出す",
+    "reading": "うみだす",
+    "meaning": "戒指、環",
+    "frequency_rank": 6363,
+    "tranche_id": 7,
+    "jlpt_level": "N2",
+    "verb_type": "五段動詞",
+    "rank_source": "frequency_backfill"
+  },
+  {
+    "rank": 295,
+    "id": 6365,
+    "word": "盛り上がる",
+    "reading": "もりあがる",
+    "meaning": "我們、上升、提高",
+    "frequency_rank": 6365,
+    "tranche_id": 7,
+    "jlpt_level": "N2",
+    "verb_type": "五段動詞",
+    "rank_source": "frequency_backfill"
+  },
+  {
+    "rank": 296,
+    "id": 6377,
+    "word": "試す",
+    "reading": "ためす",
+    "meaning": "動作、行為",
+    "frequency_rank": 6377,
+    "tranche_id": 7,
+    "jlpt_level": "N2",
+    "verb_type": "五段動詞",
+    "rank_source": "frequency_backfill"
+  },
+  {
+    "rank": 297,
+    "id": 6449,
+    "word": "担う",
+    "reading": "になう",
+    "meaning": "擔う",
+    "frequency_rank": 6449,
+    "tranche_id": 7,
+    "jlpt_level": "N2",
+    "verb_type": "五段動詞",
+    "rank_source": "frequency_backfill"
+  },
+  {
+    "rank": 298,
+    "id": 6451,
+    "word": "揺れる",
+    "reading": "ゆれる",
+    "meaning": "方式、方法",
+    "frequency_rank": 6451,
+    "tranche_id": 7,
+    "jlpt_level": "N2",
+    "verb_type": "一段動詞",
+    "rank_source": "frequency_backfill"
+  },
+  {
+    "rank": 299,
+    "id": 6473,
+    "word": "育つ",
+    "reading": "そだつ",
+    "meaning": "動作、行為",
+    "frequency_rank": 6473,
+    "tranche_id": 7,
+    "jlpt_level": "N2",
+    "verb_type": "五段動詞",
+    "rank_source": "frequency_backfill"
+  },
+  {
+    "rank": 300,
+    "id": 6478,
+    "word": "負う",
+    "reading": "おう",
+    "meaning": "背後、後方",
+    "frequency_rank": 6478,
+    "tranche_id": 7,
+    "jlpt_level": "N2",
+    "verb_type": "五段動詞",
     "rank_source": "frequency_backfill"
   }
 ]

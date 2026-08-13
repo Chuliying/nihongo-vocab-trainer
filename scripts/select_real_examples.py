@@ -160,8 +160,11 @@ def token_matches_target(token, target):
     word = target["word"]
     surface = token.surface
     lemma = token_lemma(token)
+    orth_base = token_value(token, "orthBase")
     if lemma == word:
         return True
+    if orth_base == word:
+        return target_pos_compatible(token, target)
     if surface == word:
         return target_pos_compatible(token, target)
     # Permit only orthographic hiragana/katakana normalization. Token reading is NOT
