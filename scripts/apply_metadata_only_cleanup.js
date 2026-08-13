@@ -50,7 +50,7 @@ function clone(value) {
 
 function isStaleOnly(row) {
   return (
-    row.risk_bucket === "metadata_only" &&
+    row.issue_bucket === "metadata_only" &&
     Array.isArray(row.issues) &&
     row.issues.length === 1 &&
     row.issues[0] === "stale_llm_source"
@@ -130,4 +130,6 @@ function main() {
   console.log(JSON.stringify(summary, null, 2));
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = { isStaleOnly };
