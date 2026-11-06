@@ -44,3 +44,9 @@ The credit manifest covers all 10,875 sentence IDs found in reachable vocabulary
 Application checks passed; the stricter content audit still has unresolved vocabulary findings. Neither this report nor public visibility declares the entire corpus verified. No hosted deployment or database import was performed.
 
 The shared secret scanner passed the 129-file application/script/test scope, client environment checks, log checks, and environment-file ignore check. Its staged-index wrapper reported a coverage-protocol error, so that staged result is not claimed as passed. An independent scan read every added/modified staged Git blob: 31 text files (about 1.22 MB), with zero private-key, provider-token, credential-URL, or long credential-assignment findings. The two staged PNG files were visually inspected. Deletions cannot introduce new blob content. This is heuristic evidence, not a security guarantee.
+
+## Delivery
+
+Implementation commit: `32cca76` (`Prepare reproducible public release with source attribution`). Remote main was re-fetched and had not advanced before the fast-forward push. The parent reviewer inspected the implementation, notices, tests, and production screenshots.
+
+Repository: https://github.com/Chuliying/nihongo-vocab-trainer. Visibility was changed to public under the user's explicit authorization. GitHub metadata reported `PUBLIC`; an unauthenticated HTTP request reported `private=false`, and the public README returned HTTP 200. No force push or history rewrite was used.
