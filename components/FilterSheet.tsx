@@ -14,6 +14,7 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -88,6 +89,7 @@ export function FilterSheet({
       <SheetContent side="bottom" className="mx-auto max-w-md pb-8">
         <SheetHeader>
           <SheetTitle>篩選</SheetTitle>
+          <SheetDescription className="sr-only">調整詞庫範圍、日語程度與詞性。</SheetDescription>
         </SheetHeader>
 
         <div className="space-y-6 px-5">

@@ -1,92 +1,80 @@
 # Nihongo Vocab Trainer
 
-A mobile-first Japanese vocabulary trainer for Traditional Chinese (Taiwan) learners.
+A Japanese vocabulary study app for Traditional Chinese learners. Browse and search a 13,000-entry corpus, study selected collections with flashcards, and keep learning progress in your browser.
 
-## Scope
+The interface is in Traditional Chinese. The corpus is still being reviewed; this is a study aid, not a verified dictionary or an official JLPT word list.
 
-- 13,000 common Japanese words.
-- Tranche-based browsing and progress.
-- Sequential study mode and 隨機練習 (Random 30) mode.
-- Fixed-size flashcards with mobile swipe; word font auto-scales to length.
-- localStorage progress.
-- Deterministic verb conjugation info for verbs.
-- Public-data-first content pipeline using JMdict/EDRDG, frequency lists, and open
-  example corpora (Tatoeba/Tanaka).
+![Desktop vocabulary list with Japanese words, Chinese meanings, and expandable study details](docs/images/study-desktop.png)
 
-## Development
+[Mobile flashcard preview](docs/images/study-mobile.png)
 
-```bash
-npm install
+## Run locally
+
+Use Node.js 22 and npm. No account, database, or model API key is required for the default local mode.
+
+```sh
+git clone https://github.com/Chuliying/nihongo-vocab-trainer.git
+cd nihongo-vocab-trainer
+nvm use # optional; select Node 22 with your preferred version manager
+npm ci
 npm run dev
 ```
 
-Node note: the project needs Node 20. If your default `node` is older, prefix
-commands with the v20 path, e.g.
-`env PATH=/Users/Chuliying/.nvm/versions/node/v20.19.4/bin:$PATH npm run dev`.
+Open http://localhost:3000. Start with the common-verb collection, switch between list and card views, or search by word, kana, and meaning. Learned words and session state are saved in this browser's localStorage. They do not sync across devices; clearing site data removes them.
 
-Core quality gates:
+The default `VOCAB_DATA_SOURCE=json` reads the tracked chunk files on the server. If you already have a local environment file that selects a database, run `VOCAB_DATA_SOURCE=json npm run dev` to use the local corpus explicitly. Do not copy another installation's credentials.
 
-```bash
-npm run type-check
+## Features
+
+- Progressive browsing and server-side search across the full corpus.
+- Collections for common verbs, adjectives, adverbs, conjunctions, and 500 selected nouns.
+- Sequential and random flashcard sessions, mobile swipe, and related-word navigation.
+- Deterministic verb conjugations for supported, reviewed entries.
+- Source links, contributor credits, and license information for attributed Tatoeba examples.
+
+## Data quality and licenses
+
+There are 13,000 entries in 52 chunks and 13 learning layers. Counts describe coverage, not correctness. Some meanings and usage labels still need semantic review. A content filter hides known low-value examples, but passing that filter does not certify a sentence as correct. Labels such as “curated” describe the curation workflow, not teacher certification.
+
+N1–N5 labels are rank-based estimates. The ordering uses wordfreq with a few essential-verb adjustments; it is not an official JLPT or BCCWJ ranking. Historical audit flags include missing provenance as well as content issues, so a flagged-entry count must not be described as a count of wrong words.
+
+See [data licenses and attribution](DATA_LICENSES.md), the app's `/sources` page, and the [sentence credit manifest](public/data/attribution/tatoeba.json). Original dictionary and wordfreq download versions were not recorded. The runtime corpus, legacy seed files, and historical curation artifacts have different roles and must not be interchanged.
+
+**The application code has no general reuse license at present.** Public visibility permits inspection; it is not an MIT or Apache license grant. Third-party data retains the licenses described in `DATA_LICENSES.md`.
+
+## Architecture
+
+```text
+List / flashcards → focused API routes → vocabulary repository
+                                         ├─ JSON chunks (default)
+                                         └─ PostgreSQL (optional)
+Learning progress → browser localStorage
+```
+
+Next.js and React render the interface. A repository boundary keeps JSON and PostgreSQL access behind the same API. Search, direct lookup, and collection endpoints return focused payloads; the full corpus and attribution manifest stay out of client bundles. Source credits are attached at the server boundary in both data modes.
+
+For PostgreSQL, see [the database notes](docs/data/vocab-db-migration-audit.md). The app uses `VOCAB_DATA_SOURCE=db` and a server-only `DATABASE_URL`. Import commands write to the configured database: they are maintenance operations, not part of local setup. This release preparation does not import or change production data.
+
+## Development checks
+
+```sh
+npm run typecheck
 npm run lint
 npm run test:unit
 npm run audit:copy
 npm run build
+npx playwright install chromium
+npm run test:e2e
 ```
 
-## Data architecture
+Browser tests use local JSON data and a local server. They include real-corpus search and navigation checks as well as mocked error/race scenarios. Test success covers those behaviors; it does not establish semantic correctness of all vocabulary.
 
-There are two sources of truth, kept in sync by an importer:
+`npm run validate:chunks` is the stricter content-quality audit. It currently reports unresolved corpus issues and is not a passing release gate. Preserve that distinction when reporting results.
 
-- **Edit source** — `public/data/chunks/vocab_chunk_*.json` (52 chunks × 250 entries).
-  All content edits land here first.
-- **Runtime source** — Neon Postgres. The app reads from the DB
-  (`validate:runtime-repository` reports `source: db`, 13,000 entries, 13 tranches).
-- Sync edit → runtime with `npm run db:import` (writes the DB and checks API parity).
-- Client components receive only focused API payloads. Empty-query browsing loads the
-  13 tranches progressively; a non-empty query uses the bounded full-corpus search.
+## Corpus maintenance
 
-> `public/data/vocab_13000.json` is legacy seed data and is **not** the runtime
-> source — it diverges heavily from the chunks/DB and must not be used to overwrite them.
+Edit source: `public/data/chunks/vocab_chunk_*.json`. Never replace these with the older `public/data/vocab_13000.json` seed. The hosted database is synchronized separately by an explicitly authorized import.
 
-## Data-quality cleanup
+Read `VOCAB_CLEANUP_STATE.json`, `CLAUDE.md`, and `.claude/skills/vocab-cleanup/SKILL.md` before curation. The state file records historical checkpoints and constraints; remeasure before presenting its counts as current. Generated candidates require review. Do not infer verb conjugations with an LLM or apply related-word links from vector similarity alone.
 
-The corpus is being cleaned for natural, teachable content: real example sentences,
-correct readings, correct Traditional-Chinese meanings, and safe verb conjugations
-(related-word vectors come last). The work runs as small, validated, committed
-iterations.
-
-- **Live status & next step:** `VOCAB_CLEANUP_STATE.json` (repo root) — read this first.
-- **Runnable playbook:** the `vocab-cleanup` skill (`.claude/skills/vocab-cleanup/`).
-- **Entry point / constraints:** `CLAUDE.md`.
-- **Reference docs:** `docs/vocab-cleanup/` (operations, architecture, cleanup-flow,
-  iteration-log).
-
-### Current status (after iteration 055)
-
-- Bad entries: **8,086 / 13,000**; total issues: **~19,838**.
-- Verb invariant clean every batch (generated-suspect / mechanical-error / queue = 0).
-
-### Roadmap (the order to "follow this README to completion")
-
-1. ~~Dual-row meaning cleanup, clean segment~~ — **done** (iter049–053, 437 rows).
-2. ~~Track A: `chinese_placeholder` meaning + example-Chinese~~ — **done**
-   (iter054–055, 122 rows; 4 broken-Japanese rows deferred to step 5).
-3. **Track B (in progress): `chinese_latin` cheap rows** — meaning fixed and the
-   broken/meta example replaced with a generated natural sentence, for the safe
-   common-noun subset only (proper/place names and sensitive terms excluded); heavy
-   reading/translation review + deterministic gate.
-4. Remaining cheap meaning work: non-cheap-bucket JMdict legacy meanings;
-   non-verified legacy (homophone-suspect / gloss-unmatched); residual latin/placeholder.
-5. `low_value_example` real examples (Tatoeba sourcing) for the ~3,780 meta-example rows,
-   including the deferred broken-Japanese rows.
-6. Related-word vectors (last; never applied from nearest-vector alone).
-
-### Safety constraints (see `CLAUDE.md` for the full list)
-
-- Never commit `.env*`, secrets, `output.jsonl`, or scratch batch artifacts.
-- The cheap model never touches verbs, grammar words, katakana/semantic-review
-  buckets, proper/place/scientific names, or non-Japanese symbols.
-- Verb conjugations are never LLM-generated.
-- Each batch: deterministic gate → validation suite → DB-import parity → build,
-  then update state + iteration log and commit.
+Bug reports should include the word or entry ID, the observed behavior, and a reliable reference when reporting a language issue. Do not include account credentials or personal study data.

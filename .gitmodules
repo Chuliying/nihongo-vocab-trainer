@@ -1,3 +1,0 @@
-[submodule ".agent/skills/_shared"]
-	path = .agent/skills/_shared
-	url = git@github.com:HDRenewables/agent-playbook.git

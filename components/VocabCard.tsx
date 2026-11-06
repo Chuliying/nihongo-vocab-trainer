@@ -4,6 +4,7 @@ import { memo } from "react";
 import { Check } from "lucide-react";
 import type { VocabEntry } from "@/lib/types";
 import { isExampleOptimized } from "@/lib/example-quality";
+import { ExampleAttribution } from "@/components/ExampleAttribution";
 import { RelatedWords } from "@/components/RelatedWords";
 import { VerbInfoPanel } from "@/components/VerbInfoPanel";
 import { Badge } from "@/components/ui/badge";
@@ -90,6 +91,7 @@ export const VocabCard = memo(function VocabCard({
               <p className="text-sm text-foreground/80">
                 {entry.example.chinese}
               </p>
+              <ExampleAttribution source={entry.source} />
             </blockquote>
           )}
           <VerbInfoPanel verbInfo={entry.verb_info} />

@@ -7,6 +7,7 @@ import { DraggableProgress } from "@/components/ui/DraggableProgress";
 import { FilterSheet } from "@/components/FilterSheet";
 import { RelatedWords } from "@/components/RelatedWords";
 import { isExampleOptimized } from "@/lib/example-quality";
+import { ExampleAttribution } from "@/components/ExampleAttribution";
 import { SessionEndSummary } from "@/components/SessionEndSummary";
 import { VerbInfoPanel } from "@/components/VerbInfoPanel";
 import { Badge } from "@/components/ui/badge";
@@ -94,6 +95,7 @@ export function CardMode({
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
   const [showEndSummary, setShowEndSummary] = useState(false);
+  const [sessionLearnedCount, setSessionLearnedCount] = useState(0);
   const sessionLearnedRef = useRef<Set<number>>(new Set());
 
   const filteredEntries = useMemo(
@@ -143,6 +145,7 @@ export function CardMode({
     if (sessionWords.length === 0) return;
     const next = safeIndex + delta;
     if (next >= sessionWords.length) {
+      setSessionLearnedCount(sessionLearnedRef.current.size);
       setShowEndSummary(true);
       return;
     }
@@ -168,6 +171,7 @@ export function CardMode({
   function handleRestart() {
     setShowEndSummary(false);
     sessionLearnedRef.current.clear();
+    setSessionLearnedCount(0);
     setIndex(0);
     setIsFlipped(false);
   }
@@ -312,7 +316,7 @@ export function CardMode({
           {showEndSummary ? (
             <SessionEndSummary
               totalSeen={sessionWords.length}
-              learnedThisSession={sessionLearnedRef.current.size}
+              learnedThisSession={sessionLearnedCount}
               onRestart={handleRestart}
               onBackToList={onBackToList}
             />
@@ -385,6 +389,7 @@ export function CardMode({
                         <p className="text-sm text-foreground/80">
                           {current.example.chinese}
                         </p>
+                        <ExampleAttribution source={current.source} />
                       </blockquote>
                     )}
                     <VerbInfoPanel verbInfo={current.verb_info} />

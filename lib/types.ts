@@ -45,6 +45,13 @@ export type VocabEntry = {
     dictionary: string;
     example: string;
     frequency?: string;
+    attribution?: {
+      sentenceId: number;
+      url: string;
+      licenseUrl: string;
+      contributors: string[];
+      ownerMissing: boolean;
+    };
   };
   quality_score: "curated" | "verb_curated" | "rule_completed" | "needs_review" | string;
   tags?: string[];

@@ -10,6 +10,7 @@ import {
   getVocabIndex,
 } from "@/lib/vocab-repository";
 import type { PopularVerb, VocabEntry } from "@/lib/types";
+import { withSourceAttribution } from "@/lib/source-attribution";
 
 const CHUNKS_DIR = path.join(process.cwd(), "public", "data", "chunks");
 
@@ -26,7 +27,7 @@ function loadRuntimeChunks(): VocabEntry[] {
     return entries.map((entry) => {
       const { _quality, ...rest } = entry;
       void _quality;
-      return rest;
+      return withSourceAttribution(rest);
     });
   });
 }

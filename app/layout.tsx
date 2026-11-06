@@ -51,15 +51,14 @@ const notoTC = Noto_Sans_TC({
 });
 
 export const metadata: Metadata = {
-  title: "NVT",
-  description: "13,000 個常用日語單字，為繁體中文學習者打造的行動優先翻卡練習工具。"
+  title: "Nihongo · 日語單字練習",
+  description: "為繁體中文學習者設計的日語詞庫與翻卡練習工具。支援搜尋、分類練習與本機學習進度；詞義與例句持續校訂中。"
 };
 
 export const viewport: Viewport = {
   themeColor: "#f8f6f1",
   width: "device-width",
-  initialScale: 1,
-  maximumScale: 1
+  initialScale: 1
 };
 
 export default function RootLayout({

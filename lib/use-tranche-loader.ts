@@ -21,7 +21,6 @@ export function useTrancheLoader(collection: CollectionId): TrancheLoaderResult 
   const loadingMoreRef = useRef(false);
   const loadGenerationRef = useRef(0);
   const collectionRef = useRef(collection);
-  collectionRef.current = collection;
 
   const loadNext = useCallback(async () => {
     if (collectionRef.current !== "all") return;
@@ -50,6 +49,7 @@ export function useTrancheLoader(collection: CollectionId): TrancheLoaderResult 
   }, []);
 
   useEffect(() => {
+    collectionRef.current = collection;
     loadGenerationRef.current += 1;
     if (collection !== "all") {
       setEntries([]);

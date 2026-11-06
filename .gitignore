@@ -24,3 +24,8 @@ __pycache__/
 
 # Tatoeba corpus (CC-BY, regenerable via download)
 scratch/tatoeba/
+
+# New curation intermediates stay local; existing historical artifacts are retained.
+scratch/
+output.jsonl
+*.tsbuildinfo

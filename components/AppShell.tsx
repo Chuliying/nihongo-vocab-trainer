@@ -39,6 +39,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
           <nav className="flex items-center gap-1" aria-label="主要導覽">
             <Link
               href="/"
+              aria-label="列表"
               aria-current={isListMode ? "page" : undefined}
               className={cn(
                 "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
@@ -52,6 +53,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
             </Link>
             <Link
               href={cardHref}
+              aria-label="卡片"
               aria-current={isCardMode ? "page" : undefined}
               className={cn(
                 "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
@@ -65,6 +67,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
             </Link>
             <Link
               href="/sources"
+              aria-label="資料來源"
               aria-current={pathname === "/sources" ? "page" : undefined}
               className={cn(
                 "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
